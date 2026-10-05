@@ -1,0 +1,31 @@
+# Nightly database backup (free) — the Supabase free plan has no automatic backups.
+# It also keeps the project active so it is not paused after 7 days of inactivity.
+# Setup: add SUPABASE_DB_URL under GitHub repo > Settings > Secrets > Actions
+# (Supabase > Project Settings > Database > Connection string > URI, "Session pooler").
+name: Daily DB backup
+
+on:
+  schedule:
+    - cron: "30 20 * * *" # 2:00 AM IST
+  workflow_dispatch:
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Postgres client
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client
+      - name: Dump database
+        env:
+          DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          pg_dump "$DB_URL" --schema=public --no-owner --no-privileges -Fc -f backup.dump
+          ls -lh backup.dump
+      - name: Save backup (90 din tak)
+        uses: actions/upload-artifact@v4
+        with:
+          name: talentdb-backup-${{ github.run_number }}
+          path: backup.dump
+          retention-days: 90

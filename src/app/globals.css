@@ -1,0 +1,150 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ------------------------------------------------------------------
+   Design tokens — light & dark. Colors as RGB channels so Tailwind
+   opacity modifiers (bg-jade/10) keep working in both themes.
+   ------------------------------------------------------------------ */
+:root {
+  --canvas: 245 246 249;
+  --surface: 255 255 255;
+  --surface-2: 249 250 252;
+  --surface-3: 240 242 246;
+  --line: 228 231 237;
+  --line-strong: 208 213 223;
+
+  --ink-900: 12 17 31;
+  --ink-800: 23 32 54;
+  --ink-700: 45 55 81;
+  --ink-600: 66 77 104;
+  --ink-500: 96 106 132;
+  --ink-400: 128 137 160;
+  --ink-300: 176 183 199;
+
+  --jade: 15 118 110;
+  --jade-50: 236 247 245;
+  --jade-100: 207 236 231;
+  --jade-700: 11 94 88;
+
+  --saffron: 233 162 59;
+  --saffron-50: 253 246 234;
+  --saffron-100: 250 230 196;
+  --saffron-600: 201 129 26;
+  --saffron-800: 122 75 7;
+
+  --sidebar: 17 23 41;
+  --sidebar-line: 255 255 255;
+  --sidebar-text: 236 239 245;
+  --sidebar-muted: 140 149 172;
+
+  --shadow-card: 0 1px 0 rgb(23 32 54 / 0.03), 0 1px 3px rgb(23 32 54 / 0.06);
+  --shadow-pop: 0 16px 40px -12px rgb(23 32 54 / 0.28), 0 3px 8px rgb(23 32 54 / 0.08);
+  color-scheme: light;
+}
+
+.dark {
+  --canvas: 10 13 23;
+  --surface: 17 22 35;
+  --surface-2: 21 27 42;
+  --surface-3: 28 35 53;
+  --line: 36 44 64;
+  --line-strong: 52 62 88;
+
+  --ink-900: 248 249 252;
+  --ink-800: 232 235 242;
+  --ink-700: 205 210 223;
+  --ink-600: 172 179 197;
+  --ink-500: 142 150 172;
+  --ink-400: 112 121 146;
+  --ink-300: 72 81 106;
+
+  --jade: 21 148 135;
+  --jade-50: 13 40 42;
+  --jade-100: 17 58 58;
+  --jade-700: 98 216 198;
+
+  --saffron: 240 178 82;
+  --saffron-50: 45 34 17;
+  --saffron-100: 70 51 20;
+  --saffron-600: 240 178 82;
+  --saffron-800: 247 206 140;
+
+  --sidebar: 8 11 20;
+  --sidebar-line: 255 255 255;
+  --sidebar-text: 232 235 242;
+  --sidebar-muted: 112 121 146;
+
+  --shadow-card: 0 0 0 1px rgb(255 255 255 / 0.02);
+  --shadow-pop: 0 20px 48px -12px rgb(0 0 0 / 0.7), 0 0 0 1px rgb(255 255 255 / 0.04);
+  color-scheme: dark;
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    @apply bg-canvas font-sans text-ink-800;
+    font-feature-settings: "ss01", "cv11";
+  }
+  :focus-visible {
+    @apply outline-none ring-2 ring-jade/60 ring-offset-1 ring-offset-surface;
+  }
+  ::selection {
+    background: rgb(var(--jade) / 0.25);
+  }
+  input[type="date"]::-webkit-calendar-picker-indicator,
+  input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+    opacity: 0.5;
+    cursor: pointer;
+  }
+  .dark input[type="date"]::-webkit-calendar-picker-indicator,
+  .dark input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+  }
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(var(--line-strong)) transparent;
+  }
+}
+
+@layer components {
+  .field-label {
+    @apply mb-1.5 block text-[13px] font-medium text-ink-700;
+  }
+  .field-input {
+    @apply h-10 w-full rounded-lg border border-line bg-surface px-3 text-sm text-ink-800 placeholder:text-ink-300
+      transition-colors hover:border-line-strong focus:border-jade focus:outline-none focus:ring-2 focus:ring-jade/15
+      disabled:cursor-not-allowed disabled:bg-surface-2;
+  }
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+  .card {
+    @apply rounded-xl border border-line bg-surface shadow-card;
+  }
+  .hairline-grid {
+    background-image: linear-gradient(rgb(var(--line) / 0.6) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(var(--line) / 0.6) 1px, transparent 1px);
+    background-size: 28px 28px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: white !important;
+  }
+}

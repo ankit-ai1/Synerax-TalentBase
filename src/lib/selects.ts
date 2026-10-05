@@ -1,0 +1,5 @@
+export const INTERVIEW_SELECT =
+  "id, round_no, round_name, mode, scheduled_at, duration_min, location, meeting_link, interviewers, status, result, rating, feedback, created_by, application:applications!inner(id, stage, job:jobs!inner(id, title, client:clients(name)), candidate:candidates!inner(id, first_name, last_name, phone, email, current_designation))";
+
+export const APP_SELECT =
+  "id, stage, match_score, stage_changed_at, offered_ctc, expected_joining, joined_at, rejection_reason, created_at, position, owner:profiles!applications_owner_id_fkey(full_name), candidate:candidates(id, candidate_code, first_name, last_name, current_designation, current_company, total_experience, expected_ctc, current_ctc, notice_period_days, phone, email, current_city, serving_notice, last_working_day, status), interviews(id, scheduled_at, round_name, status, result)";
