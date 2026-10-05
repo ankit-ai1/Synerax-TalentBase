@@ -2,8 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useEffect } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { ChevronsLeft, ChevronsRight, LogOut, Search, X } from "lucide-react";
 import { Avatar } from "@/components/ui/misc";
 import { Menu, MenuDivider } from "@/components/ui/interactive";
@@ -32,7 +32,14 @@ export function Sidebar({
   onSearch: () => void;
 }) {
   const path = usePathname();
-  useEffect(() => onMobileClose(), [path]); // eslint-disable-line react-hooks/exhaustive-deps
+  const router = useRouter();
+  // highlight the clicked item instantly, before the new page has loaded
+  const [pending, setPending] = useState<string | null>(null);
+  useEffect(() => {
+    setPending(null);
+    onMobileClose();
+  }, [path]); // eslint-disable-line react-hooks/exhaustive-deps
+  const current = pending ?? path;
 
   const body = (mini: boolean) => (
     <div className="relative flex h-full flex-col">
@@ -79,7 +86,15 @@ export function Sidebar({
             {mini && <div className="mx-auto mb-2 h-px w-6 bg-sidebar-line/10" />}
             <div className="space-y-0.5">
               {g.items.map((item) => (
-                <NavLink key={item.href} item={item} active={isActive(path, item)} mini={mini} count={item.badge ? counts[item.badge] : 0} />
+                <NavLink
+                  key={item.href}
+                  item={item}
+                  active={isActive(current, item)}
+                  mini={mini}
+                  count={item.badge ? counts[item.badge] : 0}
+                  onNavigate={() => item.href !== path && setPending(item.href)}
+                  onPrefetch={() => router.prefetch(item.href)}
+                />
               ))}
             </div>
           </div>
@@ -140,6 +155,7 @@ export function Sidebar({
 
   return (
     <>
+      {pending && <div aria-hidden className="fixed inset-x-0 top-0 z-[60] h-0.5 animate-pulse bg-saffron" />}
       <aside
         className={cn(
           "fixed inset-y-0 left-0 z-30 hidden border-r border-black/20 bg-sidebar transition-[width] duration-200 lg:block",
@@ -158,11 +174,30 @@ export function Sidebar({
   );
 }
 
-function NavLink({ item, active, mini, count }: { item: NavItem; active: boolean; mini: boolean; count: number }) {
+function NavLink({
+  item,
+  active,
+  mini,
+  count,
+  onNavigate,
+  onPrefetch,
+}: {
+  item: NavItem;
+  active: boolean;
+  mini: boolean;
+  count: number;
+  onNavigate: () => void;
+  onPrefetch: () => void;
+}) {
   const Icon = item.icon;
   return (
     <Link
       href={item.href}
+      onClick={(e) => {
+        if (!e.metaKey && !e.ctrlKey && !e.shiftKey && e.button === 0) onNavigate();
+      }}
+      onMouseEnter={onPrefetch}
+      onFocus={onPrefetch}
       title={mini ? item.label : undefined}
       className={cn(
         "group relative flex h-9 items-center gap-3 rounded-lg text-[13.5px] transition-colors",

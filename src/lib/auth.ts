@@ -1,20 +1,21 @@
+import { cache } from "react";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { Profile } from "@/lib/types";
 
-export async function getCurrentProfile(): Promise<Profile | null> {
+/** Cached per request, so the layout and the page share a single lookup */
+export const getCurrentProfile = cache(async (): Promise<Profile | null> => {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return null;
+  const { data: auth } = await supabase.auth.getClaims();
+  const userId = auth?.claims?.sub;
+  if (!userId) return null;
   const { data } = await supabase
     .from("profiles")
     .select("id, email, full_name, role, is_active, created_at")
-    .eq("id", user.id)
+    .eq("id", userId)
     .single();
   return (data as Profile) ?? null;
-}
+});
 
 /** For pages: requires login + an active account */
 export async function requireStaff(): Promise<Profile> {
