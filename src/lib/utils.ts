@@ -113,6 +113,7 @@ export function mask(v: string | null | undefined, visible = 4) {
 export function friendlyError(msg: string | undefined | null) {
   if (!msg) return "Something went wrong. Please try again.";
   if (msg.includes("DUPLICATE:")) return msg.split("DUPLICATE:")[1].trim();
+  if (msg.includes("VALIDATION:")) return msg.split("VALIDATION:")[1].trim();
   if (msg.includes("invalid input syntax for type date")) return "One of the dates is in an invalid format.";
   if (msg.includes("invalid input syntax for type numeric") || msg.includes("invalid input syntax for type integer"))
     return "One of the number fields has an invalid value.";

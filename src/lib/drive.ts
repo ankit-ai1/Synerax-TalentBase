@@ -85,3 +85,23 @@ export async function downloadFile(id: string) {
 export async function trashFile(id: string) {
   await getDrive().files.update({ ...ALL, fileId: id, requestBody: { trashed: true } });
 }
+
+/** Find a folder by name inside a parent, or create it */
+export async function findOrCreateFolder(name: string, parentId: string) {
+  const q = `name = '${safeName(name).replace(/'/g, "\'")}' and '${parentId}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false`;
+  const res = await getDrive().files.list({ ...ALL, includeItemsFromAllDrives: true, q, fields: "files(id)", pageSize: 1 });
+  return res.data.files?.[0]?.id ?? (await createFolder(name, parentId));
+}
+
+/** Move a file into another folder */
+export async function moveFile(fileId: string, newParentId: string) {
+  const drive = getDrive();
+  const cur = await drive.files.get({ ...ALL, fileId, fields: "parents" });
+  await drive.files.update({
+    ...ALL,
+    fileId,
+    addParents: newParentId,
+    removeParents: (cur.data.parents ?? []).join(","),
+    fields: "id",
+  });
+}

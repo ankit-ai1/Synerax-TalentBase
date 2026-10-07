@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useState } from "react";
 import {
-  Bell,
   Briefcase,
   Building2,
   CalendarClock,
@@ -25,6 +24,7 @@ import { cn, dayLabel, formatTime, istDayRange } from "@/lib/utils";
 import type { Profile } from "@/lib/types";
 import type { ShellCounts } from "./app-shell";
 import { LogoMark } from "./sidebar";
+import { NotificationBell } from "@/components/portal/notification-bell";
 
 export function Topbar({ onMenu, onSearch, counts, profile }: { onMenu: () => void; onSearch: () => void; counts: ShellCounts; profile: Profile }) {
   const router = useRouter();
@@ -35,7 +35,7 @@ export function Topbar({ onMenu, onSearch, counts, profile }: { onMenu: () => vo
         <button onClick={onMenu} className="-ml-1 rounded-md p-1.5 text-ink-600 lg:hidden" aria-label="Open menu">
           <MenuIcon className="h-5 w-5" />
         </button>
-        <Link href="/" className="lg:hidden">
+        <Link href="/dashboard" className="lg:hidden">
           <LogoMark size={26} />
         </Link>
 
@@ -96,6 +96,7 @@ export function Topbar({ onMenu, onSearch, counts, profile }: { onMenu: () => vo
           </Menu>
 
           <Notifications count={counts.tasks + counts.interviews} userId={profile.id} />
+          <NotificationBell allHref="/notifications" />
           <ThemeToggle />
         </div>
       </div>
@@ -136,9 +137,10 @@ function Notifications({ count, userId }: { count: number; userId: string }) {
             load();
           }}
           className="relative flex h-9 w-9 items-center justify-center rounded-lg text-ink-500 transition-colors hover:bg-surface-3 hover:text-ink-900"
-          aria-label={`Notifications${count ? `: ${count}` : ""}`}
+          aria-label={`Today’s agenda${count ? `: ${count}` : ""}`}
+          title="Today’s tasks & interviews"
         >
-          <Bell className="h-[18px] w-[18px]" />
+          <CalendarClock className="h-[18px] w-[18px]" />
           {count > 0 && <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-saffron ring-2 ring-canvas" />}
         </button>
       )}

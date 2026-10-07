@@ -135,6 +135,63 @@ Re-running `supabase/schema.sql` safely updates every function (including the En
 
 ---
 
+## Client & candidate portals
+
+| Who | Signs in at | Lands on | How they get a login |
+| --- | --- | --- | --- |
+| Admin / HR | `/login` | `/dashboard` | Admin → Team & access |
+| Client | `/login` | `/client` | Staff create it: Clients → a client → **Portal access** (the login email is sent automatically) |
+| Candidate | `/login` | `/portal` | Self sign-up at `/register` (email verification required) |
+
+Existing databases: run `supabase/migrations/003_portals.sql` in the SQL Editor (safe to re-run any time).
+
+### Supabase settings (one time)
+
+1. **Authentication → Hooks → Customize Access Token (JWT) Claims** → enable → `public.custom_access_token_hook`.
+2. **Authentication → Sign In / Providers → Email**: *Allow new users to sign up* **on**, *Confirm email* **on**.
+3. **Authentication → URL Configuration**: Site URL = your live URL (e.g. `https://synerax-talent-base.vercel.app`); Redirect URLs = `https://<your-domain>/**` and `http://localhost:3000/**`.
+4. **Authentication → Emails → SMTP Settings** (recommended): enable custom SMTP with the **same** SMTP details as below. Supabase's built-in mailer only sends a few emails per hour — not enough for sign-up verification and password resets.
+
+### Automated emails
+
+All emails go out over plain SMTP (Gmail with an app password, Zoho, Brevo, Resend SMTP…). Set these in Vercel → Settings → Environment Variables, then redeploy:
+
+| Variable | Example | Notes |
+| --- | --- | --- |
+| `SMTP_HOST` | `smtp.gmail.com` | |
+| `SMTP_PORT` | `587` | `465` for SSL |
+| `SMTP_USER` | `hr@yourdomain.com` | |
+| `SMTP_PASS` | app password | Gmail: Google Account → Security → App passwords |
+| `MAIL_FROM` | `hr@yourdomain.com` | Must be allowed by the SMTP account |
+| `SYNERAX_NOTIFY_EMAILS` | `hr@yourdomain.com,ops@yourdomain.com` | Team inboxes (can also be set in the app) |
+| `NEXT_PUBLIC_SITE_URL` | `https://synerax-talent-base.vercel.app` | Used for links inside emails |
+| `CRON_SECRET` | long random string | Protects the daily job |
+
+Then open **Admin → Email settings** to send a test email, change the sender name and team inboxes, switch individual emails on/off, and see the full email log (sent / failed / skipped).
+
+- Emails never block the action that triggered them; failures are logged, not shown to users.
+- Each event is sent once (deduplicated), and every email also creates an in-app notification (bell icon).
+- Candidate emails go only to candidates who registered on the portal — never to profiles your team imported.
+- Interview emails carry a calendar invite (`.ics`).
+
+**Daily job** (`vercel.json` → `/api/cron/daily`, 09:00 IST): team digest of new registrations, incomplete-profile reminders (after 3 days, max 2), client reminders for profiles pending over 48 h, and job alerts for opted-in candidates (max once a day). Vercel calls it automatically once `CRON_SECRET` is set. To trigger it by hand:
+
+```bash
+curl -H "Authorization: Bearer $CRON_SECRET" https://<your-domain>/api/cron/daily
+```
+
+### Demo data & security tests
+
+```bash
+npm run seed:portals          # 1 demo client + login, 3 demo candidates, 2 published jobs (password: Demo@Portal2026)
+npm run test:roles            # signs in as anon / candidate / client with the PUBLIC key and checks nothing leaks
+npm run seed:portals:cleanup  # removes all demo data again
+```
+
+Demo logins use `@example.com` addresses, so no real emails are sent. Their CVs are placeholders (opening one shows "File unavailable"). `test:roles` checks that portal users can't read staff tables, call staff functions, see contact details of shared candidates, see other clients' jobs, or promote themselves to admin. Run it after every database change.
+
+---
+
 ## Free limits (when you'll need to pay)
 
 | Service | Free tier | When to upgrade |

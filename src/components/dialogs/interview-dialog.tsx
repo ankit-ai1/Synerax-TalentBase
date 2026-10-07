@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { MessageCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { staffEvent } from "@/lib/portal-rpc";
 import { Dialog } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { SelectField, TextField } from "@/components/ui/fields";
@@ -117,11 +118,13 @@ export function InterviewDialog({ prefill, me, onClose }: { prefill: InterviewPr
       interviewers: interviewers.trim() || null,
     };
     const supabase = createClient();
-    const { error } = prefill.id
-      ? await supabase.from("interviews").update({ ...row, status: "Scheduled" }).eq("id", prefill.id)
-      : await supabase.from("interviews").insert({ ...row, created_by: me.id });
+    const { data: saved, error } = prefill.id
+      ? await supabase.from("interviews").update({ ...row, status: "Scheduled" }).eq("id", prefill.id).select("id").maybeSingle()
+      : await supabase.from("interviews").insert({ ...row, created_by: me.id }).select("id").single();
     setSaving(false);
     if (error) return toast.error(friendlyError(error.message));
+    staffEvent("interview", saved?.id ?? prefill.id);
+    staffEvent("stage", appId);
     toast.success(prefill.id ? "Interview rescheduled" : "Interview scheduled");
 
     if (sendWa) {

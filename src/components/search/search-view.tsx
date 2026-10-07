@@ -72,6 +72,7 @@ const PRESETS: { label: string; apply: (f: Filters) => Filters; on: (f: Filters)
     on: (f) => f.statuses.includes("Available") && f.statuses.includes("On Bench"),
   },
   { label: "Ready to relocate", apply: (f) => ({ ...f, relocate: f.relocate === "true" ? "" : "true" }), on: (f) => f.relocate === "true" },
+  { label: "Self-registered", apply: (f) => ({ ...f, portal: f.portal === "true" ? "" : "true" }), on: (f) => f.portal === "true" },
   {
     label: "Added this week",
     apply: (f) => ({ ...f, added_from: f.added_from ? "" : new Date(Date.now() - 7 * 86400e3).toISOString().slice(0, 10) }),
@@ -87,6 +88,19 @@ export function SearchView({ skills, roles, isAdmin, meId }: { skills: Skill[]; 
   const sp = useSearchParams();
   const dialogs = useDialogs();
   const users = useUsers();
+  const [jobOpts, setJobOpts] = useState<{ value: string; label: string }[]>([]);
+  useEffect(() => {
+    createClient()
+      .from("jobs")
+      .select("id, title, job_code, client:clients(name)")
+      .in("status", ["Open", "On Hold", "Pending review"])
+      .order("created_at", { ascending: false })
+      .limit(200)
+      .then(({ data }) =>
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        setJobOpts((data ?? []).map((j: any) => ({ value: j.id, label: `${j.title}${j.client?.name ? ` — ${j.client.name}` : ""} (${j.job_code})` })))
+      );
+  }, []);
   const [f, setF] = useState<Filters>(() => parseFilters(new URLSearchParams(sp.toString())));
   const [qInput, setQInput] = useState(f.q);
   const [result, setResult] = useState<SearchResult | null>(null);
@@ -231,6 +245,24 @@ export function SearchView({ skills, roles, isAdmin, meId }: { skills: Skill[]; 
       <SelectField label="Qualification" value={f.qualification} onChange={(v) => update({ qualification: v })} options={QUALIFICATIONS} placeholder="Any" />
       <SelectField label="Gender" value={f.gender} onChange={(v) => update({ gender: v })} options={GENDERS} placeholder="Any" />
       <SelectField label="Source" value={f.source} onChange={(v) => update({ source: v })} options={SOURCES} placeholder="Any" />
+      <SelectField
+        label="Candidate portal"
+        value={f.portal}
+        onChange={(v) => update({ portal: v })}
+        options={[
+          { value: "true", label: "Self-registered (has portal login)" },
+          { value: "false", label: "Added by the team" },
+        ]}
+        placeholder="Any"
+      />
+      <SelectField
+        label="Profile completion"
+        value={f.completion_min}
+        onChange={(v) => update({ completion_min: v })}
+        options={["50", "70", "80", "90", "100"].map((x) => ({ value: x, label: x === "100" ? "100% complete" : `${x}% or more` }))}
+        placeholder="Any"
+      />
+      <SelectField label="Applied to / in pipeline of" value={f.in_job} onChange={(v) => update({ in_job: v })} options={jobOpts} placeholder="Any job" />
       <SelectField label="Added by" value={f.added_by} onChange={(v) => update({ added_by: v })} options={users.map((u) => ({ value: u.id, label: u.full_name }))} placeholder="Any" />
       <TextField label="Tag" value={f.tag} onChange={(v) => update({ tag: v })} placeholder="e.g. Urgent" />
       <label className="flex cursor-pointer items-center gap-2.5 text-[13px] text-ink-700">
@@ -456,7 +488,10 @@ export function SearchView({ skills, roles, isAdmin, meId }: { skills: Skill[]; 
                           <Link href={`/candidates/${c.id}`} className="flex items-center gap-2.5">
                             <Avatar name={name} size="xs" />
                             <span className="min-w-0">
-                              <span className="block truncate font-medium text-ink-900 hover:text-jade-700">{name}</span>
+                              <span className="flex items-center gap-1.5 truncate font-medium text-ink-900 hover:text-jade-700">
+                                {name}
+                                {c.portal_user && <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-cyan-500" title="Self-registered" />}
+                              </span>
                               <span className="block max-w-[220px] truncate text-[11.5px] text-ink-400">{c.current_designation || c.headline || "—"}</span>
                             </span>
                           </Link>
@@ -743,6 +778,9 @@ function ResultCard({ c, selected, onSelect }: { c: SearchItem; selected: boolea
                 <p className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
                   <span className="text-base font-semibold text-ink-900 group-hover:text-jade-700">{name}</span>
                   <StatusBadge status={c.status} />
+                  {c.portal_user && (
+                    <span className="inline-flex items-center rounded-full bg-cyan-50 px-2 py-0.5 text-[11px] font-medium text-cyan-800 dark:bg-cyan-400/10 dark:text-cyan-300">Self-registered</span>
+                  )}
                   {c.active_jobs > 0 && (
                     <span className="inline-flex items-center gap-1 rounded-full bg-indigo-50 px-2 py-0.5 text-[11px] font-medium text-indigo-700 dark:bg-indigo-400/10 dark:text-indigo-300">
                       <Briefcase className="h-3 w-3" /> {c.active_jobs} active job{c.active_jobs > 1 ? "s" : ""}

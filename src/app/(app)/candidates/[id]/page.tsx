@@ -11,10 +11,12 @@ import {
   Pencil,
   Phone,
   Star,
+  Globe,
+  KeyRound,
 } from "lucide-react";
 import { requireStaff } from "@/lib/auth";
 import { getCandidate } from "@/lib/data";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient, createClient } from "@/lib/supabase/server";
 import { describeActivity } from "@/lib/activity";
 import { Avatar, Badge, Card, CardHeader, EmptyState } from "@/components/ui/misc";
 import { JoiningTimeline } from "@/components/candidate/joining-timeline";
@@ -41,7 +43,7 @@ export default async function CandidatePage({ params }: { params: Promise<{ id: 
   if (!c) notFound();
 
   const supabase = await createClient();
-  const [docs, notes, logs, apps, ivs, tks, sls] = await Promise.all([
+  const [docs, notes, logs, apps, ivs, tks, sls, comp, portal] = await Promise.all([
     supabase
       .from("candidate_documents")
       .select("*, uploader:profiles!candidate_documents_uploaded_by_fkey(full_name)")
@@ -71,6 +73,8 @@ export default async function CandidatePage({ params }: { params: Promise<{ id: 
       .order("status", { ascending: false })
       .order("due_at", { ascending: true }),
     supabase.from("shortlist_candidates").select("shortlist:shortlists(id, name)").eq("candidate_id", id),
+    supabase.rpc("candidate_completion", { p_candidate: id }),
+    portalLogin(c.user_id as string | null),
   ]);
 
   const isAdmin = profile.role === "admin";
@@ -82,7 +86,9 @@ export default async function CandidatePage({ params }: { params: Promise<{ id: 
     (c.candidate_job_roles ?? []).length > 0, (c.candidate_experiences ?? []).length > 0, (c.candidate_educations ?? []).length > 0,
     (c.preferred_locations ?? []).length > 0, c.source, c.highest_qualification,
   ];
-  const completeness = Math.round((checks.filter(Boolean).length / checks.length) * 100);
+  const completion = comp.data as { percent: number; missing: { label: string }[] } | null;
+  const completeness = completion?.percent ?? Math.round((checks.filter(Boolean).length / checks.length) * 100);
+  const selfRegistered = !!c.user_id || c.source === "Portal";
   const skills = [...(c.candidate_skills ?? [])]
     .filter((s: any) => s.skill)
     .sort((a: any, b: any) => Number(b.is_primary) - Number(a.is_primary) || (Number(b.years) || 0) - (Number(a.years) || 0));
@@ -445,6 +451,11 @@ export default async function CandidatePage({ params }: { params: Promise<{ id: 
               <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                 <h1 className="text-[28px] font-semibold leading-tight tracking-[-0.02em] text-ink-900">{name}</h1>
                 <span className="font-mono text-xs text-ink-400">{c.candidate_code}</span>
+                {selfRegistered && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-cyan-50 px-2 py-0.5 text-[11px] font-medium text-cyan-800 dark:bg-cyan-400/10 dark:text-cyan-300">
+                    <Globe className="h-3 w-3" /> Self-registered
+                  </span>
+                )}
               </div>
               <p className="mt-1 text-[15px] text-ink-600">
                 {c.headline ||
@@ -461,7 +472,34 @@ export default async function CandidatePage({ params }: { params: Promise<{ id: 
               <div className="mt-3 flex flex-wrap items-center gap-3">
                 <StatusControl id={c.id} status={c.status} />
                 <RatingControl id={c.id} rating={c.rating} />
-                <span className="text-xs text-ink-400">Profile {completeness}% complete</span>
+                <span
+                  className="text-xs text-ink-400"
+                  title={completion?.missing?.length ? `Missing: ${completion.missing.map((m) => m.label).join(", ")}` : undefined}
+                >
+                  Profile {completeness}% complete
+                </span>
+                {portal && (
+                  <span
+                    className={cn(
+                      "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium",
+                      !portal.active
+                        ? "bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-300"
+                        : portal.confirmed
+                          ? "bg-emerald-50 text-emerald-800 dark:bg-emerald-400/10 dark:text-emerald-300"
+                          : "bg-saffron-50 text-saffron-800"
+                    )}
+                    title={portal.email ?? undefined}
+                  >
+                    <KeyRound className="h-3 w-3" />
+                    {!portal.active
+                      ? "Portal login disabled"
+                      : !portal.confirmed
+                        ? "Portal login · email not verified"
+                        : portal.lastSignIn
+                          ? `Portal login · last seen ${timeAgo(portal.lastSignIn)}`
+                          : "Portal login · never signed in"}
+                  </span>
+                )}
               </div>
               <div className="mt-2">
                 <ShortlistChips lists={(sls.data ?? []).map((x: any) => x.shortlist).filter(Boolean)} />
@@ -559,4 +597,25 @@ function Row({ icon, value, muted }: { icon: React.ReactNode; value: React.React
       <span className={cn("min-w-0 break-words", muted ? "text-ink-500" : "text-ink-800")}>{value || <span className="text-ink-300">—</span>}</span>
     </div>
   );
+}
+
+/** Portal account state for a self-registered candidate (service role — staff-only page) */
+async function portalLogin(userId: string | null) {
+  if (!userId) return null;
+  try {
+    const admin = createAdminClient();
+    const [{ data: u }, { data: p }] = await Promise.all([
+      admin.auth.admin.getUserById(userId),
+      admin.from("profiles").select("is_active").eq("id", userId).maybeSingle(),
+    ]);
+    if (!u.user) return null;
+    return {
+      email: u.user.email ?? null,
+      confirmed: !!u.user.email_confirmed_at,
+      lastSignIn: u.user.last_sign_in_at ?? null,
+      active: p?.is_active !== false,
+    };
+  } catch {
+    return null;
+  }
 }

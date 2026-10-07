@@ -7,7 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "google-token": "node scripts/get-google-refresh-token.mjs"
+    "google-token": "node scripts/get-google-refresh-token.mjs",
+    "seed:portals": "node scripts/seed-portals.mjs",
+    "seed:portals:cleanup": "node scripts/seed-portals.mjs --cleanup",
+    "test:roles": "node scripts/test-roles.mjs"
   },
   "dependencies": {
     "@googleapis/drive": "^26.0.2",
@@ -16,7 +19,9 @@
     "clsx": "^2.1.1",
     "geist": "^1.7.2",
     "lucide-react": "^1.52.0",
+    "motion": "^14.0.0",
     "next": "15.5.27",
+    "nodemailer": "^10.0.15",
     "papaparse": "^5.7.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
@@ -24,10 +29,12 @@
     "recharts": "^3.10.1",
     "server-only": "^0.0.1",
     "sonner": "^2.0.8",
-    "tailwind-merge": "^3.3.1"
+    "tailwind-merge": "^3.3.1",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
+    "@types/nodemailer": "^8.0.2",
     "@types/papaparse": "^5.5.2",
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.0",

@@ -15,6 +15,12 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     return Response.json({ error: "You can't remove your own admin access" }, { status: 400 });
   }
 
+  // Team & access manages staff only — client/candidate logins are managed elsewhere and can never be promoted here
+  const { data: target } = await admin.from("profiles").select("role").eq("id", id).single();
+  if (!target || (target.role !== "admin" && target.role !== "hr")) {
+    return Response.json({ error: "This user is not a staff member" }, { status: 400 });
+  }
+
   const patch: Record<string, unknown> = {};
   if (body.role === "admin" || body.role === "hr") patch.role = body.role;
   if (typeof body.is_active === "boolean") patch.is_active = body.is_active;

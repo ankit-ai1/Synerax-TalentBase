@@ -15,12 +15,13 @@ import {
   Trash2,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { staffEvent } from "@/lib/portal-rpc";
 import { useDialogs } from "@/components/dialogs/provider";
 import { Button, LinkButton } from "@/components/ui/button";
 import { Card, EmptyState, ScoreRing, StageBadge } from "@/components/ui/misc";
 import { Checkbox, Menu, MenuItem } from "@/components/ui/interactive";
 import { InterviewRow } from "@/components/interviews/interviews-view";
-import { STAGES, STAGE_STYLE } from "@/lib/constants";
+import { ACTIVE_STAGES, STAGES, STAGE_STYLE } from "@/lib/constants";
 import { cn, dayLabel, formatDate, formatTime, friendlyError, lpa, timeAgo } from "@/lib/utils";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -71,6 +72,7 @@ export function CandidateJobs({ cand, apps }: { cand: Cand; apps: any[] }) {
     if (NEEDS_DIALOG.includes(to)) return d.openStage({ applicationId: a.id, candidateName: name, from: a.stage, to });
     const { error } = await createClient().from("applications").update({ stage: to }).eq("id", a.id);
     if (error) return toast.error(friendlyError(error.message));
+    staffEvent("stage", a.id);
     toast.success(`${a.job.title}: ${to}`);
     router.refresh();
   }
@@ -138,7 +140,7 @@ export function CandidateJobs({ cand, apps }: { cand: Cand; apps: any[] }) {
             {/* stage progress */}
             {!closed && (
               <div className="mt-4 flex items-center gap-1">
-                {STAGES.slice(0, 6).map((s, i) => (
+                {ACTIVE_STAGES.map((s, i) => (
                   <div key={s} className="flex-1">
                     <div className={cn("h-1.5 rounded-full", i <= stageIdx ? STAGE_STYLE[s].dot : "bg-surface-3")} />
                     <p className={cn("mt-1 hidden text-[10.5px] sm:block", i === stageIdx ? "font-medium text-ink-800" : "text-ink-400")}>{s}</p>

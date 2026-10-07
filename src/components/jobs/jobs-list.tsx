@@ -42,7 +42,7 @@ export function JobsList({ jobs, mine }: { jobs: any[]; mine: string[] }) {
         <Segmented
           value={status}
           onChange={setStatus}
-          options={["Open", "On Hold", "Draft", "Closed", "All"].map((s) => ({
+          options={[...(count("Pending review") ? ["Pending review"] : []), "Open", "On Hold", "Draft", "Closed", "All"].map((s) => ({
             value: s,
             label: (
               <>

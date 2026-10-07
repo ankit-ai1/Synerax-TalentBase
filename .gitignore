@@ -1,5 +1,6 @@
 node_modules
 .next
+.next-test
 .env*.local
 .env
 next-env.d.ts

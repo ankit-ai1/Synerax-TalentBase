@@ -12,6 +12,7 @@ import { range, stageCounts } from "@/components/jobs/job-row";
 import { Pipeline } from "@/components/jobs/pipeline";
 import { Matches } from "@/components/jobs/matches";
 import { JobActions, JobStatusControl } from "@/components/jobs/job-actions";
+import { PublishPanel } from "@/components/jobs/publish-panel";
 import { ACTIVE_STAGES, STAGE_STYLE } from "@/lib/constants";
 import { cn, daysUntil, formatDate, formatDateTime, noticeLabel, timeAgo } from "@/lib/utils";
 
@@ -30,7 +31,7 @@ export default async function JobPage({ params }: { params: Promise<{ id: string
   const [{ data: j }, { data: apps }, { data: logs }] = await Promise.all([
     supabase
       .from("jobs")
-      .select("*, client:clients(id, name, client_code), role:job_roles(name), job_skills(is_mandatory, min_years, skill:skills(id, name)), job_assignees(user:profiles(id, full_name)), creator:profiles!jobs_created_by_fkey(full_name)")
+      .select("*, client:clients(id, name, client_code), role:job_roles(name), job_skills(is_mandatory, min_years, skill:skills(id, name)), job_assignees(user_id, user:profiles(id, full_name)), creator:profiles!jobs_created_by_fkey(full_name)")
       .eq("id", id)
       .maybeSingle(),
     supabase.from("applications").select(APP_SELECT).eq("job_id", id).order("position").order("stage_changed_at", { ascending: false }),
@@ -102,9 +103,9 @@ export default async function JobPage({ params }: { params: Promise<{ id: string
         </div>
 
         {/* funnel strip */}
-        <div className="mt-6 grid grid-cols-3 overflow-hidden rounded-xl border border-line bg-surface shadow-card sm:grid-cols-6">
+        <div className="mt-6 grid grid-cols-4 overflow-hidden rounded-xl border border-line bg-surface shadow-card sm:grid-cols-7">
           {ACTIVE_STAGES.map((st, i) => (
-            <div key={st} className={cn("relative px-4 py-3.5", i > 0 && "border-l border-line", i >= 3 && "border-t border-line sm:border-t-0")}>
+            <div key={st} className={cn("relative px-4 py-3.5", i > 0 && "border-l border-line", i >= 4 && "border-t border-line sm:border-t-0")}>
               <p className="flex items-center gap-1.5 text-xs text-ink-500">
                 <span className={cn("h-1.5 w-1.5 rounded-full", STAGE_STYLE[st].dot)} />
                 {st}
@@ -119,12 +120,23 @@ export default async function JobPage({ params }: { params: Promise<{ id: string
       </header>
 
       <Tabs
+        initial={j.status === "Pending review" ? "publish" : "pipeline"}
         tabs={[
           {
             id: "pipeline",
             label: "Pipeline",
             count: (apps ?? []).length,
-            content: <Pipeline jobId={j.id} jobTitle={j.title} apps={(apps ?? []) as any[]} />,
+            content: <Pipeline jobId={j.id} jobTitle={j.title} clientId={j.client?.id ?? null} clientName={j.client?.name ?? null} apps={(apps ?? []) as any[]} />,
+          },
+          {
+            id: "publish",
+            label: (
+              <span className="inline-flex items-center gap-1.5">
+                Publish
+                <span className={cn("h-1.5 w-1.5 rounded-full", j.published ? "bg-jade" : j.status === "Pending review" ? "bg-violet-500" : "bg-ink-300")} />
+              </span>
+            ),
+            content: <PublishPanel job={j} assignees={(j.job_assignees ?? []).map((a: any) => a.user_id)} />,
           },
           {
             id: "matches",
@@ -135,7 +147,7 @@ export default async function JobPage({ params }: { params: Promise<{ id: string
             id: "details",
             label: "Job details",
             content: (
-              <div className="grid gap-6 lg:grid-cols-[1.5fr_1fr]">
+              <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
                 <Card>
                   <CardHeader title="Job description" />
                   <div className="whitespace-pre-wrap p-5 text-sm leading-relaxed text-ink-700">

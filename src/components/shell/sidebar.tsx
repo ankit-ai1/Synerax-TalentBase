@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { ChevronsLeft, ChevronsRight, LogOut, Search, X } from "lucide-react";
+import { ChevronsLeft, ChevronsRight, KeyRound, LogOut, Search, X } from "lucide-react";
 import { Avatar } from "@/components/ui/misc";
 import { Menu, MenuDivider } from "@/components/ui/interactive";
 import { ThemeSegmented } from "@/components/theme";
@@ -49,7 +49,7 @@ export function Sidebar({
       </div>
 
       <div className={cn("relative flex h-16 shrink-0 items-center", mini ? "justify-center px-0" : "justify-between px-4")}>
-        <Link href="/" className="flex items-center gap-2.5">
+        <Link href="/dashboard" className="flex items-center gap-2.5">
           <LogoMark />
           {!mini && <span className="text-[16px] font-semibold tracking-tight text-sidebar-text">{APP_NAME}</span>}
         </Link>
@@ -134,6 +134,9 @@ export function Sidebar({
                 <ThemeSegmented />
               </div>
               <MenuDivider />
+              <Link href="/account/password" className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[13px] text-ink-700 hover:bg-surface-3">
+                <KeyRound className="h-4 w-4 text-ink-400" /> Change password
+              </Link>
               <form action="/auth/signout" method="post">
                 <button type="submit" className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[13px] text-ink-700 hover:bg-surface-3">
                   <LogOut className="h-4 w-4 text-ink-400" /> Sign out

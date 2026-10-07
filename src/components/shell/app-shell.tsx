@@ -12,6 +12,7 @@ export interface ShellCounts {
   tasks: number;
   interviews: number;
   jobs: number;
+  review: number;
 }
 
 const ShellCtx = createContext<{ profile: Profile; openPalette: () => void }>({

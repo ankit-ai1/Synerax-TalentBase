@@ -28,9 +28,10 @@ export const STATUS_STYLE: Record<string, { bg: string; text: string; dot: strin
 };
 
 /** Job pipeline stages (order matters) */
-export const STAGES = ["Sourced", "Screening", "Submitted", "Interview", "Offered", "Joined", "Rejected", "Dropped"] as const;
-export const ACTIVE_STAGES = ["Sourced", "Screening", "Submitted", "Interview", "Offered", "Joined"] as const;
+export const STAGES = ["Applied", "Sourced", "Screening", "Submitted", "Interview", "Offered", "Joined", "Rejected", "Dropped"] as const;
+export const ACTIVE_STAGES = ["Applied", "Sourced", "Screening", "Submitted", "Interview", "Offered", "Joined"] as const;
 export const STAGE_STYLE: Record<string, { dot: string; soft: string; text: string; hex: string; hint: string }> = {
+  Applied: { dot: "bg-cyan-500", soft: "bg-cyan-50 dark:bg-cyan-400/10", text: "text-cyan-800 dark:text-cyan-300", hex: "#06B6D4", hint: "Applied via the candidate portal" },
   Sourced: { dot: "bg-slate-400", soft: "bg-slate-100 dark:bg-slate-400/10", text: "text-slate-700 dark:text-slate-300", hex: "#94A3B8", hint: "Added to pipeline" },
   Screening: { dot: "bg-sky-500", soft: "bg-sky-50 dark:bg-sky-400/10", text: "text-sky-800 dark:text-sky-300", hex: "#0EA5E9", hint: "Call / basic check in progress" },
   Submitted: { dot: "bg-indigo-500", soft: "bg-indigo-50 dark:bg-indigo-400/10", text: "text-indigo-800 dark:text-indigo-300", hex: "#6366F1", hint: "Profile sent to client" },
@@ -41,8 +42,9 @@ export const STAGE_STYLE: Record<string, { dot: string; soft: string; text: stri
   Dropped: { dot: "bg-stone-400", soft: "bg-stone-100 dark:bg-stone-400/10", text: "text-stone-600 dark:text-stone-300", hex: "#A8A29E", hint: "Candidate declined" },
 };
 
-export const JOB_STATUSES = ["Draft", "Open", "On Hold", "Filled", "Closed"] as const;
+export const JOB_STATUSES = ["Pending review", "Draft", "Open", "On Hold", "Filled", "Closed"] as const;
 export const JOB_STATUS_STYLE: Record<string, string> = {
+  "Pending review": "bg-violet-50 text-violet-800 dark:bg-violet-400/10 dark:text-violet-300",
   Draft: "bg-slate-100 text-slate-700 dark:bg-slate-400/10 dark:text-slate-300",
   Open: "bg-jade-50 text-jade-700",
   "On Hold": "bg-amber-50 text-amber-800 dark:bg-amber-400/10 dark:text-amber-300",
@@ -115,6 +117,7 @@ export const SOURCES = [
   "Foundit (Monster)",
   "Shine",
   "Instahyre",
+  "Portal",
   "Referral",
   "Walk-in",
   "Company Website",

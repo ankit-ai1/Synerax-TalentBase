@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
+import { staffEvent } from "@/lib/portal-rpc";
 import { Dialog } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { TextArea } from "@/components/ui/fields";
@@ -43,7 +44,8 @@ export function FeedbackDialog({ interviewId, onDone, onClose }: { interviewId: 
     const supabase = createClient();
     const { error } = await supabase.from("interviews").update({ status, result, rating, feedback: feedback.trim() || null }).eq("id", interviewId);
     if (!error && moveStage && result === "Rejected") {
-      await supabase.from("applications").update({ stage: "Rejected", rejection_reason: `Rejected in interview (${iv.round_name})` }).eq("id", iv.application.id);
+      const { error: stErr } = await supabase.from("applications").update({ stage: "Rejected", rejection_reason: `Rejected in interview (${iv.round_name})` }).eq("id", iv.application.id);
+      if (!stErr) staffEvent("stage", iv.application.id);
     }
     setSaving(false);
     if (error) return toast.error(friendlyError(error.message));

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
+import { staffEvent } from "@/lib/portal-rpc";
 import { Dialog } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { SelectField, TextArea, TextField } from "@/components/ui/fields";
@@ -42,6 +43,7 @@ export function StageDialog({ prefill, onClose }: { prefill: StagePrefill; onClo
     const { error } = await createClient().from("applications").update(patch).eq("id", prefill.applicationId);
     setSaving(false);
     if (error) return toast.error(friendlyError(error.message));
+    staffEvent("stage", prefill.applicationId);
     toast.success(`${prefill.candidateName} → ${prefill.to}`);
     prefill.onDone?.();
     router.refresh();

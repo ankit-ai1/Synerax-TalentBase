@@ -9,7 +9,7 @@ export const metadata = { title: "Team & access" };
 export default async function UsersPage() {
   const me = await requireAdmin();
   const supabase = await createClient();
-  const { data } = await supabase.from("profiles").select("*").order("created_at");
+  const { data } = await supabase.from("profiles").select("*").in("role", ["admin", "hr"]).order("created_at");
   const { data: counts } = await supabase.from("candidates").select("created_by");
   const added: Record<string, number> = {};
   (counts ?? []).forEach((c) => {

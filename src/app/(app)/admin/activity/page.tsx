@@ -23,7 +23,7 @@ export default async function ActivityPage({ searchParams }: { searchParams: Pro
     .range((page - 1) * PER_PAGE, page * PER_PAGE - 1);
   if (sp.user) query = query.eq("actor_id", sp.user);
 
-  const [{ data, count }, { data: users }] = await Promise.all([query, supabase.from("profiles").select("id, full_name").order("full_name")]);
+  const [{ data, count }, { data: users }] = await Promise.all([query, supabase.from("profiles").select("id, full_name").in("role", ["admin", "hr"]).order("full_name")]);
   const pages = Math.max(1, Math.ceil((count ?? 0) / PER_PAGE));
   const qs = (p: number) => `?page=${p}${sp.user ? `&user=${sp.user}` : ""}`;
 

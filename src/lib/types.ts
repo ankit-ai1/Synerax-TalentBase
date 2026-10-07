@@ -1,4 +1,4 @@
-export type Role = "admin" | "hr";
+export type Role = "admin" | "hr" | "client" | "candidate";
 
 export interface Profile {
   id: string;
@@ -203,6 +203,7 @@ export interface CandidateDocument {
 export interface SearchItem {
   id: string;
   candidate_code: string;
+  portal_user?: boolean;
   first_name: string;
   last_name: string | null;
   headline: string | null;

@@ -25,6 +25,8 @@ export interface Filters {
   archived: string;
   shortlist_id: string;
   in_job: string;
+  portal: string;
+  completion_min: string;
   added_by: string;
   added_from: string;
   ids: string[];
@@ -59,6 +61,8 @@ export const emptyFilters = (): Filters => ({
   archived: "",
   shortlist_id: "",
   in_job: "",
+  portal: "",
+  completion_min: "",
   added_by: "",
   added_from: "",
   ids: [],

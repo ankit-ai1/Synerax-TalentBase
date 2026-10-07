@@ -209,6 +209,7 @@ export function UserSelect({
       .from("profiles")
       .select("id, full_name")
       .eq("is_active", true)
+      .in("role", ["admin", "hr"])
       .order("full_name")
       .then(({ data }) => setUsers(data ?? []));
   }, []);
@@ -238,6 +239,7 @@ export function useUsers() {
       .from("profiles")
       .select("id, full_name")
       .eq("is_active", true)
+      .in("role", ["admin", "hr"])
       .order("full_name")
       .then(({ data }) => setUsers(data ?? []));
   }, []);

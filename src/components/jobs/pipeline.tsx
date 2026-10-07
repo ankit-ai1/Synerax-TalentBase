@@ -18,8 +18,15 @@ import {
   Search,
   Trash2,
   UserPlus,
+  Globe,
+  MessagesSquare,
+  Share2,
+  Undo2,
+  X,
 } from "lucide-react";
+import { CommentsDialog, ShareDialog } from "./share-dialog";
 import { createClient } from "@/lib/supabase/client";
+import { staffEvent } from "@/lib/portal-rpc";
 import { useDialogs } from "@/components/dialogs/provider";
 import { Avatar, ScoreRing, StageBadge } from "@/components/ui/misc";
 import { Menu, MenuDivider, MenuItem, MenuLabel, Segmented } from "@/components/ui/interactive";
@@ -31,7 +38,19 @@ import { cn, dayLabel, formatTime, friendlyError, lpa, noticeLabel, timeAgo, yea
 type App = any;
 const NEEDS_DIALOG = ["Rejected", "Dropped", "Offered", "Joined"];
 
-export function Pipeline({ jobId, jobTitle, apps: initial }: { jobId: string; jobTitle: string; apps: App[] }) {
+export function Pipeline({
+  jobId,
+  jobTitle,
+  clientId,
+  clientName,
+  apps: initial,
+}: {
+  jobId: string;
+  jobTitle: string;
+  clientId: string | null;
+  clientName: string | null;
+  apps: App[];
+}) {
   const router = useRouter();
   const dialogs = useDialogs();
   const [apps, setApps] = useState<App[]>(initial);
@@ -40,8 +59,21 @@ export function Pipeline({ jobId, jobTitle, apps: initial }: { jobId: string; jo
   const [dragId, setDragId] = useState<string | null>(null);
   const [over, setOver] = useState<string | null>(null);
   const [showClosed, setShowClosed] = useState(false);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [shareApps, setShareApps] = useState<App[] | null>(null);
+  const [thread, setThread] = useState<App | null>(null);
+  const toggleSel = (id: string) =>
+    setSelected((s) => {
+      const n = new Set(s);
+      if (n.has(id)) n.delete(id);
+      else n.add(id);
+      return n;
+    });
 
-  useEffect(() => setApps(initial), [initial]);
+  useEffect(() => {
+    setApps(initial);
+    setSelected((s) => new Set([...s].filter((id) => initial.some((a) => a.id === id))));
+  }, [initial]);
 
   const filtered = useMemo(() => {
     const s = q.toLowerCase();
@@ -63,6 +95,7 @@ export function Pipeline({ jobId, jobTitle, apps: initial }: { jobId: string; jo
       setApps(prev);
       return toast.error(friendlyError(error.message));
     }
+    staffEvent("stage", a.id);
     toast.success(`${name(a)} → ${to}`);
     router.refresh();
   }
@@ -73,6 +106,18 @@ export function Pipeline({ jobId, jobTitle, apps: initial }: { jobId: string; jo
     if (error) return toast.error(friendlyError(error.message));
     setApps((l) => l.filter((x) => x.id !== a.id));
     toast.success("Removed from pipeline");
+    router.refresh();
+  }
+
+  async function unshare(list: App[]) {
+    const res = await fetch("/api/applications/share", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ ids: list.map((a) => a.id), unshare: true }),
+    });
+    const out = await res.json().catch(() => ({}));
+    if (!res.ok) return toast.error(friendlyError(out.error ?? "Could not unshare"));
+    toast.success(list.length === 1 ? "Hidden from the client again" : `${out.count} profiles hidden from the client`);
     router.refresh();
   }
 
@@ -125,6 +170,24 @@ export function Pipeline({ jobId, jobTitle, apps: initial }: { jobId: string; jo
           >
             Follow-up task
           </MenuItem>
+          {clientId && (
+            <>
+              <MenuDivider />
+              <MenuItem icon={<Share2 className="h-4 w-4" />} onClick={() => (close(), setShareApps([a]))}>
+                {a.shared_with_client ? "Update shared CV / note" : "Share with client…"}
+              </MenuItem>
+              {a.shared_with_client && (
+                <>
+                  <MenuItem icon={<MessagesSquare className="h-4 w-4" />} onClick={() => (close(), setThread(a))}>
+                    Client conversation
+                  </MenuItem>
+                  <MenuItem icon={<Undo2 className="h-4 w-4" />} onClick={() => (close(), unshare([a]))}>
+                    Unshare
+                  </MenuItem>
+                </>
+              )}
+            </>
+          )}
           <MenuDivider />
           <MenuLabel>Change stage</MenuLabel>
           <div className="grid grid-cols-2 gap-0.5 px-1 pb-1">
@@ -168,6 +231,39 @@ export function Pipeline({ jobId, jobTitle, apps: initial }: { jobId: string; jo
           <AsyncPicker value={null} onChange={(v) => v && addOne(v.id)} search={searchCandidates} placeholder="+ Add candidate" />
         </div>
       </div>
+
+      {selected.size > 0 && (
+        <div className="sticky top-2 z-20 mb-3 flex flex-wrap items-center gap-2 rounded-xl border border-jade/30 bg-surface px-3 py-2 shadow-pop">
+          <span className="text-sm font-medium text-ink-800">{selected.size} selected</span>
+          <div className="ml-auto flex flex-wrap gap-2">
+            {clientId && (
+              <button
+                onClick={() => setShareApps(apps.filter((a) => selected.has(a.id)))}
+                className="inline-flex h-8 items-center gap-1.5 rounded-md bg-jade px-3 text-[13px] font-medium text-white hover:brightness-110"
+              >
+                <Share2 className="h-3.5 w-3.5" /> Share with client
+              </button>
+            )}
+            {clientId && apps.some((a) => selected.has(a.id) && a.shared_with_client) && (
+              <button
+                onClick={() => unshare(apps.filter((a) => selected.has(a.id) && a.shared_with_client))}
+                className="inline-flex h-8 items-center gap-1.5 rounded-md border border-line px-3 text-[13px] font-medium text-ink-700 hover:bg-surface-2"
+              >
+                <Undo2 className="h-3.5 w-3.5" /> Unshare
+              </button>
+            )}
+            <button
+              onClick={() => dialogs.openMessage({ candidates: apps.filter((a) => selected.has(a.id)).map((a) => a.candidate), vars: { job_title: jobTitle } })}
+              className="inline-flex h-8 items-center gap-1.5 rounded-md border border-line px-3 text-[13px] font-medium text-ink-700 hover:bg-surface-2"
+            >
+              <MessageCircle className="h-3.5 w-3.5" /> Message
+            </button>
+            <button onClick={() => setSelected(new Set())} className="inline-flex h-8 w-8 items-center justify-center rounded-md text-ink-500 hover:bg-surface-2" aria-label="Clear selection">
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {apps.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-line-strong px-6 py-14 text-center">
@@ -219,6 +315,10 @@ export function Pipeline({ jobId, jobTitle, apps: initial }: { jobId: string; jo
                         }}
                         onDragEnd={() => setDragId(null)}
                         menu={cardMenu(a)}
+                        selected={selected.has(a.id)}
+                        selecting={selected.size > 0}
+                        onSelect={() => toggleSel(a.id)}
+                        onThread={() => setThread(a)}
                       />
                     ))}
                     {col.length === 0 && (
@@ -261,7 +361,18 @@ export function Pipeline({ jobId, jobTitle, apps: initial }: { jobId: string; jo
               {showClosed && (
                 <div className="flex flex-col gap-2 px-2 pb-2">
                   {closed.map((a) => (
-                    <AppCard key={a.id} a={a} dragging={false} onDragStart={(e) => e.dataTransfer.setData("text/plain", a.id)} onDragEnd={() => {}} menu={cardMenu(a)} />
+                    <AppCard
+                      key={a.id}
+                      a={a}
+                      dragging={false}
+                      onDragStart={(e) => e.dataTransfer.setData("text/plain", a.id)}
+                      onDragEnd={() => {}}
+                      menu={cardMenu(a)}
+                        selected={selected.has(a.id)}
+                        selecting={selected.size > 0}
+                        onSelect={() => toggleSel(a.id)}
+                        onThread={() => setThread(a)}
+                    />
                   ))}
                 </div>
               )}
@@ -270,27 +381,43 @@ export function Pipeline({ jobId, jobTitle, apps: initial }: { jobId: string; jo
         </div>
       ) : (
         <div className="overflow-x-auto rounded-xl border border-line bg-surface shadow-card">
-          <table className="w-full min-w-[900px] text-sm">
+          <table className="w-full min-w-[1040px] text-sm">
             <thead>
               <tr className="border-b border-line text-left text-xs text-ink-400">
+                <th className="w-10 py-3 pl-4">
+                  <input
+                    type="checkbox"
+                    aria-label="Select all"
+                    className="accent-[#0F766E]"
+                    checked={filtered.length > 0 && filtered.every((a) => selected.has(a.id))}
+                    onChange={(e) => setSelected(e.target.checked ? new Set(filtered.map((a) => a.id)) : new Set())}
+                  />
+                </th>
                 <th className="px-4 py-3 font-medium">Candidate</th>
                 <th className="px-3 py-3 font-medium">Match</th>
                 <th className="px-3 py-3 font-medium">Exp</th>
                 <th className="px-3 py-3 font-medium">Expected</th>
                 <th className="px-3 py-3 font-medium">Notice</th>
                 <th className="px-3 py-3 font-medium">Stage</th>
+                <th className="px-3 py-3 font-medium">Client</th>
                 <th className="px-3 py-3 font-medium">In stage</th>
                 <th className="px-3 py-3" />
               </tr>
             </thead>
             <tbody className="divide-y divide-line">
               {filtered.map((a) => (
-                <tr key={a.id} className="group hover:bg-surface-2">
+                <tr key={a.id} className={cn("group hover:bg-surface-2", selected.has(a.id) && "bg-jade-50/40")}>
+                  <td className="py-2.5 pl-4">
+                    <input type="checkbox" aria-label={`Select ${name(a)}`} className="accent-[#0F766E]" checked={selected.has(a.id)} onChange={() => toggleSel(a.id)} />
+                  </td>
                   <td className="px-4 py-2.5">
                     <Link href={`/candidates/${a.candidate.id}`} className="flex items-center gap-2.5">
                       <Avatar name={name(a)} size="sm" />
                       <span>
-                        <span className="block font-medium text-ink-900 hover:text-jade-700">{name(a)}</span>
+                        <span className="flex items-center gap-1.5 font-medium text-ink-900 hover:text-jade-700">
+                          {name(a)}
+                          {a.origin === "Candidate applied" && <PortalBadge />}
+                        </span>
                         <span className="block text-xs text-ink-400">{[a.candidate.current_designation, a.candidate.current_company].filter(Boolean).join(" @ ")}</span>
                       </span>
                     </Link>
@@ -311,6 +438,9 @@ export function Pipeline({ jobId, jobTitle, apps: initial }: { jobId: string; jo
                       ))}
                     </select>
                   </td>
+                  <td className="px-3 py-2.5">
+                    <ClientChip a={a} onThread={() => setThread(a)} />
+                  </td>
                   <td className="px-3 py-2.5 text-xs text-ink-400">{timeAgo(a.stage_changed_at)}</td>
                   <td className="px-3 py-2.5 text-right">{cardMenu(a)}</td>
                 </tr>
@@ -322,6 +452,17 @@ export function Pipeline({ jobId, jobTitle, apps: initial }: { jobId: string; jo
       <p className="mt-3 flex items-center gap-1.5 text-xs text-ink-400">
         <ArrowRightLeft className="h-3.5 w-3.5" /> Drag cards to change stage. You'll be asked for details on Offer, Joined and Reject.
       </p>
+      <ShareDialog
+        open={!!shareApps}
+        onClose={() => setShareApps(null)}
+        apps={shareApps ?? []}
+        clientName={clientName}
+        onDone={() => {
+          setSelected(new Set());
+          router.refresh();
+        }}
+      />
+      <CommentsDialog open={!!thread} onClose={() => setThread(null)} app={thread} onPosted={() => router.refresh()} />
     </div>
   );
 }
@@ -332,12 +473,20 @@ function AppCard({
   onDragStart,
   onDragEnd,
   menu,
+  selected,
+  selecting,
+  onSelect,
+  onThread,
 }: {
   a: App;
   dragging: boolean;
   onDragStart: (e: React.DragEvent) => void;
   onDragEnd: () => void;
   menu: React.ReactNode;
+  selected: boolean;
+  selecting: boolean;
+  onSelect: () => void;
+  onThread: () => void;
 }) {
   const c = a.candidate;
   const name = `${c.first_name} ${c.last_name ?? ""}`.trim();
@@ -354,17 +503,31 @@ function AppCard({
       onDragEnd={onDragEnd}
       className={cn(
         "group cursor-grab rounded-xl border border-line bg-surface p-3 shadow-card transition-all hover:border-line-strong hover:shadow-pop active:cursor-grabbing",
-        dragging && "rotate-[1.5deg] opacity-50"
+        dragging && "rotate-[1.5deg] opacity-50",
+        selected && "border-jade ring-1 ring-jade/30"
       )}
     >
       <div className="flex items-start gap-2.5">
         <GripVertical className="-ml-1 mt-1 h-3.5 w-3.5 shrink-0 text-ink-300 opacity-0 group-hover:opacity-100" />
-        <Avatar name={name} size="sm" />
+        <span className="relative shrink-0">
+          <Avatar name={name} size="sm" />
+          <input
+            type="checkbox"
+            checked={selected}
+            onChange={onSelect}
+            aria-label={`Select ${name}`}
+            className={cn(
+              "absolute inset-0 m-auto h-4 w-4 cursor-pointer accent-[#0F766E] transition-opacity",
+              selected || selecting ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+            )}
+          />
+        </span>
         <div className="min-w-0 flex-1">
           <Link href={`/candidates/${c.id}`} className="block truncate text-[13.5px] font-semibold text-ink-900 hover:text-jade-700" draggable={false}>
             {name}
           </Link>
           <p className="truncate text-xs text-ink-400">{[c.current_designation, c.current_company].filter(Boolean).join(" @ ") || "—"}</p>
+          {a.origin === "Candidate applied" && <PortalBadge className="mt-1" />}
         </div>
         {a.match_score != null && <ScoreRing value={a.match_score} size={30} />}
         {menu}
@@ -391,6 +554,17 @@ function AppCard({
           {a.rejection_reason && <p className="truncate text-[11px] text-red-600 dark:text-red-400">{a.rejection_reason}</p>}
         </div>
       )}
+      {a.shared_with_client && (
+        <div className="mt-2 space-y-1 pl-[42px]">
+          <ClientChip a={a} onThread={onThread} />
+          {(a.client_feedback || a.client_reject_reason) && (
+            <p className="line-clamp-2 text-[11px] italic text-ink-500" title={a.client_feedback || a.client_reject_reason}>
+              “{a.client_feedback || a.client_reject_reason}”
+            </p>
+          )}
+          {clientInterviewNote(a) && <p className="line-clamp-2 text-[11px] text-ink-500">Interview: “{clientInterviewNote(a)}”</p>}
+        </div>
+      )}
       <div className="mt-2 flex items-center justify-between pl-[42px] text-[11px] text-ink-400">
         <span className={cn(stale && "font-medium text-saffron-600")} title="Time in this stage">
           {stale ? "⚠ " : ""}
@@ -404,4 +578,49 @@ function AppCard({
 
 function StageResult({ r }: { r: string }) {
   return <span className={cn("font-medium", r === "Selected" ? "text-emerald-600" : r === "Rejected" ? "text-red-600" : "text-amber-600")}>{r}</span>;
+}
+
+function PortalBadge({ className }: { className?: string }) {
+  return (
+    <span
+      className={cn("inline-flex items-center gap-1 rounded-full bg-cyan-50 px-1.5 py-px text-[10px] font-medium text-cyan-800 dark:bg-cyan-400/10 dark:text-cyan-300", className)}
+      title="Applied through the candidate portal"
+    >
+      <Globe className="h-2.5 w-2.5" /> via portal
+    </span>
+  );
+}
+
+const clientInterviewNote = (a: App) =>
+  (a.interviews ?? []).filter((i: any) => i.client_feedback).sort((x: any, y: any) => y.scheduled_at.localeCompare(x.scheduled_at))[0]?.client_feedback as string | undefined;
+
+function ClientChip({ a, onThread }: { a: App; onThread: () => void }) {
+  if (!a.shared_with_client) return <span className="text-xs text-ink-300">—</span>;
+  const d = a.client_decision ?? "Pending";
+  const style =
+    d === "Approved"
+      ? "bg-emerald-50 text-emerald-800 dark:bg-emerald-400/10 dark:text-emerald-300"
+      : d === "Rejected"
+        ? "bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-300"
+        : "bg-sky-50 text-sky-800 dark:bg-sky-400/10 dark:text-sky-300";
+  const label = d === "Approved" ? "Client approved" : d === "Rejected" ? "Client rejected" : "Shared · awaiting client";
+  const comments = (a.application_comments ?? []).length;
+  return (
+    <span className="inline-flex flex-wrap items-center gap-1">
+      <span className={cn("inline-flex items-center rounded-full px-1.5 py-px text-[10.5px] font-medium", style)} title={a.shared_at ? `Shared ${timeAgo(a.shared_at)}` : undefined}>
+        {label}
+      </span>
+      <button
+        onClick={(e) => {
+          e.preventDefault();
+          onThread();
+        }}
+        className="inline-flex items-center gap-0.5 rounded-full px-1.5 py-px text-[10.5px] text-ink-500 hover:bg-surface-3 hover:text-ink-800"
+        aria-label="Client conversation"
+        draggable={false}
+      >
+        <MessagesSquare className="h-3 w-3" /> {comments || ""}
+      </button>
+    </span>
+  );
 }

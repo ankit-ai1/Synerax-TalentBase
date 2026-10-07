@@ -1,4 +1,6 @@
 import { Suspense } from "react";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import { LogoMark } from "@/components/shell/sidebar";
 import { APP_NAME } from "@/lib/constants";
 import { LoginForm } from "./login-form";
@@ -59,17 +61,20 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <p className="relative text-xs text-white/40">For authorised Admin and HR team members only.</p>
+        <p className="relative text-xs text-white/40">One secure sign-in for candidates, clients and the Synerax team.</p>
       </aside>
 
-      <main className="flex items-center justify-center px-6 py-12">
+      <main className="relative flex items-center justify-center px-6 py-12">
+        <Link href="/" className="absolute right-6 top-6 inline-flex items-center gap-1.5 text-[13px] font-medium text-ink-500 hover:text-ink-900">
+          <ArrowLeft className="h-4 w-4" aria-hidden /> Back to website
+        </Link>
         <div className="w-full max-w-sm">
           <div className="mb-10 flex items-center gap-2.5 lg:hidden">
             <LogoMark size={32} />
             <span className="text-lg font-semibold tracking-tight text-ink-900">{APP_NAME}</span>
           </div>
           <h1 className="text-[28px] font-semibold tracking-[-0.02em] text-ink-900">Welcome back</h1>
-          <p className="mt-1.5 text-sm text-ink-500">Sign in with your company email and password.</p>
+          <p className="mt-1.5 text-sm text-ink-500">Sign in with your email and password.</p>
           <Suspense>
             <LoginForm />
           </Suspense>
