@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { KeyRound, UserPlus } from "lucide-react";
+import { Contact, KeyRound, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { SelectField, TextField } from "@/components/ui/fields";
@@ -24,6 +24,7 @@ export function UsersManager({ users, meId, added }: { users: Profile[]; meId: s
   const [form, setForm] = useState({ full_name: "", email: "", role: "hr", password: genPassword() });
   const [saving, setSaving] = useState(false);
   const [reset, setReset] = useState<{ user: Profile; password: string } | null>(null);
+  const [contact, setContact] = useState<{ user: Profile; phone: string; designation: string } | null>(null);
 
   async function patch(id: string, body: Record<string, unknown>, ok: string) {
     const res = await fetch(`/api/admin/users/${id}`, {
@@ -89,7 +90,10 @@ export function UsersManager({ users, meId, added }: { users: Profile[]; meId: s
                         <p className="font-medium text-ink-800">
                           {u.full_name} {u.id === meId && <span className="text-xs font-normal text-ink-400">(you)</span>}
                         </p>
-                        <p className="text-xs text-ink-400">{u.email}</p>
+                        <p className="text-xs text-ink-400">
+                          {u.email}
+                          {(u as Profile & { designation?: string | null }).designation ? ` · ${(u as Profile & { designation?: string | null }).designation}` : ""}
+                        </p>
                       </div>
                     </div>
                   </td>
@@ -110,6 +114,17 @@ export function UsersManager({ users, meId, added }: { users: Profile[]; meId: s
                   <td className="px-3 py-3">{u.is_active ? <Badge tone="jade">Active</Badge> : <Badge tone="red">Deactivated</Badge>}</td>
                   <td className="px-5 py-3">
                     <div className="flex justify-end gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        title="Shown to clients and candidates on their portal"
+                        onClick={() => {
+                          const x = u as Profile & { phone?: string | null; designation?: string | null };
+                          setContact({ user: u, phone: x.phone ?? "", designation: x.designation ?? "" });
+                        }}
+                      >
+                        <Contact className="h-3.5 w-3.5" /> Contact card
+                      </Button>
                       <Button variant="ghost" size="sm" onClick={() => setReset({ user: u, password: genPassword() })}>
                         <KeyRound className="h-3.5 w-3.5" /> Password
                       </Button>
@@ -197,6 +212,29 @@ export function UsersManager({ users, meId, added }: { users: Profile[]; meId: s
         }
       >
         {reset && <TextField label="New password" value={reset.password} onChange={(v) => setReset({ ...reset, password: v })} />}
+      </Dialog>
+      <Dialog
+        open={!!contact}
+        onClose={() => setContact(null)}
+        title={`Contact card — ${contact?.user.full_name ?? ""}`}
+        description="Clients see this on “Your Synerax team” and candidates on “Your recruiter”."
+        footer={
+          <Button
+            onClick={async () => {
+              if (!contact) return;
+              if (await patch(contact.user.id, { phone: contact.phone, designation: contact.designation }, "Contact card saved")) setContact(null);
+            }}
+          >
+            Save
+          </Button>
+        }
+      >
+        {contact && (
+          <div className="space-y-4">
+            <TextField label="Designation" value={contact.designation} onChange={(v) => setContact({ ...contact, designation: v })} placeholder="e.g. Senior Recruiter" />
+            <TextField label="Phone / WhatsApp" value={contact.phone} onChange={(v) => setContact({ ...contact, phone: v })} placeholder="+91 98xxx xxxxx" inputMode="tel" />
+          </div>
+        )}
       </Dialog>
     </>
   );

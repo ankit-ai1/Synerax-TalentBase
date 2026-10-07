@@ -1,13 +1,14 @@
 import { requireRole } from "@/lib/auth";
 import { NotificationsList } from "@/components/portal/notifications-list";
+import { PageTitle } from "@/components/portal-ui/kit";
 
 export const metadata = { title: "Notifications" };
 
 export default async function ClientNotificationsPage() {
   await requireRole("client");
   return (
-    <div className="mx-auto max-w-3xl">
-      <h1 className="mb-6 text-[28px] font-semibold tracking-[-0.02em] text-ink-900">Notifications</h1>
+    <div className="portal-in mx-auto max-w-3xl">
+      <PageTitle eyebrow="Inbox" title="Notifications" subtitle="Everything that happened, newest first." />
       <NotificationsList />
     </div>
   );

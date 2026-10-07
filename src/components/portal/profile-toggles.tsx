@@ -11,10 +11,10 @@ async function save(field: "open_to_work" | "job_alerts", value: boolean) {
   if (error) throw new Error(friendlyError(error.message));
 }
 
-export function OpenToWorkToggle({ initial }: { initial: boolean }) {
+export function OpenToWorkToggle({ initial, plain }: { initial: boolean; plain?: boolean }) {
   const [on, setOn] = useState(initial);
   return (
-    <div className="rounded-2xl border border-line bg-surface px-4 py-3 shadow-card">
+    <div className={plain ? "" : "rounded-2xl border border-line bg-surface px-4 py-3 shadow-card"}>
       <Switch
         checked={on}
         onChange={async (v) => {

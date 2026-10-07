@@ -26,13 +26,19 @@ export type CandidateJob = {
   matched_skills: string[];
   applied: boolean;
   saved: boolean;
+  // section 36 (optional so older databases still type-check)
+  missing_skills?: string[];
+  salary_min?: number | null;
+  salary_max?: number | null;
 };
 
-export type CandidateJobDetail = Omit<CandidateJob, "applied"> & {
+export type CandidateJobDetail = Omit<CandidateJob, "applied" | "missing_skills"> & {
   description: string | null;
   interview_process: string | null;
   missing_skills: string[];
   application_id: string | null;
+  fit?: { skills: number; experience: number; salary: number; notice: number; location: number } | null;
+  similar?: { id: string; title: string; company: string; locations: string[]; work_mode: string | null; exp_min: number | null; exp_max: number | null; match: number | null }[];
 };
 
 export type PortalInterview = {
@@ -61,7 +67,14 @@ export type MyApplication = {
   status_label: string;
   can_withdraw: boolean;
   interviews: PortalInterview[];
+  history?: { step: number; at: string }[];
+  closed_at?: string | null;
+  recruiter?: PortalContact | null;
 };
+
+export type PortalContact = { id: string; name: string; designation: string | null; email: string; phone: string | null; avatar_url: string | null; role: string };
+
+export type PortalExtras = { recruiter: PortalContact | null; photo_id: string | null; resume_id: string | null; saved_jobs: number; matching_jobs: number };
 
 export type MyProfile = {
   candidate: Record<string, unknown> & {
@@ -84,6 +97,22 @@ export type MyProfile = {
 /** Candidate-friendly pipeline steps */
 export const PORTAL_STEPS = ["Applied", "Under review", "Shared with employer", "Interview", "Offer", "Joined"] as const;
 
+/** Every profile-strength item (mirrors candidate_completion in the database) */
+export const COMPLETION_ITEMS = [
+  { key: "basic", label: "Basic details", hint: "Full name and city", section: "basic", weight: 10 },
+  { key: "contact", label: "Contact details", hint: "Email and mobile", section: "contact", weight: 10 },
+  { key: "current_job", label: "Current job & CTC", hint: "Role, experience and salary", section: "professional", weight: 15 },
+  { key: "notice", label: "Notice period", hint: "Or last working day", section: "professional", weight: 10 },
+  { key: "skills", label: "Skills", hint: "At least 3, with years", section: "skills", weight: 15 },
+  { key: "work_history", label: "Work history", hint: "Past companies and roles", section: "experience", weight: 10 },
+  { key: "education", label: "Education", hint: "Highest degree", section: "education", weight: 10 },
+  { key: "cv", label: "CV / resume", hint: "PDF or Word", section: "documents", weight: 15 },
+  { key: "preferences", label: "Job preferences", hint: "Locations and work mode", section: "preferences", weight: 5 },
+] as const;
+
+export const profileLevel = (pct: number) =>
+  pct >= 90 ? { label: "All-star", tone: "jade" as const } : pct >= 60 ? { label: "Intermediate", tone: "saffron" as const } : { label: "Beginner", tone: "ink" as const };
+
 /** Where each completion item is edited */
 export const SECTION_ANCHOR: Record<string, string> = {
   basic: "/portal/profile#basic",
@@ -99,3 +128,7 @@ export const SECTION_ANCHOR: Record<string, string> = {
 /** "3–7 yrs" style label (plain helper — usable from server and client components) */
 export const expRange = (min: number | null, max: number | null) =>
   min == null && max == null ? null : min != null && max != null ? `${min}–${max} yrs` : min != null ? `${min}+ yrs` : `Up to ${max} yrs`;
+
+/** "₹18–30 LPA" style label, null when hidden */
+export const salaryLabel = (min?: number | null, max?: number | null) =>
+  min == null && max == null ? null : min != null && max != null ? `₹${min}–${max} LPA` : min != null ? `₹${min}+ LPA` : `Up to ₹${max} LPA`;

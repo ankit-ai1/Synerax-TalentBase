@@ -432,3 +432,61 @@ html.reveal-on [data-reveal].is-in .reveal-word { opacity: 1; transform: none; }
   }
   [data-reveal] { opacity: 1 !important; transform: none !important; }
 }
+
+/* ===================== Portals (client + candidate) ===================== */
+.portal-card {
+  position: relative;
+  border-radius: 1.25rem;
+  border: 1px solid rgb(var(--line));
+  background:
+    linear-gradient(180deg, rgb(var(--surface)) 0%, rgb(var(--surface)) 60%, rgb(var(--surface-2)) 100%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.7), 0 1px 2px rgb(16 24 40 / 0.04), 0 10px 30px -18px rgb(16 24 40 / 0.18);
+}
+.dark .portal-card {
+  border-color: rgb(255 255 255 / 0.07);
+  background: linear-gradient(180deg, rgb(var(--surface)) 0%, rgb(var(--surface-2) / 0.9) 100%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.05), 0 18px 40px -24px rgb(0 0 0 / 0.9);
+}
+.portal-card.interactive { transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.3s, border-color 0.3s; }
+.portal-card.interactive:hover { transform: translateY(-3px); border-color: rgb(var(--jade) / 0.35); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.7), 0 22px 44px -22px rgb(16 24 40 / 0.32); }
+.dark .portal-card.interactive:hover { border-color: rgb(var(--jade) / 0.4); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06), 0 26px 50px -22px rgb(0 0 0 / 0.95); }
+
+/* soft animated amber border for the card that needs attention */
+.urgent-glow { position: relative; }
+.urgent-glow::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: conic-gradient(from var(--beam-angle), rgb(var(--saffron) / 0.15) 0deg, rgb(var(--saffron)) 120deg, rgb(var(--saffron) / 0.15) 240deg, rgb(var(--saffron)) 330deg, rgb(var(--saffron) / 0.15) 360deg);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: beam-spin 5s linear infinite;
+  pointer-events: none;
+}
+
+/* skeleton shimmer */
+.skeleton {
+  border-radius: 0.75rem;
+  background: linear-gradient(90deg, rgb(var(--surface-3)) 0%, rgb(var(--surface-2)) 50%, rgb(var(--surface-3)) 100%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.4s ease-in-out infinite;
+}
+@keyframes skeleton-shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+
+/* staggered entrance (CSS only, no JS needed) */
+@keyframes portal-in { from { opacity: 0; transform: translate3d(0, 14px, 0); } to { opacity: 1; transform: none; } }
+.portal-in > * { animation: portal-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.portal-in > *:nth-child(2) { animation-delay: 60ms; }
+.portal-in > *:nth-child(3) { animation-delay: 120ms; }
+.portal-in > *:nth-child(4) { animation-delay: 180ms; }
+.portal-in > *:nth-child(5) { animation-delay: 240ms; }
+.portal-in > *:nth-child(6) { animation-delay: 300ms; }
+.portal-in > *:nth-child(n + 7) { animation-delay: 360ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  .portal-in > *, .skeleton, .urgent-glow::after, .mesh-a, .mesh-b, .mesh-c { animation: none !important; }
+  .portal-card.interactive:hover { transform: none; }
+}

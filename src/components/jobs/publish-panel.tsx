@@ -17,6 +17,7 @@ export function PublishPanel({ job, assignees }: { job: any; assignees: string[]
   const [desc, setDesc] = useState<string>(job.public_description ?? job.description ?? "");
   const [process, setProcess] = useState<string>(job.interview_process ?? "");
   const [showClient, setShowClient] = useState<boolean>(!!job.show_client_name);
+  const [showSalary, setShowSalary] = useState<boolean>(!!job.show_salary);
   const [team, setTeam] = useState<string[]>(assignees);
   const [busy, setBusy] = useState<"" | "save" | "publish" | "unpublish">("");
   const pending = job.status === "Pending review";
@@ -27,7 +28,7 @@ export function PublishPanel({ job, assignees }: { job: any; assignees: string[]
     const res = await fetch(`/api/jobs/${job.id}/publish`, {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ publish, public_description: desc, interview_process: process, show_client_name: showClient, assignees: team }),
+      body: JSON.stringify({ publish, public_description: desc, interview_process: process, show_client_name: showClient, show_salary: showSalary, assignees: team }),
     });
     const out = await res.json().catch(() => ({}));
     setBusy("");
@@ -56,6 +57,12 @@ export function PublishPanel({ job, assignees }: { job: any; assignees: string[]
             onChange={setShowClient}
             label="Show the client's name publicly"
             description="Off = the listing shows “A Synerax client” instead of the company name."
+          />
+          <Switch
+            checked={showSalary}
+            onChange={setShowSalary}
+            label="Show the salary range to candidates"
+            description="Uses the job's CTC budget. Off = “Discussed with your recruiter”."
           />
         </div>
       </Card>

@@ -80,7 +80,7 @@ async function main() {
   check("candidate: can read own profile", !prof.error && prof.data?.candidate?.first_name === DEMO.candidates[0].first_name, prof.error?.message ?? JSON.stringify(prof.data).slice(0, 100));
   const jobs = await cand.c.rpc("candidate_jobs", { f: {} });
   const jobList = jobs.data?.items ?? jobs.data ?? [];
-  check("candidate: sees published jobs", !jobs.error && JSON.stringify(jobList).includes("(seed)"), jobs.error?.message);
+  check("candidate: sees published jobs", !jobs.error && JSON.stringify(jobList).includes("Senior React Developer"), jobs.error?.message);
   check("candidate: job list hides the client name", !JSON.stringify(jobs.data ?? {}).includes(DEMO.clientName), "client name leaked");
   check("candidate: job list has no budget/internal notes", !/"(notes|ctc_min|ctc_max|fee_value)"/.test(JSON.stringify(jobs.data ?? {})), "internal fields present");
   const apps = await cand.c.rpc("candidate_my_applications");

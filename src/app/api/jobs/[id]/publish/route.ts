@@ -9,6 +9,7 @@ const schema = z.object({
   public_description: z.string().trim().max(8000).nullable().optional(),
   interview_process: z.string().trim().max(2000).nullable().optional(),
   show_client_name: z.boolean().optional(),
+  show_salary: z.boolean().optional(),
   assignees: z.array(z.string().uuid()).max(30).optional(),
 });
 
@@ -31,6 +32,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   if (b.public_description !== undefined) patch.public_description = b.public_description || null;
   if (b.interview_process !== undefined) patch.interview_process = b.interview_process || null;
   if (b.show_client_name !== undefined) patch.show_client_name = b.show_client_name;
+  if (b.show_salary !== undefined) patch.show_salary = b.show_salary;
   if (b.publish) {
     if (!job.published_at) patch.published_at = new Date().toISOString();
     // a client-posted job goes live as Open once reviewed

@@ -25,6 +25,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   if (body.role === "admin" || body.role === "hr") patch.role = body.role;
   if (typeof body.is_active === "boolean") patch.is_active = body.is_active;
   if (typeof body.full_name === "string" && body.full_name.trim()) patch.full_name = body.full_name.trim();
+  if (typeof body.phone === "string") patch.phone = body.phone.trim().slice(0, 30) || null;
+  if (typeof body.designation === "string") patch.designation = body.designation.trim().slice(0, 80) || null;
 
   if (Object.keys(patch).length) {
     const { error } = await admin.from("profiles").update(patch).eq("id", id);
