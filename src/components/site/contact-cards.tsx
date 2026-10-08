@@ -112,7 +112,7 @@ export function MapGraphic() {
       </div>
       <div className="glass absolute bottom-4 left-4 rounded-xl px-3 py-2">
         <p className="text-[13px] font-semibold text-ink-900">{site.name} office</p>
-        <p className="text-[11.5px] text-ink-500">{c.address[1]}</p>
+        <p className="text-[11.5px] text-ink-500">{c.address[0]}</p>
       </div>
     </div>
   );

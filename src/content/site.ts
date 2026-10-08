@@ -17,8 +17,8 @@ export const site = {
   tagline: "Staffing & recruitment partner",
   description:
     "Synerax helps companies hire faster with permanent, contract and executive staffing — and helps professionals find roles that move their careers forward.",
-  // TODO: set NEXT_PUBLIC_SITE_URL in Vercel to your real domain (used for SEO/Open Graph)
-  url: process.env.NEXT_PUBLIC_SITE_URL || "https://example.com",
+  // live domain (NEXT_PUBLIC_SITE_URL in Vercel overrides it)
+  url: process.env.NEXT_PUBLIC_SITE_URL || "https://staffing.synerax.in",
 
   /** Show "Sample data" tags on placeholder sections. Set to false once real data is in. */
   showSampleBadges: true,

@@ -11,6 +11,12 @@ export default function robots(): MetadataRoute.Robots {
         allow: "/",
         disallow: [
           "/login",
+          "/forgot-password",
+          "/reset-password",
+          "/account",
+          "/portal",
+          "/client",
+          "/notifications",
           "/dashboard",
           "/candidates",
           "/jobs",
