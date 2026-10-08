@@ -24,17 +24,15 @@ export const site = {
   showSampleBadges: true,
 
   contact: {
-    // TODO: replace with real contact details
-    email: "hello@example.com",
-    phone: "+91 00000 00000",
-    whatsapp: "+91 00000 00000",
-    address: ["Office address line 1", "Area, City – 000000", "India"],
+    email: "hr@synerax.in",
+    phone: "+91 9306917180",
+    whatsapp: "+91 9306917180",
+    address: ["Noida, India", "Serving clients globally"],
     hours: [
-      { days: "Monday – Friday", time: "9:30 AM – 6:30 PM IST" },
-      { days: "Saturday", time: "10:00 AM – 2:00 PM IST" },
+      { days: "Monday – Saturday", time: "9:00 AM – 8:00 PM IST" },
       { days: "Sunday", time: "Closed" },
     ],
-    responseTime: "We reply within 1 working day",
+    responseTime: "We reply within 24 hours",
     mapEmbedUrl: "", // TODO: paste a Google Maps embed URL to show a live map
   },
 
