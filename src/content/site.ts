@@ -75,10 +75,11 @@ export const site = {
 
   // TODO: replace with real data — these numbers are placeholders
   metrics: [
-    { icon: "Award", value: 1200, suffix: "+", label: "Placements made", context: "Across permanent and contract roles" },
-    { icon: "Building2", value: 150, suffix: "+", label: "Client companies", context: "From funded startups to enterprises" },
-    { icon: "Timer", value: 72, suffix: " hrs", label: "To first shortlist", context: "Average for standard roles" },
-    { icon: "TrendingUp", value: 92, suffix: "%", label: "Offer-to-join ratio", context: "Candidates who accept and join" },
+    // honest commitments, not achievement numbers (we are a new company)
+    { icon: "Timer", value: 72, suffix: " hrs", label: "To first shortlist", context: "Our target time for standard roles" },
+    { icon: "ShieldCheck", value: 100, suffix: "%", label: "Profiles screened", context: "Every profile is screened by a recruiter" },
+    { icon: "Layers", value: 6, suffix: "+", label: "Industries we hire for", context: "From IT and BFSI to healthcare and logistics" },
+    { icon: "IndianRupee", value: 0, prefix: "₹", label: "Fees for candidates", context: "Job seekers never pay us anything" },
   ],
 
   services: [
