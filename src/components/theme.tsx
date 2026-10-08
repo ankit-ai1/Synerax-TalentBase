@@ -6,17 +6,17 @@ import { cn } from "@/lib/utils";
 
 type Theme = "light" | "dark" | "system";
 const Ctx = createContext<{ theme: Theme; resolved: "light" | "dark"; setTheme: (t: Theme) => void }>({
-  theme: "dark",
-  resolved: "dark",
+  theme: "light",
+  resolved: "light",
   setTheme: () => {},
 });
 
 /** Apply the theme before the page paints — avoids a flash */
-export const themeScript = `(function(){try{var t=localStorage.getItem('theme')||'dark';var d=t==='dark'||(t==='system'&&matchMedia('(prefers-color-scheme: dark)').matches);if(d)document.documentElement.classList.add('dark')}catch(e){}})()`;
+export const themeScript = `(function(){try{var t=localStorage.getItem('theme')||'light';var d=t==='dark'||(t==='system'&&matchMedia('(prefers-color-scheme: dark)').matches);if(d)document.documentElement.classList.add('dark')}catch(e){}})()`;
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>("dark");
-  const [resolved, setResolved] = useState<"light" | "dark">("dark");
+  const [theme, setThemeState] = useState<Theme>("light");
+  const [resolved, setResolved] = useState<"light" | "dark">("light");
 
   const apply = useCallback((t: Theme) => {
     const dark = t === "dark" || (t === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
@@ -25,17 +25,17 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    let t: Theme = "dark";
+    let t: Theme = "light";
     try {
-      t = (localStorage.getItem("theme") as Theme) || "dark";
+      t = (localStorage.getItem("theme") as Theme) || "light";
     } catch {}
     setThemeState(t);
     apply(t);
     const mq = window.matchMedia("(prefers-color-scheme: dark)");
     const onChange = () => {
-      let cur: Theme = "dark";
+      let cur: Theme = "light";
       try {
-        cur = (localStorage.getItem("theme") as Theme) || "dark";
+        cur = (localStorage.getItem("theme") as Theme) || "light";
       } catch {}
       if (cur === "system") apply("system");
     };
