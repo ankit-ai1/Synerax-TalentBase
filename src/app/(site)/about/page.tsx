@@ -49,7 +49,7 @@ export default function AboutPage() {
       <PageHero eyebrow="About Synerax" title={a.statement} highlight="find each other." description="A staffing partner built on speed, honesty and a genuine respect for every candidate." aside={<ValuesCollage />} />
 
       {/* Story + timeline */}
-      <Section tone="canvas">
+      <Section tone="light" index="01" label="Story">
         <div className="grid gap-12 lg:grid-cols-[1fr_1.2fr] lg:gap-16">
           <Reveal className="lg:sticky lg:top-28 lg:self-start">
             <p className="text-[12.5px] font-semibold uppercase tracking-[0.16em] text-jade-700">Our story</p>
@@ -68,8 +68,8 @@ export default function AboutPage() {
       </Section>
 
       {/* Mission / vision / values */}
-      <Section tone="surface">
-        <SectionHeading eyebrow="What drives us" title="Mission, vision and values" />
+      <Section tone="dark" index="02" label="Values">
+        <SectionHeading index="02" eyebrow="What drives us" title="Mission, vision and values" />
         <div className="grid gap-4 md:grid-cols-2">
           <Reveal>
             <SpotlightCard className="h-full p-7">
@@ -104,7 +104,7 @@ export default function AboutPage() {
       </Section>
 
       {/* Culture marquee */}
-      <section className="overflow-hidden border-b border-line py-10" aria-label="Our culture">
+      <section className="band band-light overflow-hidden py-12" aria-label="Our culture">
         <Marquee speed={45} gap="gap-10">
           {a.culture.map((w) => (
             <span key={w} className="flex items-center gap-10 whitespace-nowrap text-[34px] font-semibold tracking-[-0.03em] text-ink-300 sm:text-[48px]">
@@ -116,14 +116,14 @@ export default function AboutPage() {
       </section>
 
       {/* Team */}
-      <Section tone="canvas">
-        <SectionHeading eyebrow="Leadership" title="The team behind Synerax" badge />
+      <Section tone="light" index="03" label="Team" className="!pt-8">
+        <SectionHeading index="03" eyebrow="Leadership" title="The team behind Synerax" badge />
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {a.team.map((p, i) => (
             <Reveal key={p.name} delay={i * 80}>
               <TiltCard className="group h-full p-6 text-center">
                 <span
-                  className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-jade to-[#0B5E58] text-2xl font-semibold text-white ring-4 ring-jade/15"
+                  className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-jade to-[rgb(var(--p-800))] text-2xl font-semibold text-white ring-4 ring-jade/15"
                   role="img"
                   aria-label={`${p.name} (initials avatar)`}
                 >
@@ -150,7 +150,7 @@ export default function AboutPage() {
       </Section>
 
       {/* Metrics band — dark */}
-      <Section tone="dark" glow="b">
+      <Section tone="dark" index="04" label="Numbers">
         <div className="grid grid-cols-2 gap-8 lg:grid-cols-4">
           {site.metrics.map((mt, i) => (
             <Reveal key={mt.label} delay={i * 80} className="text-center">

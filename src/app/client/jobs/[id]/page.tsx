@@ -139,7 +139,7 @@ export default async function ClientJobPage({ params, searchParams }: { params: 
             >
               {t.label}
               {t.count !== undefined && <span className="rounded-full bg-surface-3 px-1.5 text-[11px] font-semibold tabular text-ink-600">{t.count}</span>}
-              {!!t.badge && <span className="rounded-full bg-saffron px-1.5 text-[11px] font-bold text-[#3A2503]">{t.badge} new</span>}
+              {!!t.badge && <span className="rounded-full bg-saffron px-1.5 text-[11px] font-bold text-[rgb(var(--on-accent))]">{t.badge} new</span>}
             </Link>
           ))}
         </nav>

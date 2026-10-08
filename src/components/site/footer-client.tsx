@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowUp, Loader2, Send } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -45,6 +45,7 @@ export function NewsletterForm() {
       <label htmlFor="newsletter-email" className="sr-only">
         Email address
       </label>
+      <span className="conn-input min-w-0 flex-1">
       <input
         id="newsletter-email"
         type="email"
@@ -53,12 +54,14 @@ export function NewsletterForm() {
         onChange={(e) => setEmail(e.target.value)}
         placeholder="you@company.com"
         autoComplete="email"
-        className="h-11 min-w-0 flex-1 rounded-xl border border-white/10 bg-white/[0.05] px-4 text-[14px] text-white placeholder:text-white/35 focus:border-jade focus:outline-none focus:ring-2 focus:ring-jade/30"
+        className="h-12 w-full rounded-xl border border-white/10 bg-white/[0.05] px-4 text-[14px] text-white placeholder:text-white/40 focus:border-white/20 focus:outline-none"
       />
+      <span className="conn-line" aria-hidden />
+      </span>
       <button
         type="submit"
         disabled={loading}
-        className="inline-flex h-11 shrink-0 items-center gap-2 rounded-xl bg-jade px-4 text-[14px] font-semibold text-white hover:brightness-110 disabled:opacity-60"
+        className="inline-flex h-12 shrink-0 items-center gap-2 rounded-xl bg-jade px-4 text-[14px] font-semibold text-white hover:brightness-110 disabled:opacity-60"
       >
         {loading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Send className="h-4 w-4" aria-hidden />}
         Subscribe
@@ -87,5 +90,68 @@ export function BackToTop() {
     >
       <ArrowUp className="h-5 w-5" />
     </button>
+  );
+}
+
+/** Giant outlined SYNERAX wordmark that fills with the brand gradient as you reach the bottom */
+export function FooterWordmark() {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || navigator.webdriver) {
+      el.style.setProperty("--fill", "1");
+      return;
+    }
+    let raf = 0;
+    const read = () => {
+      raf = 0;
+      const r = el.getBoundingClientRect();
+      const p = Math.min(1, Math.max(0, (innerHeight - r.top) / (r.height + innerHeight * 0.35)));
+      el.style.setProperty("--fill", p.toFixed(3));
+    };
+    const on = () => {
+      if (!raf) raf = requestAnimationFrame(read);
+    };
+    read();
+    addEventListener("scroll", on, { passive: true });
+    return () => {
+      cancelAnimationFrame(raf);
+      removeEventListener("scroll", on);
+    };
+  }, []);
+  return (
+    // SVG text with textLength fits the container width exactly at every viewport (never clipped)
+    <div ref={ref} aria-hidden className="select-none">
+      <svg viewBox="0 0 1000 176" className="block h-auto w-full overflow-visible" preserveAspectRatio="xMidYMid meet">
+        <defs>
+          <linearGradient id="wm-grad" x1="0" x2="1" y1="0" y2="0">
+            <stop offset="0" stopColor="#FDFBD4" />
+            <stop offset="0.45" stopColor="rgb(var(--accent-a))" />
+            <stop offset="0.8" stopColor="rgb(var(--ember-a))" />
+            <stop offset="1" stopColor="rgb(var(--ember-b))" />
+          </linearGradient>
+          {/* liquid-metal shine that passes through the filled letters */}
+          <linearGradient id="wm-shine" gradientUnits="userSpaceOnUse" x1="0" x2="260" y1="0" y2="60">
+            <stop offset="0" stopColor="#fff" stopOpacity="0" />
+            <stop offset="0.5" stopColor="#fff" stopOpacity="0.6" />
+            <stop offset="1" stopColor="#fff" stopOpacity="0" />
+            <animateTransform attributeName="gradientTransform" type="translate" values="-400 0; 1300 0; 1300 0" keyTimes="0; 0.6; 1" dur="6s" repeatCount="indefinite" />
+          </linearGradient>
+          <clipPath id="wm-clip">
+            <rect x="0" y="0" width="1000" height="176" className="wordmark-fill" />
+          </clipPath>
+        </defs>
+        <text x="6" y="168" textLength="988" lengthAdjust="spacingAndGlyphs" fontSize="214" fontWeight="700" fill="none" stroke="rgb(var(--accent-a) / 0.45)" strokeWidth="1.5" vectorEffect="non-scaling-stroke" style={{ letterSpacing: "-0.04em" }}>
+          SYNERAX
+        </text>
+        <text x="6" y="168" textLength="988" lengthAdjust="spacingAndGlyphs" fontSize="214" fontWeight="700" fill="url(#wm-grad)" clipPath="url(#wm-clip)" style={{ letterSpacing: "-0.04em" }}>
+          SYNERAX
+        </text>
+        <text x="6" y="168" textLength="988" lengthAdjust="spacingAndGlyphs" fontSize="214" fontWeight="700" fill="url(#wm-shine)" clipPath="url(#wm-clip)" className="motion-reduce:hidden" style={{ letterSpacing: "-0.04em", mixBlendMode: "overlay" }}>
+          SYNERAX
+        </text>
+      </svg>
+    </div>
   );
 }

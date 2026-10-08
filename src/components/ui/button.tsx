@@ -8,7 +8,7 @@ type Size = "xs" | "sm" | "md" | "lg" | "icon" | "icon-sm";
 
 const variants: Record<Variant, string> = {
   primary:
-    "bg-jade text-white shadow-sm shadow-jade/20 hover:brightness-110 active:brightness-95 ring-1 ring-inset ring-white/10",
+    "bg-jade text-white shadow-sm shadow-jade/20 hover:bg-[rgb(var(--jade-hover))] active:brightness-95 ring-1 ring-inset ring-white/10",
   ink: "bg-ink-900 text-surface shadow-sm hover:bg-ink-800",
   secondary: "bg-surface text-ink-800 border border-line hover:border-line-strong hover:bg-surface-2 shadow-card",
   soft: "bg-jade-50 text-jade-700 hover:bg-jade-100",

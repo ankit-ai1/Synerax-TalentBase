@@ -5,7 +5,8 @@ import { IndustryExplorer } from "@/components/site/industry-cards";
 import { IndustryOrbit } from "@/components/site/orbit";
 import { Marquee } from "@/components/site/marquee";
 import { MagneticButton } from "@/components/site/magnetic-button";
-import { CtaBand, PageHero, Section, SectionHeading } from "@/components/site/ui";
+import { CtaBand, PageHero, Section, SectionHeading, StatsStrip } from "@/components/site/ui";
+import { IndiaMap } from "@/components/site/home/india-map";
 
 export const metadata: Metadata = {
   title: "Industries we hire for",
@@ -30,14 +31,14 @@ export default function IndustriesPage() {
         </MagneticButton>
       </PageHero>
 
-      <Section tone="canvas" id="explore" className="scroll-mt-16">
-        <SectionHeading eyebrow="Explore" title="Pick an industry to see what we hire for" description="Tap a card to see the roles we recruit and the skills we screen for." />
+      <Section tone="light" id="explore" index="01" label="Explore" className="scroll-mt-16">
+        <SectionHeading index="01" eyebrow="Explore" title="Pick an industry to see what we hire for" description="Tap a card to see the roles we recruit and the skills we screen for." />
         <Reveal>
           <IndustryExplorer />
         </Reveal>
       </Section>
 
-      <Section tone="dark" glow="a">
+      <Section tone="dark" index="02" label="Roles">
         <Reveal className="mx-auto mb-10 max-w-2xl text-center">
           <p className="text-[12.5px] font-semibold uppercase tracking-[0.16em] text-jade-700">Roles we fill</p>
           <h2 className="mt-3 text-balance text-[30px] font-semibold leading-[1.08] tracking-[-0.03em] text-ink-900 sm:text-[42px]">From the shop floor to the boardroom</h2>
@@ -45,14 +46,14 @@ export default function IndustriesPage() {
         <div className="space-y-3">
           <Marquee speed={55} gap="gap-3">
             {site.roleMarquee.slice(0, 8).map((r) => (
-              <span key={r} className="whitespace-nowrap rounded-full border border-line bg-white/[0.04] px-4 py-2 text-[14px] font-medium text-ink-700">
+              <span key={r} className="whitespace-nowrap rounded-full border border-line bg-fg/[0.04] px-4 py-2 text-[14px] font-medium text-ink-700">
                 {r}
               </span>
             ))}
           </Marquee>
           <Marquee speed={60} gap="gap-3" reverse>
             {site.roleMarquee.slice(8).map((r) => (
-              <span key={r} className="whitespace-nowrap rounded-full border border-line bg-white/[0.04] px-4 py-2 text-[14px] font-medium text-ink-700">
+              <span key={r} className="whitespace-nowrap rounded-full border border-line bg-fg/[0.04] px-4 py-2 text-[14px] font-medium text-ink-700">
                 {r}
               </span>
             ))}
@@ -60,6 +61,8 @@ export default function IndustriesPage() {
         </div>
       </Section>
 
+      <IndiaMap />
+      <StatsStrip stats={site.metrics} sample title="In numbers" index="06" />
       <CtaBand />
     </>
   );

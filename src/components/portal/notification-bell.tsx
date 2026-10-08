@@ -71,7 +71,7 @@ export function NotificationBell({ allHref }: { allHref: string }) {
         >
           <Bell className="h-[19px] w-[19px]" />
           {unread > 0 && (
-            <span className="absolute right-1 top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-saffron px-1 text-[10px] font-bold text-[#3A2503] ring-2 ring-canvas">{unread > 9 ? "9+" : unread}</span>
+            <span className="absolute right-1 top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-saffron px-1 text-[10px] font-bold text-[rgb(var(--on-accent))] ring-2 ring-canvas">{unread > 9 ? "9+" : unread}</span>
           )}
         </button>
       )}

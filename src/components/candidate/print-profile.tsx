@@ -36,25 +36,25 @@ export function PrintProfile({ c, preparedBy }: { c: any; preparedBy: string }) 
         </Button>
       </div>
 
-      <article className="mx-auto max-w-[820px] bg-white px-10 py-10 text-[#172036] shadow-pop print:max-w-none print:px-0 print:py-0 print:shadow-none" style={{ colorScheme: "light" }}>
-        <header className="flex items-start justify-between border-b-2 border-[#0F766E] pb-5">
+      <article className="mx-auto max-w-[820px] bg-white px-10 py-10 text-[#38240D] shadow-pop print:max-w-none print:px-0 print:py-0 print:shadow-none" style={{ colorScheme: "light" }}>
+        <header className="flex items-start justify-between border-b-2 border-jade pb-5">
           <div>
             <p className="text-[28px] font-semibold leading-tight tracking-tight">{showName ? name : `Candidate ${c.candidate_code}`}</p>
-            <p className="mt-1 text-[15px] text-[#42506B]">{c.headline || c.current_designation}</p>
+            <p className="mt-1 text-[15px] text-[#5A4128]">{c.headline || c.current_designation}</p>
             {showContact && (
-              <p className="mt-2 text-[13px] text-[#42506B]">{[c.email, c.phone, c.linkedin_url].filter(Boolean).join("  ·  ")}</p>
+              <p className="mt-2 text-[13px] text-[#5A4128]">{[c.email, c.phone, c.linkedin_url].filter(Boolean).join("  ·  ")}</p>
             )}
           </div>
           <div className="flex items-center gap-2 text-right">
             <div>
               <p className="text-sm font-semibold">{APP_NAME}</p>
-              <p className="text-[11px] text-[#7A849C]">Ref {c.candidate_code}</p>
+              <p className="text-[11px] text-[#7A6650]">Ref {c.candidate_code}</p>
             </div>
             <LogoMark size={34} />
           </div>
         </header>
 
-        <section className="mt-6 grid grid-cols-4 gap-px overflow-hidden rounded-lg border border-[#E3E6EC] bg-[#E3E6EC]">
+        <section className="mt-6 grid grid-cols-4 gap-px overflow-hidden rounded-lg border border-[#EBE4BC] bg-[#EBE4BC]">
           {[
             ["Experience", years(c.total_experience)],
             ["Notice period", c.serving_notice && c.last_working_day ? `LWD ${formatDate(c.last_working_day)}` : noticeLabel(c.notice_period_days)],
@@ -62,7 +62,7 @@ export function PrintProfile({ c, preparedBy }: { c: any; preparedBy: string }) 
             showCtc ? ["Current / Expected", `${lpa(c.current_ctc)} / ${lpa(c.expected_ctc)}`] : ["Qualification", c.highest_qualification ?? "—"],
           ].map(([k, v]) => (
             <div key={k} className="bg-white px-4 py-3">
-              <p className="text-[11px] text-[#7A849C]">{k}</p>
+              <p className="text-[11px] text-[#7A6650]">{k}</p>
               <p className="mt-0.5 text-[14px] font-semibold">{v}</p>
             </div>
           ))}
@@ -70,7 +70,7 @@ export function PrintProfile({ c, preparedBy }: { c: any; preparedBy: string }) 
 
         {c.summary && (
           <Block title="Profile summary">
-            <p className="whitespace-pre-wrap text-[13.5px] leading-relaxed text-[#2D3751]">{c.summary}</p>
+            <p className="whitespace-pre-wrap text-[13.5px] leading-relaxed text-[#4A3218]">{c.summary}</p>
           </Block>
         )}
 
@@ -78,9 +78,9 @@ export function PrintProfile({ c, preparedBy }: { c: any; preparedBy: string }) 
           <Block title="Key skills">
             <div className="flex flex-wrap gap-1.5">
               {skills.map((s: any) => (
-                <span key={s.skill.id} className="rounded border border-[#D0D5DF] px-2 py-0.5 text-[12.5px]">
+                <span key={s.skill.id} className="rounded border border-[#D6CBA0] px-2 py-0.5 text-[12.5px]">
                   {s.skill.name}
-                  {s.years ? <span className="text-[#7A849C]"> · {Number(s.years)}y</span> : null}
+                  {s.years ? <span className="text-[#7A6650]"> · {Number(s.years)}y</span> : null}
                 </span>
               ))}
             </div>
@@ -95,14 +95,14 @@ export function PrintProfile({ c, preparedBy }: { c: any; preparedBy: string }) 
                   <div className="flex items-baseline justify-between gap-4">
                     <p className="text-[14px] font-semibold">
                       {e.designation}
-                      {(showCompany || i > 0 || !e.is_current) && <span className="font-normal text-[#42506B]"> — {e.company}</span>}
-                      {!showCompany && i === 0 && e.is_current && <span className="font-normal text-[#42506B]"> — Current employer</span>}
+                      {(showCompany || i > 0 || !e.is_current) && <span className="font-normal text-[#5A4128]"> — {e.company}</span>}
+                      {!showCompany && i === 0 && e.is_current && <span className="font-normal text-[#5A4128]"> — Current employer</span>}
                     </p>
-                    <p className="shrink-0 text-[12px] text-[#7A849C]">
+                    <p className="shrink-0 text-[12px] text-[#7A6650]">
                       {formatDate(e.start_date, { month: "short", year: "numeric" })} – {e.is_current ? "Present" : formatDate(e.end_date, { month: "short", year: "numeric" })}
                     </p>
                   </div>
-                  {e.responsibilities && <p className="mt-1 whitespace-pre-wrap text-[13px] leading-relaxed text-[#2D3751]">{e.responsibilities}</p>}
+                  {e.responsibilities && <p className="mt-1 whitespace-pre-wrap text-[13px] leading-relaxed text-[#4A3218]">{e.responsibilities}</p>}
                 </div>
               ))}
             </div>
@@ -115,10 +115,10 @@ export function PrintProfile({ c, preparedBy }: { c: any; preparedBy: string }) 
               {c.candidate_projects.map((p: any) => (
                 <div key={p.id} className="break-inside-avoid">
                   <p className="text-[13.5px] font-semibold">
-                    {p.title} {p.role && <span className="font-normal text-[#42506B]">· {p.role}</span>}
+                    {p.title} {p.role && <span className="font-normal text-[#5A4128]">· {p.role}</span>}
                   </p>
-                  {p.technologies && <p className="text-[12px] text-[#7A849C]">{p.technologies}</p>}
-                  {p.description && <p className="mt-0.5 text-[13px] text-[#2D3751]">{p.description}</p>}
+                  {p.technologies && <p className="text-[12px] text-[#7A6650]">{p.technologies}</p>}
+                  {p.description && <p className="mt-0.5 text-[13px] text-[#4A3218]">{p.description}</p>}
                 </div>
               ))}
             </div>
@@ -132,7 +132,7 @@ export function PrintProfile({ c, preparedBy }: { c: any; preparedBy: string }) 
                 {c.candidate_educations.map((e: any) => (
                   <div key={e.id}>
                     <p className="text-[13.5px] font-semibold">{[e.degree, e.specialization].filter(Boolean).join(", ") || e.level}</p>
-                    <p className="text-[12px] text-[#7A849C]">{[e.institute, e.end_year].filter(Boolean).join(" · ")}</p>
+                    <p className="text-[12px] text-[#7A6650]">{[e.institute, e.end_year].filter(Boolean).join(" · ")}</p>
                   </div>
                 ))}
               </div>
@@ -144,7 +144,7 @@ export function PrintProfile({ c, preparedBy }: { c: any; preparedBy: string }) 
                 {c.candidate_certifications.map((e: any) => (
                   <div key={e.id}>
                     <p className="text-[13.5px] font-semibold">{e.name}</p>
-                    <p className="text-[12px] text-[#7A849C]">{[e.issuer, e.issue_date && formatDate(e.issue_date, { month: "short", year: "numeric" })].filter(Boolean).join(" · ")}</p>
+                    <p className="text-[12px] text-[#7A6650]">{[e.issuer, e.issue_date && formatDate(e.issue_date, { month: "short", year: "numeric" })].filter(Boolean).join(" · ")}</p>
                   </div>
                 ))}
               </div>
@@ -153,7 +153,7 @@ export function PrintProfile({ c, preparedBy }: { c: any; preparedBy: string }) 
         </div>
 
         <Block title="Preferences">
-          <p className="text-[13px] text-[#2D3751]">
+          <p className="text-[13px] text-[#4A3218]">
             {[
               c.preferred_locations?.length ? `Preferred: ${c.preferred_locations.join(", ")}` : null,
               c.work_mode_preference ? `Work mode: ${c.work_mode_preference}` : null,
@@ -165,7 +165,7 @@ export function PrintProfile({ c, preparedBy }: { c: any; preparedBy: string }) 
           </p>
         </Block>
 
-        <footer className="mt-10 flex justify-between border-t border-[#E3E6EC] pt-3 text-[11px] text-[#7A849C]">
+        <footer className="mt-10 flex justify-between border-t border-[#EBE4BC] pt-3 text-[11px] text-[#7A6650]">
           <span>Prepared by {preparedBy}</span>
           <span>{formatDate(todayIST())}</span>
         </footer>
@@ -177,7 +177,7 @@ export function PrintProfile({ c, preparedBy }: { c: any; preparedBy: string }) 
 function Block({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="mt-7">
-      <h2 className="mb-2.5 text-[12px] font-semibold uppercase tracking-[0.08em] text-[#0F766E]">{title}</h2>
+      <h2 className="mb-2.5 text-[12px] font-semibold uppercase tracking-[0.08em] text-jade-700">{title}</h2>
       {children}
     </section>
   );

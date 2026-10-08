@@ -2,6 +2,7 @@ import { apiStaff } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { createFolder, folderExists, rootFolderId, uploadFile } from "@/lib/drive";
 import { DOC_TYPES } from "@/lib/constants";
+import { indexResumeFile } from "@/lib/resume/server";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -45,10 +46,11 @@ export async function POST(req: Request) {
     const base = file.name.slice(0, file.name.length - ext.length);
     const driveName = `${docType} - ${base}${ext}`;
 
+    const data = Buffer.from(await file.arrayBuffer());
     const uploaded = await uploadFile({
       name: driveName,
       mimeType: file.type,
-      data: Buffer.from(await file.arrayBuffer()),
+      data,
       parentId: folderId,
     });
 
@@ -66,6 +68,7 @@ export async function POST(req: Request) {
       .select()
       .single();
     if (insErr) return Response.json({ error: insErr.message }, { status: 500 });
+    if (docType === "Resume") await indexResumeFile(cand.id, data, file.type, file.name);
 
     return Response.json({ document: doc });
   } catch (e) {

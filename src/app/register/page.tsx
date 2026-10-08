@@ -6,7 +6,7 @@ import { RegisterWizard } from "./register-wizard";
 
 export const metadata: Metadata = {
   title: "Create your candidate account",
-  description: "Register with Synerax Talent to get matched with jobs, apply in one click and track every application.",
+  description: "Register with Synerax TalentBase to get matched with jobs, apply in one click and track every application.",
   robots: { index: true, follow: true },
 };
 
@@ -23,7 +23,7 @@ export default async function RegisterPage() {
       title="Create your candidate account"
       subtitle={
         <>
-          Two quick steps. Already registered?{" "}
+          Upload your CV and we’ll fill in most of it. Already registered?{" "}
           <Link href="/login" className="font-semibold text-jade-700 hover:underline">
             Sign in
           </Link>

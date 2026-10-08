@@ -34,7 +34,7 @@ export async function getEmailSettings(): Promise<EmailSettings> {
   const { data } = await createAdminClient().from("email_settings").select("sender_name, notify_emails, events").eq("id", 1).maybeSingle();
   const envInbox = (process.env.SYNERAX_NOTIFY_EMAILS ?? "").split(",").map((s) => s.trim()).filter(Boolean);
   return {
-    sender_name: data?.sender_name || "Synerax Talent",
+    sender_name: data?.sender_name || "Synerax TalentBase",
     notify_emails: data?.notify_emails?.length ? data.notify_emails : envInbox,
     events: (data?.events as Record<string, boolean>) ?? {},
   };

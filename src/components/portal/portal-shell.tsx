@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import { BrandMark } from "@/components/brand-logo";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { m } from "motion/react";
@@ -51,11 +51,12 @@ export function PortalShell({
       <div className="min-h-screen bg-canvas">
         <header className="sticky top-0 z-40 border-b border-line/80 bg-canvas/75 backdrop-blur-xl supports-[backdrop-filter]:bg-canvas/60">
           <div className="mx-auto flex h-16 max-w-[1440px] items-center gap-3 px-4 sm:px-6 lg:px-8">
-            <Link href={home} className="flex shrink-0 items-center gap-2.5" aria-label={`${area} home`}>
-              <Image src="/logo.png" alt="" width={32} height={32} className="h-8 w-8 object-contain" />
+            <Link href={home} className="brand flex shrink-0 items-center gap-2.5" aria-label={`${area} home`}>
+              <BrandMark size={32} />
               <span className="hidden leading-tight sm:block">
-                <span className="block text-[15px] font-semibold tracking-[-0.02em] text-ink-900">
-                  Synerax <span className="text-jade-700">Talent</span>
+                <span className="block whitespace-nowrap text-[15px] tracking-[-0.03em]">
+                  <span className="font-semibold text-ink-900">Synerax</span> <span className="font-medium text-ink-500">Talent</span>
+                  <span className="ember-text font-semibold">Base</span>
                 </span>
                 <span className="block text-[10.5px] font-semibold uppercase tracking-[0.14em] text-ink-400">{area}</span>
               </span>

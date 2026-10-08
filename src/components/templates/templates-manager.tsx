@@ -71,7 +71,7 @@ export function TemplatesManager({ templates }: { templates: any[] }) {
           {templates.map((t) => (
             <Card key={t.id} className="group flex flex-col p-5">
               <div className="flex items-start gap-3">
-                <span className={t.channel === "WhatsApp" ? "rounded-lg bg-[#25D366]/10 p-2 text-[#1DA851]" : "rounded-lg bg-sky-50 p-2 text-sky-700 dark:bg-sky-400/10 dark:text-sky-300"}>
+                <span className={t.channel === "WhatsApp" ? "rounded-lg bg-[#2F7D4A]/10 p-2 text-[#286A3F]" : "rounded-lg bg-sky-50 p-2 text-sky-700 dark:bg-sky-400/10 dark:text-sky-300"}>
                   {t.channel === "WhatsApp" ? <MessageCircle className="h-4 w-4" /> : <Mail className="h-4 w-4" />}
                 </span>
                 <div className="min-w-0 flex-1">

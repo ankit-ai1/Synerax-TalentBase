@@ -17,6 +17,7 @@ export function Reveal({
   variant = "up",
   id,
   style,
+  onMouseLeave,
 }: {
   as?: Tag;
   children?: React.ReactNode;
@@ -25,9 +26,10 @@ export function Reveal({
   variant?: "up" | "fade" | "scale";
   id?: string;
   style?: React.CSSProperties;
+  onMouseLeave?: React.MouseEventHandler<HTMLElement>;
 }) {
   return (
-    <Comp id={id} data-reveal={variant === "up" ? "" : variant} className={className} style={{ ...style, ["--d" as string]: `${delay}ms` }}>
+    <Comp id={id} onMouseLeave={onMouseLeave} data-reveal={variant === "up" ? "" : variant} className={className} style={{ ...style, ["--d" as string]: `${delay}ms` }}>
       {children}
     </Comp>
   );

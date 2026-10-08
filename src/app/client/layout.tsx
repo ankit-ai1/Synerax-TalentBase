@@ -5,7 +5,7 @@ import { NotificationBell } from "@/components/portal/notification-bell";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
-  title: { default: "Client portal", template: "%s · Synerax Talent" },
+  title: { default: "Client portal", template: "%s · Synerax TalentBase" },
   robots: { index: false, follow: false },
 };
 

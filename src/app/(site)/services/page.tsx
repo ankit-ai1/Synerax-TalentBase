@@ -4,7 +4,7 @@ import { Reveal } from "@/components/site/reveal";
 import { ServiceTabs } from "@/components/site/service-tabs";
 import { ModelsTable } from "@/components/site/tables";
 import { ScrollTimeline } from "@/components/site/scroll-timeline";
-import { Faq } from "@/components/site/faq";
+import { FaqSearch } from "@/components/site/home/faq-search";
 import { MagneticButton } from "@/components/site/magnetic-button";
 import { CtaBand, PageHero, Section, SectionHeading } from "@/components/site/ui";
 
@@ -31,30 +31,24 @@ export default function ServicesPage() {
         </MagneticButton>
       </PageHero>
 
-      <Section tone="canvas">
+      <Section tone="light" index="01" label="Services">
+        <SectionHeading index="01" eyebrow="Services" title="Pick a model, see how it runs" highlight="how it runs" description="Every model is backed by the same screening and transparent process." />
         <Reveal>
           <ServiceTabs />
         </Reveal>
       </Section>
 
-      <Section tone="surface" id="models" className="scroll-mt-16">
-        <SectionHeading eyebrow="Engagement models" title="Choose the model that fits" description="Not sure which is right? We'll recommend one after a short call." />
+      <Section tone="dark" id="models" index="02" label="Models" className="scroll-mt-16">
+        <SectionHeading index="02" eyebrow="Engagement models" title="Choose the model that fits" description="Not sure which is right? We'll recommend one after a short call." />
         <ModelsTable />
       </Section>
 
-      <Section tone="canvas">
-        <SectionHeading eyebrow="Our process" title="How every engagement runs" description="The same transparent four-step process, whichever model you choose." />
+      <Section tone="light" index="03" label="Process">
+        <SectionHeading index="03" eyebrow="Our process" title="How every engagement runs" description="The same transparent four-step process, whichever model you choose." />
         <ScrollTimeline items={site.process.map((p, i) => ({ title: p.title, text: p.text, tag: `Step ${i + 1}` }))} />
       </Section>
 
-      <Section tone="surface">
-        <div className="grid gap-10 lg:grid-cols-[1fr_1.4fr] lg:gap-16">
-          <SectionHeading align="left" className="mb-0" eyebrow="FAQ" title="Service questions" description="Quick answers about engagement models, payroll and minimums." />
-          <Reveal>
-            <Faq items={site.servicesFaq} />
-          </Reveal>
-        </div>
-      </Section>
+      <FaqSearch items={site.servicesFaq} index="04" title="Service questions, answered" />
 
       <CtaBand />
     </>

@@ -5,6 +5,8 @@ import { createFolder, findOrCreateFolder, folderExists, moveFile, rootFolderId,
 import type { Registration } from "@/lib/registration-schema";
 import { after } from "next/server";
 import { onCandidateRegistered } from "@/lib/email/notify-events";
+import { resumePlainText } from "@/lib/resume";
+import { loadCurrentCv } from "@/lib/resume/server";
 
 /**
  * Candidate self-registration.
@@ -185,6 +187,12 @@ export async function finalizeRegistration(userId: string): Promise<FinalizeResu
     });
   }
 
+  // plain text of the CV → resume_text (search inside CVs); also refreshes the search index
+  if (p.cv?.id) {
+    const cv = await loadCurrentCv(candidateId).catch(() => null);
+    const text = cv ? await resumePlainText(cv.buf, cv.mime, cv.name).catch(() => "") : "";
+    if (text) await admin.from("candidates").update({ resume_text: text }).eq("id", candidateId);
+  }
   await admin.rpc("refresh_candidate_search", { p_id: candidateId });
   await admin.from("profiles").update({ full_name: p.full_name }).eq("id", userId);
   await admin.auth.admin.updateUserById(userId, {

@@ -9,7 +9,7 @@ const AV = ["AK", "SR", "MV", "NP", "DT", "RG", "PI", "KM", "VB", "AS", "HJ", "L
 
 function Avatar({ text, className }: { text: string; className?: string }) {
   return (
-    <span className={cn("flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-jade to-[#0B5E58] text-[10px] font-bold text-white ring-2 ring-surface", className)}>
+    <span className={cn("flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-jade to-[rgb(var(--p-800))] text-[10px] font-bold text-white ring-2 ring-surface", className)}>
       {text}
     </span>
   );
@@ -122,7 +122,7 @@ export function ExecutiveVisual() {
             <Avatar text={a} className={i === 2 ? "h-12 w-12 text-[12px] ring-4 ring-saffron/40" : ""} />
           </div>
         ))}
-        <div className="spot-sweep pointer-events-none absolute inset-y-[-20px] left-1/2 w-16 -translate-x-1/2 rounded-full bg-white/30 blur-xl dark:bg-white/10" />
+        <div className="spot-sweep pointer-events-none absolute inset-y-[-20px] left-1/2 w-16 -translate-x-1/2 rounded-full bg-fg/30 blur-xl dark:bg-fg/10" />
       </div>
     </Frame>
   );

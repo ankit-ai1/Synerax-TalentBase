@@ -22,9 +22,9 @@ function Tip({ active, payload, label, labelFormatter }: any) {
 export const CHART = {
   jade: "rgb(var(--jade))",
   saffron: "rgb(var(--saffron))",
-  violet: "#8b5cf6",
-  sky: "#38bdf8",
-  emerald: "#10b981",
+  violet: "#713600",
+  sky: "#857358",
+  emerald: "#2F7D4A",
   ink: "rgb(var(--ink-400))",
 };
 

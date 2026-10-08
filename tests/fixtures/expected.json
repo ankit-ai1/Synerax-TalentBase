@@ -1,0 +1,50 @@
+{
+  "aarav-sharma-single.pdf": {
+    "full_name": "Aarav Sharma", "email": "aarav.sharma.dev@gmail.com", "phone": "9876543210", "linkedin_url": "linkedin.com/in/aarav-sharma-java",
+    "current_city": "Bangalore", "total_experience": 7, "current_designation": "Senior Software Engineer", "current_company": "Infosys",
+    "highest_qualification": "B.Tech", "notice_period_days": 60, "current_ctc": 18, "expected_ctc": 24,
+    "skills": ["Java", "Spring Boot", "Microservices", "Hibernate", "MySQL", "Kafka", "Docker", "Kubernetes", "AWS", "Git", "Jenkins"]
+  },
+  "priya-nair-two-column.pdf": {
+    "full_name": "Priya Nair", "email": "priya.nair.fe@outlook.com", "phone": "9123456780", "github_url": "github.com/priyanair-dev",
+    "current_city": "Pune", "total_experience": { "since": "2017-07" }, "current_designation": "Senior Frontend Developer", "current_company": "Persistent Systems",
+    "highest_qualification": "B.E.",
+    "skills": ["React", "TypeScript", "Redux", "Node.js", "HTML", "CSS", "Figma"]
+  },
+  "sneha-kulkarni-nurse.pdf": {
+    "full_name": "Sneha Kulkarni", "email": "sneha.kulkarni.rn@yahoo.co.in", "phone": "9845012345",
+    "current_city": "Bangalore", "total_experience": 5, "current_designation": "Staff Nurse", "current_company": "Manipal Hospitals",
+    "highest_qualification": "B.Sc Nursing", "notice_period_days": 30, "dob": "1997-04-12",
+    "skills": ["Patient Care", "ICU"]
+  },
+  "ananya-iyer-senior.pdf": {
+    "full_name": "Ananya Iyer", "email": "ananya.iyer@protonmail.com", "phone": "9003011223", "linkedin_url": "linkedin.com/in/ananyaiyer", "portfolio_url": "ananyaiyer.dev",
+    "current_city": "Chennai", "total_experience": 15, "current_designation": "Director of Engineering", "current_company": "Zentrix Software",
+    "highest_qualification": "M.Tech", "notice_period_days": 90, "serving_notice": true, "last_working_day": "2026-11-30", "expected_ctc": 85,
+    "skills": ["Python", "AWS", "Microservices", "Kubernetes", "Kafka", "Team Management"]
+  },
+  "rahul-verma-fresher.docx": {
+    "full_name": "Rahul Verma", "email": "rahulverma2003@gmail.com", "phone": "7007123456",
+    "current_city": "Lucknow", "total_experience": 0, "current_designation": "Data Analyst Intern", "current_company": "Brightpath Technologies",
+    "highest_qualification": "BCA",
+    "skills": ["Python", "SQL", "Excel", "HTML", "CSS", "Power BI", "Communication"]
+  },
+  "vikram-singh-accountant.docx": {
+    "full_name": "Vikram Singh", "email": "vikram.singh.accounts@rediffmail.com", "phone": "9988776655",
+    "current_city": "Gurgaon", "total_experience": 8.5, "current_designation": "Senior Accountant", "current_company": "Kairo Logistics",
+    "highest_qualification": "M.Com", "notice_period_days": 0, "current_ctc": 9.5, "expected_ctc": 12, "dob": "1991-03-05",
+    "skills": ["Tally", "GST", "Taxation", "Excel", "Financial Reporting", "SAP"]
+  },
+  "mohammed-arif-logistics.docx": {
+    "full_name": "Mohammed Arif", "email": "arif.warehouse@gmail.com", "phone": "9849012345",
+    "current_city": "Hyderabad", "total_experience": 10, "current_designation": "Warehouse Supervisor", "current_company": "Swiftcart Logistics",
+    "highest_qualification": "Diploma", "notice_period_days": 15,
+    "skills": ["Inventory Management", "Warehouse Management", "Supply Chain", "Excel", "SAP"]
+  },
+  "kavya-reddy-table.docx": {
+    "full_name": "Kavya Reddy", "email": "kavya.reddy.data@gmail.com", "phone": "8800123456",
+    "current_city": "Noida", "total_experience": { "since": "2020-03" }, "current_designation": "Data Analyst", "current_company": "EXL Services",
+    "highest_qualification": "M.Sc",
+    "skills": ["Power BI", "SQL", "Python", "Pandas", "Tableau", "Excel"]
+  }
+}

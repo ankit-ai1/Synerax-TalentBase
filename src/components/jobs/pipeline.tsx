@@ -388,7 +388,7 @@ export function Pipeline({
                   <input
                     type="checkbox"
                     aria-label="Select all"
-                    className="accent-[#0F766E]"
+                    className="accent-[rgb(var(--jade))]"
                     checked={filtered.length > 0 && filtered.every((a) => selected.has(a.id))}
                     onChange={(e) => setSelected(e.target.checked ? new Set(filtered.map((a) => a.id)) : new Set())}
                   />
@@ -408,7 +408,7 @@ export function Pipeline({
               {filtered.map((a) => (
                 <tr key={a.id} className={cn("group hover:bg-surface-2", selected.has(a.id) && "bg-jade-50/40")}>
                   <td className="py-2.5 pl-4">
-                    <input type="checkbox" aria-label={`Select ${name(a)}`} className="accent-[#0F766E]" checked={selected.has(a.id)} onChange={() => toggleSel(a.id)} />
+                    <input type="checkbox" aria-label={`Select ${name(a)}`} className="accent-[rgb(var(--jade))]" checked={selected.has(a.id)} onChange={() => toggleSel(a.id)} />
                   </td>
                   <td className="px-4 py-2.5">
                     <Link href={`/candidates/${a.candidate.id}`} className="flex items-center gap-2.5">
@@ -517,7 +517,7 @@ function AppCard({
             onChange={onSelect}
             aria-label={`Select ${name}`}
             className={cn(
-              "absolute inset-0 m-auto h-4 w-4 cursor-pointer accent-[#0F766E] transition-opacity",
+              "absolute inset-0 m-auto h-4 w-4 cursor-pointer accent-[rgb(var(--jade))] transition-opacity",
               selected || selecting ? "opacity-100" : "opacity-0 group-hover:opacity-100"
             )}
           />

@@ -1,4 +1,5 @@
 import { apiRole } from "@/lib/auth";
+import { indexResumeFile } from "@/lib/resume/server";
 import { createAdminClient } from "@/lib/supabase/server";
 import { uploadFile } from "@/lib/drive";
 import { CANDIDATE_DOC_TYPES, ensureCandidateFolder, getMyCandidate } from "@/lib/portal";
@@ -35,10 +36,11 @@ export async function POST(req: Request) {
   try {
     const folderId = await ensureCandidateFolder(admin, cand);
     const ext = file.name.includes(".") ? file.name.slice(file.name.lastIndexOf(".")) : "";
+    const data = Buffer.from(await file.arrayBuffer());
     const uploaded = await uploadFile({
       name: `${docType} - ${file.name.slice(0, file.name.length - ext.length)}${ext}`,
       mimeType: file.type,
-      data: Buffer.from(await file.arrayBuffer()),
+      data,
       parentId: folderId,
     });
     // one active CV / photo at a time — older ones are archived (kept for history)
@@ -60,6 +62,7 @@ export async function POST(req: Request) {
       .single();
     if (error) return Response.json({ error: error.message }, { status: 500 });
     await admin.from("candidates").update({ updated_at: new Date().toISOString() }).eq("id", cand.id);
+    if (docType === "Resume") await indexResumeFile(cand.id, data, file.type, file.name);
     return Response.json({ document: doc });
   } catch (e) {
     console.error("Portal upload failed", e);

@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { BrandLogo } from "@/components/brand-logo";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { ThemeToggle } from "@/components/theme";
@@ -25,11 +25,8 @@ export function AuthShell({
         <div className="absolute -top-40 left-1/2 h-80 w-[640px] -translate-x-1/2 rounded-full bg-jade/20 blur-3xl" />
       </div>
       <header className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4 sm:px-6">
-        <Link href="/" className="flex items-center gap-2.5" aria-label="Synerax Talent home">
-          <Image src="/logo.png" alt="" width={32} height={32} className="h-8 w-8 object-contain" />
-          <span className="text-[17px] font-semibold tracking-[-0.02em] text-ink-900">
-            Synerax <span className="text-jade-700">Talent</span>
-          </span>
+        <Link href="/" className="flex items-center" aria-label="Synerax TalentBase home">
+          <BrandLogo size={32} textClassName="text-[17px]" />
         </Link>
         <div className="flex items-center gap-2">
           {back && (

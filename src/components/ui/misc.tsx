@@ -122,13 +122,13 @@ export function Badge({
 }
 
 const AVATAR_TONES = [
-  "bg-[#DCE7F7] text-[#1E3A6B] dark:bg-[#1E3A6B]/50 dark:text-[#B9CEF0]",
-  "bg-[#D2EEEA] text-[#0B5E58] dark:bg-[#0B5E58]/45 dark:text-[#9FE0D5]",
-  "bg-[#FAE6C4] text-[#7A4B07] dark:bg-[#7A4B07]/45 dark:text-[#F5CF8E]",
-  "bg-[#EADFF5] text-[#4B2A7A] dark:bg-[#4B2A7A]/50 dark:text-[#D3BFF0]",
-  "bg-[#F6DCDC] text-[#7A2424] dark:bg-[#7A2424]/45 dark:text-[#F0B4B4]",
-  "bg-[#E1ECD9] text-[#2F5A1E] dark:bg-[#2F5A1E]/50 dark:text-[#BEDDAA]",
-];
+  "bg-[#ECE4CB] text-[#554835] dark:bg-[#554835]/60 dark:text-[#DCCFAE]",
+  "bg-jade-100 text-jade-700 dark:bg-jade-100 dark:text-jade-700",
+  "bg-[#DED0A5] text-[#5C3005] dark:bg-[#5C3005]/50 dark:text-[#E5DBD1]",
+  "bg-[#F0D7A5] text-[#743B07] dark:bg-[#743B07]/50 dark:text-[#E8C3A3]",
+  "bg-[#F4DDD5] text-[#7A1F17] dark:bg-[#7A1F17]/45 dark:text-[#F0B9AE]",
+  "bg-[#DCEBDF] text-[#245E38] dark:bg-[#245E38]/50 dark:text-[#B9DCC4]",
+]
 
 export function Avatar({
   name,

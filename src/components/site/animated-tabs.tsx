@@ -83,7 +83,7 @@ export function AnimatedTabs({
               {selected && (
                 <m.span
                   layoutId={`${base}-pill`}
-                  className="absolute inset-0 rounded-xl bg-surface shadow-[0_1px_2px_rgb(16_24_40/0.06),0_4px_12px_-4px_rgb(16_24_40/0.12)] ring-1 ring-line"
+                  className="absolute inset-0 rounded-xl bg-surface shadow-[0_1px_2px_rgb(56_36_13/0.06),0_4px_12px_-4px_rgb(56_36_13/0.12)] ring-1 ring-line"
                   transition={{ type: "spring", stiffness: 420, damping: 34 }}
                 />
               )}

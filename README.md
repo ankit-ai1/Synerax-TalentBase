@@ -192,6 +192,14 @@ Demo logins use `@example.com` addresses, so no real emails are sent. Their CVs 
 
 ---
 
+## Website: brand colours & partner logos
+
+**Colours.** Every brand colour lives in `src/app/globals.css` as CSS variables (the PALETTE block at the top). The website, staff app and both portals all read the same tokens, so changing the palette there restyles everything. The palette is "Graphite & Ember" (graphite neutrals, ember accent). Tailwind colour families that would bring in purple, blue, teal or gold (violet, indigo, sky, amber …) are remapped to graphite, copper and tangerine in `tailwind.config.ts`, so status colours stay on-brand. Emails and the social preview image can't read CSS variables, so they use the same colours as hex in `src/lib/email/layout.ts` and `src/app/opengraph-image.tsx`.
+
+**Partner logos.** The "Trusted by" section on the home page reads `src/data/partners.ts`. To show a logo, put the file in `/public/partners/` named after the partner (lowercase, spaces → dashes), e.g. `absyz.svg` or `tek-star-global.png` — it is picked up on the next build. You can also set `logo: "/partners/file.svg"` on a partner. Partners without a logo get a text wordmark with a small monogram. `industry`, `since` and `url` are optional; the hover tooltip only appears when one is filled in.
+
+---
+
 ## Free limits (when you'll need to pay)
 
 | Service | Free tier | When to upgrade |

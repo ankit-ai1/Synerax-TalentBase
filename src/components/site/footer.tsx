@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { Mail, MapPin, Phone } from "lucide-react";
 import { site } from "@/content/site";
-import { Container, DarkGlow } from "./ui";
+import { Container } from "./ui";
 import { MagneticButton } from "./magnetic-button";
-import { BackToTop, NewsletterForm } from "./footer-client";
+import { FooterWordmark, NewsletterForm } from "./footer-client";
+import { AxisDivider } from "./connection/motif";
 import { Logo } from "./navbar";
 
 export const SOCIAL_ICONS: Record<string, React.ReactNode> = {
@@ -55,9 +56,9 @@ const COLUMNS = [
 export function SiteFooter() {
   const socials = Object.entries(site.social).filter(([, url]) => url);
   return (
-    <footer className="section-dark relative overflow-hidden">
-      <DarkGlow variant="b" />
-      <Container className="relative pb-10 pt-16 sm:pt-20">
+    <footer className="band band-dark no-seam-top no-seam-bottom relative overflow-clip pt-16">
+      <AxisDivider />
+      <Container wide className="relative pb-6 pt-10 sm:pt-14">
         <div className="grid gap-10 border-b border-line pb-12 lg:grid-cols-[1.3fr_1fr] lg:items-end">
           <div>
             <p className="max-w-2xl text-balance text-[32px] font-semibold leading-[1.08] tracking-[-0.03em] text-ink-900 sm:text-[44px]">{site.footer.statement}</p>
@@ -117,7 +118,8 @@ export function SiteFooter() {
           ))}
         </div>
 
-        <div className="flex flex-col-reverse items-start justify-between gap-5 border-t border-line pt-6 sm:flex-row sm:items-center">
+        <FooterWordmark />
+        <div className="mt-6 flex flex-col-reverse items-start justify-between gap-5 border-t border-line pt-6 sm:flex-row sm:items-center">
           <p className="text-[13px] text-ink-400">
             © {new Date().getFullYear()} {site.legalName}. All rights reserved.
           </p>
@@ -142,7 +144,6 @@ export function SiteFooter() {
           )}
         </div>
       </Container>
-      <BackToTop />
     </footer>
   );
 }

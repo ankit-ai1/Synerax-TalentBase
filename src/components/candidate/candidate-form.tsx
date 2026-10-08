@@ -38,6 +38,9 @@ import {
 } from "@/lib/constants";
 import { cn, fileSize, friendlyError } from "@/lib/utils";
 import type { CandidateFields, CandidateFormData, JobRole, Skill } from "@/lib/types";
+import { CvAutofill, type CvKey, type CvSuggestion } from "@/components/resume/cv-autofill";
+import { CvField } from "@/components/resume/cv-ui";
+import { matchCity, qualificationLevel, type Confidence, type ResumeFields } from "@/lib/resume/client";
 
 const SECTIONS = [
   { id: "personal", label: "Personal details" },
@@ -77,13 +80,62 @@ export function CandidateForm({
   const [active, setActive] = useState<string>("personal");
   const [sameAddress, setSameAddress] = useState(false);
   const dirty = useRef(false);
+  // fields filled from an uploaded CV → "From your CV" badge until edited
+  const [cvMeta, setCvMeta] = useState<Partial<Record<CvKey, Confidence>>>({});
 
   const c = data.candidate;
   const set = <K extends keyof CandidateFields>(k: K, v: CandidateFields[K]) => {
     dirty.current = true;
     setData((d) => ({ ...d, candidate: { ...d.candidate, [k]: v } }));
     if (errors[k]) setErrors((e) => ({ ...e, [k]: "" }));
+    setCvMeta((m) => (m[k as CvKey] ? { ...m, [k]: undefined } : m));
   };
+
+  /** CV auto-fill: only fills what is empty; nothing is saved until "Save candidate" (which still runs the duplicate check) */
+  const cvFile = useRef<File | null>(null);
+  function fillFromCv(values: CvSuggestion[], newSkills: string[], f: ResumeFields) {
+    dirty.current = true;
+    const meta: Partial<Record<CvKey, Confidence>> = {};
+    setData((d) => {
+      const cand = { ...d.candidate } as Record<string, unknown>;
+      for (const v of values) {
+        cand[v.key] = v.key === "current_city" ? matchCity(String(v.value), CITIES) : v.value;
+        meta[v.key] = v.confidence;
+      }
+      // skills → master skills (by name or alias); unknown names are skipped
+      const byName = new Map<string, Skill>();
+      for (const sk of skills) {
+        byName.set(sk.name.toLowerCase(), sk);
+        for (const a of sk.aliases ?? []) byName.set(a.toLowerCase(), sk);
+      }
+      const add = newSkills
+        .map((n) => byName.get(n.toLowerCase()))
+        .filter((x): x is Skill => !!x && !d.skills.some((e) => e.skill_id === x.id))
+        .filter((x, i, a) => a.findIndex((y) => y.id === x.id) === i)
+        .map((x, i) => ({ skill_id: x.id, name: x.name, years: "", level: "Intermediate", is_primary: d.skills.length + i < 3 }));
+      const blankExp = d.experiences.every((e) => !e.company.trim() && !e.designation.trim());
+      const blankEdu = d.educations.every((e) => !e.degree.trim() && !e.institute.trim());
+      const ym = (x: string) => (/^\d{4}-\d{2}$/.test(x) ? x + "-01" : "");
+      return {
+        ...d,
+        candidate: cand as unknown as CandidateFields,
+        skills: [...d.skills, ...add],
+        experiences:
+          blankExp && f.work_history?.value.length
+            ? f.work_history.value.slice(0, 10).map((w) => ({ ...emptyExperience(), company: w.company, designation: w.title, start_date: ym(w.from), end_date: w.to === "Present" ? "" : ym(w.to), is_current: w.to === "Present" }))
+            : d.experiences,
+        educations:
+          blankEdu && f.education?.value.length
+            ? f.education.value.slice(0, 8).map((e) => ({ ...emptyEducation(), level: qualificationLevel(e.degree), degree: e.degree, institute: e.institution, end_year: e.year }))
+            : d.educations,
+      };
+    });
+    setCvMeta((m) => ({ ...m, ...meta }));
+    // the CV itself is uploaded as the candidate's Resume on save
+    const file = cvFile.current;
+    if (file) setFiles((prev) => (prev.some((q) => q.file === file) ? prev : [{ file, doc_type: "Resume" }, ...prev]));
+    toast.success("Filled from the CV — please review before saving");
+  }
   const setList = <K extends Exclude<keyof CandidateFormData, "id" | "candidate">>(k: K, v: CandidateFormData[K]) => {
     dirty.current = true;
     setData((d) => ({ ...d, [k]: v }));
@@ -281,18 +333,36 @@ export function CandidateForm({
         }}
         noValidate
       >
+        {mode === "create" && (
+          <CvAutofill
+            title="Upload CV to auto-fill"
+            description="We'll read the CV and fill the empty fields below. Review everything before saving — the CV is attached as the Resume on save."
+            applyLabel="Fill the form"
+            current={c as unknown as Partial<Record<CvKey, unknown>>}
+            currentSkills={data.skills.map((x) => x.name)}
+            onParsed={(_, file) => {
+              cvFile.current = file;
+            }}
+            onFillEmpty={fillFromCv}
+            onAccept={(v) => {
+              set(v.key as keyof CandidateFields, v.value as never);
+              setCvMeta((m) => ({ ...m, [v.key]: v.confidence }));
+            }}
+          />
+        )}
+
         {/* PERSONAL */}
         <Section id="personal" title="Personal details" description="Basic identity details.">
           <Grid>
             <div id="f-first_name">
-              <TextField label="First name" required value={c.first_name} onChange={(v) => set("first_name", v)} />
+              <CvField confidence={cvMeta.first_name}><TextField label="First name" required value={c.first_name} onChange={(v) => set("first_name", v)} /></CvField>
               {err("first_name")}
             </div>
             <TextField label="Middle name" value={c.middle_name} onChange={(v) => set("middle_name", v)} />
-            <TextField label="Last name" value={c.last_name} onChange={(v) => set("last_name", v)} />
+            <CvField confidence={cvMeta.last_name}><TextField label="Last name" value={c.last_name} onChange={(v) => set("last_name", v)} /></CvField>
             <SelectField label="Gender" value={c.gender} onChange={(v) => set("gender", v)} options={GENDERS} />
             <div id="f-dob">
-              <TextField label="Date of birth" type="date" value={c.dob} onChange={(v) => set("dob", v)} max={new Date().toISOString().slice(0, 10)} />
+              <CvField confidence={cvMeta.dob}><TextField label="Date of birth" type="date" value={c.dob} onChange={(v) => set("dob", v)} max={new Date().toISOString().slice(0, 10)} /></CvField>
               {err("dob")}
             </div>
             <SelectField label="Marital status" value={c.marital_status} onChange={(v) => set("marital_status", v)} options={MARITAL} />
@@ -306,7 +376,7 @@ export function CandidateForm({
         <Section id="contact" title="Contact & address">
           <Grid>
             <div id="f-email">
-              <TextField label="Email" type="email" value={c.email} onChange={(v) => set("email", v)} placeholder="name@gmail.com" />
+              <CvField confidence={cvMeta.email}><TextField label="Email" type="email" value={c.email} onChange={(v) => set("email", v)} placeholder="name@gmail.com" /></CvField>
               {err("email")}
             </div>
             <div id="f-alt_email">
@@ -314,7 +384,7 @@ export function CandidateForm({
               {err("alt_email")}
             </div>
             <div id="f-phone">
-              <TextField label="Phone" type="tel" value={c.phone} onChange={(v) => set("phone", v)} placeholder="98XXXXXXXX" />
+              <CvField confidence={cvMeta.phone}><TextField label="Phone" type="tel" value={c.phone} onChange={(v) => set("phone", v)} placeholder="98XXXXXXXX" /></CvField>
               {err("phone")}
             </div>
             <div id="f-alt_phone">
@@ -329,9 +399,9 @@ export function CandidateForm({
                 </button>
               )}
             </div>
-            <TextField label="LinkedIn URL" type="url" value={c.linkedin_url} onChange={(v) => set("linkedin_url", v)} placeholder="linkedin.com/in/…" />
-            <TextField label="GitHub URL" type="url" value={c.github_url} onChange={(v) => set("github_url", v)} />
-            <TextField label="Portfolio / website" type="url" value={c.portfolio_url} onChange={(v) => set("portfolio_url", v)} />
+            <CvField confidence={cvMeta.linkedin_url}><TextField label="LinkedIn URL" type="url" value={c.linkedin_url} onChange={(v) => set("linkedin_url", v)} placeholder="linkedin.com/in/…" /></CvField>
+            <CvField confidence={cvMeta.github_url}><TextField label="GitHub URL" type="url" value={c.github_url} onChange={(v) => set("github_url", v)} /></CvField>
+            <CvField confidence={cvMeta.portfolio_url}><TextField label="Portfolio / website" type="url" value={c.portfolio_url} onChange={(v) => set("portfolio_url", v)} /></CvField>
           </Grid>
 
           <SubHead>Current address</SubHead>
@@ -378,7 +448,7 @@ export function CandidateForm({
           <div className="mt-4">
             <Grid>
               <div>
-                <TextField label="Total experience" type="number" min={0} step={0.1} suffix="years" value={c.total_experience} onChange={(v) => set("total_experience", v)} />
+                <CvField confidence={cvMeta.total_experience}><TextField label="Total experience" type="number" min={0} step={0.1} suffix="years" value={c.total_experience} onChange={(v) => set("total_experience", v)} /></CvField>
                 <button type="button" onClick={calcExperience} className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-jade-700 hover:underline">
                   <Calculator className="h-3 w-3" /> Calculate from work history
                 </button>
@@ -387,11 +457,11 @@ export function CandidateForm({
                 <TextField label="Relevant experience" type="number" min={0} step={0.1} suffix="years" value={c.relevant_experience} onChange={(v) => set("relevant_experience", v)} />
                 {err("relevant_experience")}
               </div>
-              <SelectField label="Highest qualification" value={c.highest_qualification} onChange={(v) => set("highest_qualification", v)} options={QUALIFICATIONS} />
+              <CvField confidence={cvMeta.highest_qualification}><SelectField label="Highest qualification" value={c.highest_qualification} onChange={(v) => set("highest_qualification", v)} options={QUALIFICATIONS} /></CvField>
               {c.currently_employed && (
                 <>
-                  <TextField label="Current company" value={c.current_company} onChange={(v) => set("current_company", v)} />
-                  <TextField label="Current designation" value={c.current_designation} onChange={(v) => set("current_designation", v)} />
+                  <CvField confidence={cvMeta.current_company}><TextField label="Current company" value={c.current_company} onChange={(v) => set("current_company", v)} /></CvField>
+                  <CvField confidence={cvMeta.current_designation}><TextField label="Current designation" value={c.current_designation} onChange={(v) => set("current_designation", v)} /></CvField>
                   <SelectField label="Employment type" value={c.current_employment_type} onChange={(v) => set("current_employment_type", v)} options={EMPLOYMENT_TYPES} />
                   <TextField label="Payroll company" hint="Name of the third-party payroll company, if any" value={c.current_payroll} onChange={(v) => set("current_payroll", v)} />
                 </>
@@ -414,11 +484,11 @@ export function CandidateForm({
         {/* COMPENSATION */}
         <Section id="compensation" title="Salary & notice" description="All amounts in Lakhs per annum (LPA).">
           <Grid>
-            <TextField label="Current CTC" type="number" min={0} step={0.01} prefix="₹" suffix="LPA" value={c.current_ctc} onChange={(v) => set("current_ctc", v)} />
+            <CvField confidence={cvMeta.current_ctc}><TextField label="Current CTC" type="number" min={0} step={0.01} prefix="₹" suffix="LPA" value={c.current_ctc} onChange={(v) => set("current_ctc", v)} /></CvField>
             <TextField label="Fixed component" type="number" min={0} step={0.01} prefix="₹" suffix="LPA" value={c.current_fixed_ctc} onChange={(v) => set("current_fixed_ctc", v)} />
             <TextField label="Variable component" type="number" min={0} step={0.01} prefix="₹" suffix="LPA" value={c.current_variable_ctc} onChange={(v) => set("current_variable_ctc", v)} />
             <div>
-              <TextField label="Expected CTC" type="number" min={0} step={0.01} prefix="₹" suffix="LPA" value={c.expected_ctc} onChange={(v) => set("expected_ctc", v)} />
+              <CvField confidence={cvMeta.expected_ctc}><TextField label="Expected CTC" type="number" min={0} step={0.01} prefix="₹" suffix="LPA" value={c.expected_ctc} onChange={(v) => set("expected_ctc", v)} /></CvField>
               {c.current_ctc && c.expected_ctc && Number(c.current_ctc) > 0 && (
                 <p className="mt-1 text-xs text-ink-400">
                   Hike: <span className="font-medium text-ink-700">{Math.round(((Number(c.expected_ctc) - Number(c.current_ctc)) / Number(c.current_ctc)) * 100)}%</span>
@@ -434,20 +504,20 @@ export function CandidateForm({
 
           <SubHead>Notice period & joining</SubHead>
           <Grid>
-            <SelectField label="Notice period" value={c.notice_period_days} onChange={(v) => set("notice_period_days", v)} options={NOTICE_OPTIONS} />
+            <CvField confidence={cvMeta.notice_period_days}><SelectField label="Notice period" value={c.notice_period_days} onChange={(v) => set("notice_period_days", v)} options={NOTICE_OPTIONS} /></CvField>
             <div className="flex items-end pb-2">
               <Switch checked={c.serving_notice} onChange={(v) => set("serving_notice", v)} label="Serving notice" />
             </div>
             <div className="flex items-end pb-2">
               <Switch checked={c.notice_buyout} onChange={(v) => set("notice_buyout", v)} label="Notice buyout possible" />
             </div>
-            <TextField
+            <CvField confidence={cvMeta.last_working_day}><TextField
               label="Last working day"
               type="date"
               value={c.last_working_day}
               onChange={(v) => set("last_working_day", v)}
               hint={c.serving_notice ? "Enter the LWD if serving notice" : undefined}
-            />
+            /></CvField>
             <TextField label="Available to join (date)" type="date" value={c.available_from} onChange={(v) => set("available_from", v)} />
             <TextField label="Offers in hand" type="number" min={0} value={c.offers_in_hand} onChange={(v) => set("offers_in_hand", v)} />
           </Grid>

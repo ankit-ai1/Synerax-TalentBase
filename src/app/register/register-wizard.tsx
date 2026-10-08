@@ -11,6 +11,8 @@ import { CITIES, NOTICE_OPTIONS } from "@/lib/constants";
 import { ChipInput, SelectField, Switch, TextField } from "@/components/ui/fields";
 import { PasswordInput } from "@/components/auth/auth-shell";
 import { cn, fileSize } from "@/lib/utils";
+import { CvDropzone, CvField, FromCvBadge } from "@/components/resume/cv-ui";
+import { matchCity, noticeOption, parseCvFile, yearsMonths, type Confidence } from "@/lib/resume/client";
 
 type Form = {
   full_name: string;
@@ -63,11 +65,69 @@ export function RegisterWizard({ skills }: { skills: string[] }) {
   const [userId, setUserId] = useState<string | null>(null);
   const [done, setDone] = useState<"verify" | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  // step "cv" comes first: upload → read → the form opens pre-filled
+  const [stage, setStage] = useState<"cv" | "form">("cv");
+  const [parsing, setParsing] = useState(false);
+  const [meta, setMeta] = useState<Partial<Record<keyof Form, Confidence>>>({});
+  const [cvNote, setCvNote] = useState<{ kind: "ok" | "warn"; text: string } | null>(null);
 
   const set = <K extends keyof Form>(k: K, v: Form[K]) => {
     setF((p) => ({ ...p, [k]: v }));
     setErrors((e) => ({ ...e, [k]: "" }));
+    // once the candidate edits a field it is theirs — drop the "From your CV" badge
+    setMeta((m) => (m[k] ? { ...m, [k]: undefined } : m));
   };
+
+  /** Read the CV and pre-fill EMPTY fields only. Nothing is saved until the candidate submits. */
+  async function readCv(file: File) {
+    setCv(file);
+    setErrors((x) => ({ ...x, cv: "" }));
+    setParsing(true);
+    const res = await parseCvFile(file);
+    setParsing(false);
+    const p = res.fields;
+    const next: Form = { ...f };
+    const m: Partial<Record<keyof Form, Confidence>> = {};
+    const fill = <K extends keyof Form>(k: K, v: Form[K] | undefined, c: Confidence | undefined) => {
+      if (v === undefined || v === "" || !c) return;
+      const cur = next[k];
+      if (cur === "" || (Array.isArray(cur) && cur.length === 0)) {
+        next[k] = v;
+        m[k] = c;
+      }
+    };
+    fill("full_name", p.full_name?.value, p.full_name?.confidence);
+    fill("email", p.email?.value, p.email?.confidence);
+    fill("phone", p.phone?.value, p.phone?.confidence);
+    fill("current_city", p.current_city ? matchCity(p.current_city.value, CITIES) : undefined, p.current_city?.confidence);
+    if (p.total_experience) {
+      const { y, m: mo } = yearsMonths(p.total_experience.value);
+      if (next.exp_years === "") {
+        next.exp_years = String(Math.min(50, y));
+        next.exp_months = String(mo);
+        m.exp_years = p.total_experience.confidence;
+      }
+    }
+    fill("current_designation", p.current_designation?.value, p.current_designation?.confidence);
+    fill("skills", p.skills?.value.slice(0, 25), p.skills?.confidence);
+    fill("current_ctc", p.current_ctc ? String(p.current_ctc.value) : undefined, p.current_ctc?.confidence);
+    fill("expected_ctc", p.expected_ctc ? String(p.expected_ctc.value) : undefined, p.expected_ctc?.confidence);
+    fill("notice_period_days", p.notice_period_days ? noticeOption(p.notice_period_days.value) : undefined, p.notice_period_days?.confidence);
+    if (p.serving_notice?.value && !next.serving_notice) {
+      next.serving_notice = true;
+      m.serving_notice = p.serving_notice.confidence;
+    }
+    fill("last_working_day", p.last_working_day?.value, p.last_working_day?.confidence);
+    setF(next);
+    setMeta(m);
+    const n = Object.keys(m).length;
+    if (res.warnings.length && !n) setCvNote({ kind: "warn", text: res.warnings[0] });
+    else if (n) setCvNote({ kind: res.warnings.length ? "warn" : "ok", text: `We filled ${n} field${n === 1 ? "" : "s"} from your CV${res.warnings.length ? " — " + res.warnings[0] : ""}. Please review everything before creating your account; fields marked "Please check" need a second look.` });
+    else setCvNote({ kind: "warn", text: "We couldn't read details from this CV, please fill the details manually." });
+    setStage("form");
+    setStep(0);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
 
   const payload = useMemo(
     () => ({
@@ -171,7 +231,7 @@ export function RegisterWizard({ skills }: { skills: string[] }) {
       setBusy("Uploading your CV…");
       const res = await uploadProfile(id);
       if (res.finalized && hasSession) {
-        toast.success("Welcome to Synerax Talent!");
+        toast.success("Welcome to Synerax TalentBase!");
         router.replace("/portal?welcome=1");
         router.refresh();
         return;
@@ -229,35 +289,66 @@ export function RegisterWizard({ skills }: { skills: string[] }) {
     <div>
       {/* step indicator */}
       <ol className="mb-7 flex items-center gap-3" aria-label="Registration progress">
-        {["Account", "Profile & CV"].map((label, i) => (
+        {["Your CV", "Account", "Profile"].map((label, j) => {
+          const i = j - 1;
+          const cur = stage === "cv" ? -1 : step;
+          return (
           <li key={label} className="flex flex-1 items-center gap-2 last:flex-none">
             <span
               className={cn(
                 "flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[12px] font-semibold",
-                i < step ? "bg-jade text-white" : i === step ? "bg-jade text-white ring-4 ring-jade/20" : "bg-surface-3 text-ink-400"
+                i < cur ? "bg-jade text-white" : i === cur ? "bg-jade text-white ring-4 ring-jade/20" : "bg-surface-3 text-ink-400"
               )}
-              aria-current={i === step ? "step" : undefined}
+              aria-current={i === cur ? "step" : undefined}
             >
-              {i < step ? <Check className="h-3.5 w-3.5" aria-hidden /> : i + 1}
+              {i < cur ? <Check className="h-3.5 w-3.5" aria-hidden /> : j + 1}
             </span>
-            <span className={cn("whitespace-nowrap text-[13px] font-medium", i <= step ? "text-ink-900" : "text-ink-400")}>{label}</span>
-            {i === 0 && <span className={cn("h-px flex-1", step > 0 ? "bg-jade" : "bg-line-strong")} aria-hidden />}
+            <span className={cn("whitespace-nowrap text-[13px] font-medium", i <= cur ? "text-ink-900" : "text-ink-400")}>{label}</span>
+            {j < 2 && <span className={cn("h-px flex-1", cur > i ? "bg-jade" : "bg-line-strong")} aria-hidden />}
           </li>
-        ))}
+          );
+        })}
       </ol>
 
-      {step === 0 ? (
+      {stage === "form" && cvNote && (
+        <div role="status" className={cn("mb-6 flex items-start gap-2.5 rounded-xl border p-3.5 text-[13.5px]", cvNote.kind === "ok" ? "border-jade/25 bg-jade-50 text-ink-800" : "border-amber-300 bg-amber-50 text-amber-900 dark:bg-amber-400/10 dark:text-amber-200")}>
+          <span className="mt-0.5">{cvNote.kind === "ok" ? "✨" : "⚠️"}</span>
+          <span>{cvNote.text}</span>
+        </div>
+      )}
+
+      {stage === "cv" ? (
+        <div>
+          <h2 className="text-[18px] font-semibold text-ink-900">Start with your CV</h2>
+          <p className="mt-1 text-[14px] text-ink-500">We&apos;ll read it and fill in the form for you. You can review and change everything before anything is saved.</p>
+          <div className="mt-5">
+            <CvDropzone onFile={readCv} busy={parsing} file={cv} />
+          </div>
+          <div className="mt-4 flex items-center justify-between gap-3 text-[13px]">
+            <span className="text-ink-400">Your CV is only used for your Synerax profile.</span>
+            <button type="button" onClick={() => setStage("form")} disabled={parsing} className="font-semibold text-jade-700 hover:underline disabled:opacity-50">
+              Skip — I&apos;ll fill it in myself
+            </button>
+          </div>
+        </div>
+      ) : step === 0 ? (
         <div className="grid gap-4 sm:grid-cols-2">
           <div id={`${uid}-full_name`} className="sm:col-span-2">
-            <TextField label="Full name" required value={f.full_name} onChange={(v) => set("full_name", v)} autoComplete="name" />
+            <CvField confidence={meta.full_name}>
+              <TextField label="Full name" required value={f.full_name} onChange={(v) => set("full_name", v)} autoComplete="name" />
+            </CvField>
             {err("full_name")}
           </div>
           <div id={`${uid}-email`}>
-            <TextField label="Email" type="email" required value={f.email} onChange={(v) => set("email", v)} autoComplete="email" />
+            <CvField confidence={meta.email}>
+              <TextField label="Email" type="email" required value={f.email} onChange={(v) => set("email", v)} autoComplete="email" />
+            </CvField>
             {err("email")}
           </div>
           <div id={`${uid}-phone`}>
-            <TextField label="Mobile number" required value={f.phone} onChange={(v) => set("phone", v)} placeholder="10-digit mobile" inputMode="numeric" autoComplete="tel-national" maxLength={14} />
+            <CvField confidence={meta.phone}>
+              <TextField label="Mobile number" required value={f.phone} onChange={(v) => set("phone", v)} placeholder="10-digit mobile" inputMode="numeric" autoComplete="tel-national" maxLength={14} />
+            </CvField>
             {err("phone")}
           </div>
           <div id={`${uid}-password`}>
@@ -269,7 +360,9 @@ export function RegisterWizard({ skills }: { skills: string[] }) {
             {err("password")}
           </div>
           <div id={`${uid}-current_city`}>
-            <TextField label="Current city" required value={f.current_city} onChange={(v) => set("current_city", v)} list={`${uid}-cities`} autoComplete="address-level2" />
+            <CvField confidence={meta.current_city}>
+              <TextField label="Current city" required value={f.current_city} onChange={(v) => set("current_city", v)} list={`${uid}-cities`} autoComplete="address-level2" />
+            </CvField>
             <datalist id={`${uid}-cities`}>
               {CITIES.map((c) => (
                 <option key={c} value={c} />
@@ -292,8 +385,11 @@ export function RegisterWizard({ skills }: { skills: string[] }) {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2">
           <div id={`${uid}-exp_years`} className="sm:col-span-2">
-            <span className="field-label">
-              Total experience<span className="ml-0.5 text-red-500">*</span>
+            <span className="field-label flex items-center justify-between">
+              <span>
+                Total experience<span className="ml-0.5 text-red-500">*</span>
+              </span>
+              <FromCvBadge confidence={meta.exp_years} />
             </span>
             <div className="grid grid-cols-2 gap-3">
               <TextField value={f.exp_years} onChange={(v) => set("exp_years", v.replace(/\D/g, "").slice(0, 2))} inputMode="numeric" suffix="years" aria-label="Years of experience" />
@@ -302,23 +398,33 @@ export function RegisterWizard({ skills }: { skills: string[] }) {
             {err("exp_years")}
           </div>
           <div id={`${uid}-current_designation`} className="sm:col-span-2">
-            <TextField label="Current designation" required value={f.current_designation} onChange={(v) => set("current_designation", v)} placeholder="e.g. Senior Java Developer" />
+            <CvField confidence={meta.current_designation}>
+              <TextField label="Current designation" required value={f.current_designation} onChange={(v) => set("current_designation", v)} placeholder="e.g. Senior Java Developer" />
+            </CvField>
             {err("current_designation")}
           </div>
           <div id={`${uid}-skills`} className="sm:col-span-2">
-            <ChipInput label="Top skills (at least 3)" value={f.skills} onChange={(v) => set("skills", v)} suggestions={skills} placeholder="Type a skill and press Enter" />
+            <CvField confidence={meta.skills}>
+              <ChipInput label="Top skills (at least 3)" value={f.skills} onChange={(v) => set("skills", v)} suggestions={skills} placeholder="Type a skill and press Enter" />
+            </CvField>
             {err("skills")}
           </div>
           <div id={`${uid}-current_ctc`}>
-            <TextField label="Current CTC" required value={f.current_ctc} onChange={(v) => set("current_ctc", v.replace(/[^\d.]/g, ""))} inputMode="decimal" suffix="LPA" />
+            <CvField confidence={meta.current_ctc}>
+              <TextField label="Current CTC" required value={f.current_ctc} onChange={(v) => set("current_ctc", v.replace(/[^\d.]/g, ""))} inputMode="decimal" suffix="LPA" />
+            </CvField>
             {err("current_ctc")}
           </div>
           <div id={`${uid}-expected_ctc`}>
-            <TextField label="Expected CTC" required value={f.expected_ctc} onChange={(v) => set("expected_ctc", v.replace(/[^\d.]/g, ""))} inputMode="decimal" suffix="LPA" />
+            <CvField confidence={meta.expected_ctc}>
+              <TextField label="Expected CTC" required value={f.expected_ctc} onChange={(v) => set("expected_ctc", v.replace(/[^\d.]/g, ""))} inputMode="decimal" suffix="LPA" />
+            </CvField>
             {err("expected_ctc")}
           </div>
           <div id={`${uid}-notice_period_days`}>
-            <SelectField label="Notice period" required value={f.notice_period_days} onChange={(v) => set("notice_period_days", v)} options={NOTICE_OPTIONS} placeholder="Select" />
+            <CvField confidence={meta.notice_period_days}>
+              <SelectField label="Notice period" required value={f.notice_period_days} onChange={(v) => set("notice_period_days", v)} options={NOTICE_OPTIONS} placeholder="Select" />
+            </CvField>
             {err("notice_period_days")}
           </div>
           <div className="flex items-end pb-2">
@@ -341,8 +447,8 @@ export function RegisterWizard({ skills }: { skills: string[] }) {
               accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
               className="sr-only"
               onChange={(e) => {
-                setCv(e.target.files?.[0] ?? null);
-                setErrors((x) => ({ ...x, cv: "" }));
+                const file = e.target.files?.[0];
+                if (file) readCv(file);
               }}
               aria-label="Upload your CV"
             />
@@ -367,7 +473,7 @@ export function RegisterWizard({ skills }: { skills: string[] }) {
                 onDrop={(e) => {
                   e.preventDefault();
                   const file = e.dataTransfer.files?.[0];
-                  if (file) setCv(file);
+                  if (file) readCv(file);
                 }}
                 className="flex w-full flex-col items-center justify-center rounded-xl border-2 border-dashed border-line-strong bg-surface-2/60 px-4 py-7 text-center transition-colors hover:border-jade/50"
               >

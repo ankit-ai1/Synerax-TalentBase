@@ -92,16 +92,16 @@ export function MapGraphic() {
   }
   return (
     <div className="section-dark card-premium relative h-64 overflow-hidden" role="img" aria-label="Stylised map showing our office location">
-      <svg className="absolute inset-0 h-full w-full text-white/[0.07]" viewBox="0 0 400 260" preserveAspectRatio="xMidYMid slice" aria-hidden>
+      <svg className="absolute inset-0 h-full w-full text-fg/[0.07]" viewBox="0 0 400 260" preserveAspectRatio="xMidYMid slice" aria-hidden>
         {Array.from({ length: 14 }).map((_, i) => (
           <line key={`h${i}`} x1="0" y1={i * 20} x2="400" y2={i * 20 + 30} stroke="currentColor" />
         ))}
         {Array.from({ length: 22 }).map((_, i) => (
           <line key={`v${i}`} x1={i * 20} y1="0" x2={i * 20 - 40} y2="260" stroke="currentColor" />
         ))}
-        <path d="M-10 170 C 80 140, 140 200, 220 150 S 340 90, 420 120" fill="none" stroke="rgb(21 148 135 / 0.5)" strokeWidth="6" />
-        <path d="M60 -10 C 90 80, 70 160, 120 270" fill="none" stroke="rgb(255 255 255 / 0.12)" strokeWidth="4" />
-        <path d="M300 -10 C 280 90, 320 170, 290 270" fill="none" stroke="rgb(255 255 255 / 0.12)" strokeWidth="4" />
+        <path d="M-10 170 C 80 140, 140 200, 220 150 S 340 90, 420 120" fill="none" stroke="rgb(var(--jade) / 0.5)" strokeWidth="6" />
+        <path d="M60 -10 C 90 80, 70 160, 120 270" fill="none" stroke="rgb(var(--fg) / 0.12)" strokeWidth="4" />
+        <path d="M300 -10 C 280 90, 320 170, 290 270" fill="none" stroke="rgb(var(--fg) / 0.12)" strokeWidth="4" />
       </svg>
       <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
         <span className="pulse-ring absolute inset-0 rounded-full bg-jade/50" aria-hidden />

@@ -107,7 +107,7 @@ export function ShareDialog({
                       cv === d.id ? "border-jade bg-jade-50/60 ring-1 ring-jade/30" : "border-line hover:border-line-strong"
                     )}
                   >
-                    <input type="radio" name="cv" checked={cv === d.id} onChange={() => setCv(d.id)} className="accent-[#0F766E]" />
+                    <input type="radio" name="cv" checked={cv === d.id} onChange={() => setCv(d.id)} className="accent-[rgb(var(--jade))]" />
                     <FileText className="h-4 w-4 shrink-0 text-ink-400" />
                     <span className="min-w-0 flex-1">
                       <span className="block truncate font-medium text-ink-800">{d.file_name}</span>

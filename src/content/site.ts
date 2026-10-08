@@ -12,7 +12,7 @@
  */
 
 export const site = {
-  name: "Synerax",
+  name: "Synerax TalentBase",
   legalName: "Synerax", // TODO: replace with the registered company name
   tagline: "Staffing & recruitment partner",
   description:
@@ -52,6 +52,7 @@ export const site = {
     { href: "/services", label: "Services", mega: "services" },
     { href: "/industries", label: "Industries", mega: "industries" },
     { href: "/employers", label: "Employers" },
+    { href: "/job-seekers", label: "Candidates" },
     { href: "/careers", label: "Careers" },
     { href: "/about", label: "About" },
     { href: "/contact", label: "Contact" },
@@ -59,8 +60,8 @@ export const site = {
 
   hero: {
     eyebrow: "Staffing & recruitment, done right",
-    title: "The right people, hired faster.",
-    highlight: "faster.", // the phrase shown with gradient text
+    title: "The right people, hired smarter.",
+    highlight: "hired smarter.", // serif ember phrase; its last word rolls (smarter. / faster. / better.)
     subtitle:
       "Synerax connects growing companies with pre-screened talent across tech, BFSI, healthcare and more — permanent, contract or at scale.",
     primaryCta: { label: "Hire talent", href: "/employers" },
@@ -232,18 +233,30 @@ export const site = {
     ],
   },
 
-  // TODO: replace with real data — these testimonials are placeholders, not real reviews
+  // TODO: replace with real data — these testimonials are placeholders, not real reviews (names and companies are fictional)
   testimonials: [
-    { quote: "Synerax shared a shortlist within three days and two of the candidates joined. The screening notes saved our team hours.", role: "Head of Talent Acquisition", company: "Fintech company" },
-    { quote: "They ran our bulk hiring drive for a new site end to end — on time, with very few early drop-offs.", role: "HR Manager", company: "Logistics company" },
-    { quote: "As a candidate, I always knew where my application stood. The recruiter prepared me well for every round.", role: "Senior Software Engineer", company: "Placed via Synerax" },
-    { quote: "Contract-to-hire let us evaluate engineers on real work before converting. Smooth paperwork and payroll.", role: "Engineering Manager", company: "SaaS company" },
-    { quote: "Honest advice on salary benchmarks helped us close a hard-to-fill role without overpaying.", role: "Founder", company: "Health-tech startup" },
-    { quote: "The interview prep and constant updates made a stressful job switch feel easy.", role: "Relationship Manager", company: "Placed via Synerax" },
+    { audience: "employers", name: "Ritika Malhotra", role: "Head of Talent Acquisition", company: "Nimbus Fintech", rating: 5, metric: "Hired 4 engineers in 18 days", quote: "Synerax shared a shortlist within three days and two of the first five candidates joined. The screening notes on fit, CTC and notice saved my team hours every week." },
+    { audience: "employers", name: "Vikas Bansal", role: "HR Manager", company: "Tidewater Logistics", rating: 5, metric: "120 hires for a new site in 5 weeks", quote: "They ran our bulk hiring drive for a new warehouse end to end — on time, with very few early drop-offs and daily updates." },
+    { audience: "employers", name: "Ananya Rao", role: "Engineering Manager", company: "Stackline SaaS", rating: 5, metric: "3 contract-to-hire conversions", quote: "Contract-to-hire let us evaluate engineers on real work before converting. Paperwork and payroll were completely hands-off for us." },
+    { audience: "employers", name: "Dr. Sameer Kulkarni", role: "Founder", company: "Lumen Health", rating: 5, metric: "Closed a niche role in 11 days", quote: "Honest advice on salary benchmarks helped us close a hard-to-fill role without overpaying. It felt like an extension of our own team." },
+    { audience: "candidates", name: "Karthik Iyer", role: "Senior Software Engineer", company: "Placed via Synerax", rating: 5, metric: "38% salary hike", quote: "I always knew where my application stood. My recruiter prepared me for every round and negotiated a much better offer than I expected." },
+    { audience: "candidates", name: "Neha Sharma", role: "Relationship Manager", company: "Placed via Synerax", rating: 5, metric: "Offer in 9 days", quote: "The interview prep and constant updates made a stressful job switch feel easy. No spam calls — only roles that actually fit me." },
+    { audience: "candidates", name: "Mohammed Arif", role: "ICU Staff Nurse", company: "Placed via Synerax", rating: 5, metric: "Relocated to Bengaluru", quote: "They found me a hospital role close to family and helped with every document. I never paid a single rupee." },
+    { audience: "candidates", name: "Pooja Desai", role: "Data Analyst", company: "Placed via Synerax", rating: 5, metric: "First job after a career break", quote: "After a two-year break I was nervous. Synerax was honest about what employers wanted and got me back in, fully remote." },
   ],
 
   // TODO: replace with real client names/logos (with permission). These are neutral placeholders.
-  clientLogos: ["Partner 01", "Partner 02", "Partner 03", "Partner 04", "Partner 05", "Partner 06", "Partner 07", "Partner 08"],
+  // Fictional company wordmarks (illustrative only — not real clients)
+  clientLogos: [
+    { name: "Nimbuspay", mark: "circle", color: "#857358", hires: 48 },
+    { name: "Orbitly", mark: "ring", color: "#713600", hires: 31 },
+    { name: "kitecart", mark: "kite", color: "#C05800", hires: 66 },
+    { name: "LUMEN", mark: "spark", color: "#713600", hires: 22 },
+    { name: "Stackline", mark: "stack", color: "#9A5A1E", hires: 39 },
+    { name: "Bluefin", mark: "wave", color: "#857358", hires: 27 },
+    { name: "NORTHSTAR", mark: "star", color: "#CE7D38", hires: 54 },
+    { name: "Tidewater", mark: "drop", color: "#2F7D4A", hires: 73 },
+  ],
 
   faq: {
     employers: [
@@ -354,6 +367,29 @@ export const site = {
       { title: "Warehouse Supervisor", city: "Gurugram", mode: "Onsite", experience: "3–7 yrs", type: "Full-time" },
       { title: "Staff Nurse – ICU", city: "Bengaluru", mode: "Onsite", experience: "1–4 yrs", type: "Full-time" },
       { title: "Data Analyst (SQL, Power BI)", city: "Pune", mode: "Remote", experience: "2–5 yrs", type: "Contract" },
+    ],
+  },
+
+  candidates: {
+    hero: {
+      eyebrow: "For candidates",
+      title: "A recruiter in your corner — always free",
+      highlight: "always free",
+      subtitle: "Create one profile and get matched to roles that fit your skills, salary and location. Track every application in your own portal, with a real recruiter guiding you.",
+    },
+    stats: [
+      { icon: "IndianRupee", value: 0, prefix: "₹", label: "Fees, ever", context: "Synerax never charges candidates" },
+      { icon: "Layers", value: 7, label: "Industries", context: "From tech to healthcare" },
+      { icon: "Timer", value: 48, suffix: " hrs", label: "To hear back", context: "When your profile matches a role" },
+      { icon: "Bell", value: 6, label: "Stages tracked", context: "Applied to joined, in your portal" },
+    ],
+    perks: [
+      { icon: "Sparkles", title: "Matched, not spammed", text: "We only reach out with roles that fit your skills, salary and location." },
+      { icon: "LineChart", title: "Track every step", text: "See exactly where each application stands — from applied to joined." },
+      { icon: "CalendarCheck", title: "Interview prep", text: "Company briefings, likely questions and honest feedback after each round." },
+      { icon: "Handshake", title: "Offer support", text: "Salary negotiation, notice period and joining — handled with you." },
+      { icon: "ShieldCheck", title: "Your data, your consent", text: "Your profile goes to an employer only after you say yes." },
+      { icon: "Bell", title: "Smart job alerts", text: "At most one email a day with new roles that match your profile." },
     ],
   },
 

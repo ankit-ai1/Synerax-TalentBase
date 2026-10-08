@@ -9,7 +9,7 @@ export default function ForgotPasswordPage() {
   return (
     <AuthShell
       title="Forgot your password?"
-      subtitle="Enter the email you use for Synerax Talent and we'll send you a reset link."
+      subtitle="Enter the email you use for Synerax TalentBase and we'll send you a reset link."
       back={{ href: "/login", label: "Back to sign in" }}
     >
       <ForgotPasswordForm />

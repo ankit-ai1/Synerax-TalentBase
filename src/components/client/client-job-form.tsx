@@ -411,7 +411,7 @@ export function ClientJobForm({ initial }: { initial?: ClientJobDetail }) {
             <Eye className="h-3.5 w-3.5" aria-hidden /> Live preview
           </p>
           <div className="portal-card overflow-hidden">
-            <div className="h-1.5 bg-gradient-to-r from-jade via-teal-400 to-saffron" aria-hidden />
+            <div className="h-1.5 bg-gradient-to-r from-jade via-[rgb(var(--p-400))] to-saffron" aria-hidden />
             <div className="p-5">
               <p className="text-[11.5px] text-ink-400">{f.department || "Department"}</p>
               <h3 className={cn("mt-0.5 text-[18px] font-semibold leading-snug", f.title ? "text-ink-900" : "text-ink-300")}>{f.title || "Job title"}</h3>

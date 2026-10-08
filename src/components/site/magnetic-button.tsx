@@ -9,9 +9,9 @@ type Variant = "primary" | "secondary" | "light" | "ghost-light";
 
 const styles: Record<Variant, string> = {
   primary:
-    "bg-jade text-white shadow-[0_10px_30px_-10px_rgb(var(--jade)/0.7),inset_0_1px_0_rgb(255_255_255/0.2)] hover:brightness-110",
-  secondary: "glass text-ink-800 hover:bg-surface",
-  light: "bg-white text-[#0C111F] shadow-[0_10px_30px_-12px_rgb(255_255_255/0.5)] hover:bg-white/90",
+    "bg-jade text-white shadow-[0_10px_30px_-10px_rgb(var(--jade)/0.7),inset_0_1px_0_rgb(255_255_255/0.2)] hover:bg-[rgb(var(--jade-hover))]",
+  secondary: "border border-jade-700 bg-transparent text-jade-700 hover:bg-jade-700 hover:text-canvas",
+  light: "bg-white text-[rgb(var(--deep))] shadow-[0_10px_30px_-12px_rgb(255_255_255/0.35)] hover:bg-white/90",
   "ghost-light": "border border-white/20 bg-white/[0.04] text-white hover:bg-white/10",
 };
 

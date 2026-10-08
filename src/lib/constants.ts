@@ -15,31 +15,31 @@ export const STATUSES = [
 
 /** status -> badge colors (light + dark) */
 export const STATUS_STYLE: Record<string, { bg: string; text: string; dot: string; bar: string }> = {
-  New: { bg: "bg-slate-100 dark:bg-slate-400/10", text: "text-slate-700 dark:text-slate-300", dot: "bg-slate-400", bar: "#94A3B8" },
-  Screening: { bg: "bg-sky-50 dark:bg-sky-400/10", text: "text-sky-800 dark:text-sky-300", dot: "bg-sky-500", bar: "#0EA5E9" },
-  Available: { bg: "bg-jade-50", text: "text-jade-700", dot: "bg-jade", bar: "#0F766E" },
-  Interviewing: { bg: "bg-violet-50 dark:bg-violet-400/10", text: "text-violet-800 dark:text-violet-300", dot: "bg-violet-500", bar: "#8B5CF6" },
-  Offered: { bg: "bg-saffron-50", text: "text-saffron-800", dot: "bg-saffron", bar: "#E9A23B" },
-  Placed: { bg: "bg-emerald-50 dark:bg-emerald-400/10", text: "text-emerald-800 dark:text-emerald-300", dot: "bg-emerald-600", bar: "#059669" },
-  "On Bench": { bg: "bg-teal-50 dark:bg-teal-400/10", text: "text-teal-800 dark:text-teal-300", dot: "bg-teal-500", bar: "#14B8A6" },
-  "On Hold": { bg: "bg-amber-50 dark:bg-amber-400/10", text: "text-amber-800 dark:text-amber-300", dot: "bg-amber-500", bar: "#F59E0B" },
-  "Not Interested": { bg: "bg-stone-100 dark:bg-stone-400/10", text: "text-stone-600 dark:text-stone-300", dot: "bg-stone-400", bar: "#A8A29E" },
-  Blacklisted: { bg: "bg-red-50 dark:bg-red-500/10", text: "text-red-700 dark:text-red-300", dot: "bg-red-500", bar: "#EF4444" },
+  New: { bg: "bg-slate-100 dark:bg-slate-400/10", text: "text-slate-700 dark:text-slate-300", dot: "bg-slate-400", bar: "#A39370" },
+  Screening: { bg: "bg-sky-50 dark:bg-sky-400/10", text: "text-sky-800 dark:text-sky-300", dot: "bg-sky-500", bar: "#857358" },
+  Available: { bg: "bg-jade-50", text: "text-jade-700", dot: "bg-jade", bar: "rgb(var(--jade))" },
+  Interviewing: { bg: "bg-violet-50 dark:bg-violet-400/10", text: "text-violet-800 dark:text-violet-300", dot: "bg-violet-500", bar: "#713600" },
+  Offered: { bg: "bg-saffron-50", text: "text-saffron-800", dot: "bg-saffron", bar: "#C05800" },
+  Placed: { bg: "bg-emerald-50 dark:bg-emerald-400/10", text: "text-emerald-800 dark:text-emerald-300", dot: "bg-emerald-600", bar: "#2F7D4A" },
+  "On Bench": { bg: "bg-saffron-50", text: "text-saffron-800", dot: "bg-saffron", bar: "rgb(var(--saffron))" },
+  "On Hold": { bg: "bg-amber-50 dark:bg-amber-400/10", text: "text-amber-800 dark:text-amber-300", dot: "bg-amber-500", bar: "#CE7D38" },
+  "Not Interested": { bg: "bg-stone-100 dark:bg-stone-400/10", text: "text-stone-600 dark:text-stone-300", dot: "bg-stone-400", bar: "#A39370" },
+  Blacklisted: { bg: "bg-red-50 dark:bg-red-500/10", text: "text-red-700 dark:text-red-300", dot: "bg-red-500", bar: "#B3261E" },
 };
 
 /** Job pipeline stages (order matters) */
 export const STAGES = ["Applied", "Sourced", "Screening", "Submitted", "Interview", "Offered", "Joined", "Rejected", "Dropped"] as const;
 export const ACTIVE_STAGES = ["Applied", "Sourced", "Screening", "Submitted", "Interview", "Offered", "Joined"] as const;
 export const STAGE_STYLE: Record<string, { dot: string; soft: string; text: string; hex: string; hint: string }> = {
-  Applied: { dot: "bg-cyan-500", soft: "bg-cyan-50 dark:bg-cyan-400/10", text: "text-cyan-800 dark:text-cyan-300", hex: "#06B6D4", hint: "Applied via the candidate portal" },
-  Sourced: { dot: "bg-slate-400", soft: "bg-slate-100 dark:bg-slate-400/10", text: "text-slate-700 dark:text-slate-300", hex: "#94A3B8", hint: "Added to pipeline" },
-  Screening: { dot: "bg-sky-500", soft: "bg-sky-50 dark:bg-sky-400/10", text: "text-sky-800 dark:text-sky-300", hex: "#0EA5E9", hint: "Call / basic check in progress" },
-  Submitted: { dot: "bg-indigo-500", soft: "bg-indigo-50 dark:bg-indigo-400/10", text: "text-indigo-800 dark:text-indigo-300", hex: "#6366F1", hint: "Profile sent to client" },
-  Interview: { dot: "bg-violet-500", soft: "bg-violet-50 dark:bg-violet-400/10", text: "text-violet-800 dark:text-violet-300", hex: "#8B5CF6", hint: "Interview rounds in progress" },
-  Offered: { dot: "bg-saffron", soft: "bg-saffron-50", text: "text-saffron-800", hex: "#E9A23B", hint: "Offer received" },
-  Joined: { dot: "bg-emerald-600", soft: "bg-emerald-50 dark:bg-emerald-400/10", text: "text-emerald-800 dark:text-emerald-300", hex: "#059669", hint: "Candidate has joined" },
-  Rejected: { dot: "bg-red-500", soft: "bg-red-50 dark:bg-red-500/10", text: "text-red-700 dark:text-red-300", hex: "#EF4444", hint: "Rejected by client/HR" },
-  Dropped: { dot: "bg-stone-400", soft: "bg-stone-100 dark:bg-stone-400/10", text: "text-stone-600 dark:text-stone-300", hex: "#A8A29E", hint: "Candidate declined" },
+  Applied: { dot: "bg-cyan-500", soft: "bg-cyan-50 dark:bg-cyan-400/10", text: "text-cyan-800 dark:text-cyan-300", hex: "#A39370", hint: "Applied via the candidate portal" },
+  Sourced: { dot: "bg-slate-400", soft: "bg-slate-100 dark:bg-slate-400/10", text: "text-slate-700 dark:text-slate-300", hex: "#A39370", hint: "Added to pipeline" },
+  Screening: { dot: "bg-sky-500", soft: "bg-sky-50 dark:bg-sky-400/10", text: "text-sky-800 dark:text-sky-300", hex: "#857358", hint: "Call / basic check in progress" },
+  Submitted: { dot: "bg-indigo-500", soft: "bg-indigo-50 dark:bg-indigo-400/10", text: "text-indigo-800 dark:text-indigo-300", hex: "#9A5A1E", hint: "Profile sent to client" },
+  Interview: { dot: "bg-violet-500", soft: "bg-violet-50 dark:bg-violet-400/10", text: "text-violet-800 dark:text-violet-300", hex: "#713600", hint: "Interview rounds in progress" },
+  Offered: { dot: "bg-saffron", soft: "bg-saffron-50", text: "text-saffron-800", hex: "#C05800", hint: "Offer received" },
+  Joined: { dot: "bg-emerald-600", soft: "bg-emerald-50 dark:bg-emerald-400/10", text: "text-emerald-800 dark:text-emerald-300", hex: "#2F7D4A", hint: "Candidate has joined" },
+  Rejected: { dot: "bg-red-500", soft: "bg-red-50 dark:bg-red-500/10", text: "text-red-700 dark:text-red-300", hex: "#B3261E", hint: "Rejected by client/HR" },
+  Dropped: { dot: "bg-stone-400", soft: "bg-stone-100 dark:bg-stone-400/10", text: "text-stone-600 dark:text-stone-300", hex: "#A39370", hint: "Candidate declined" },
 };
 
 export const JOB_STATUSES = ["Pending review", "Draft", "Open", "On Hold", "Filled", "Closed"] as const;

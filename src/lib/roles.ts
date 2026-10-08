@@ -22,6 +22,7 @@ export const PUBLIC_PATHS = new Set([
   "/industries",
   "/employers",
   "/careers",
+  "/job-seekers",
   "/contact",
   "/privacy",
   "/terms",
@@ -33,6 +34,7 @@ export const PUBLIC_PATHS = new Set([
   "/api/contact",
   "/api/portal/register",
   "/api/portal/register/precheck",
+  "/api/resume/parse",
   "/api/cron/daily",
   "/robots.txt",
   "/sitemap.xml",
@@ -45,7 +47,7 @@ export function normalizePath(path: string) {
 
 export function isPublicPath(path: string) {
   const p = normalizePath(path);
-  return PUBLIC_PATHS.has(p) || p.startsWith("/opengraph-image");
+  return PUBLIC_PATHS.has(p) || p.startsWith("/opengraph-image") || p.startsWith("/apple-icon") || p.startsWith("/icon");
 }
 
 type Area = "public" | "portal" | "client" | "account" | "staff";

@@ -69,8 +69,8 @@ export default function CareersPage() {
         </MagneticButton>
       </PageHero>
 
-      <Section tone="canvas">
-        <SectionHeading eyebrow="How we help you" title="More than a job board" />
+      <Section tone="light" index="01" label="How we help">
+        <SectionHeading index="01" eyebrow="How we help you" title="More than a job board" />
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {c.help.map((h, i) => (
             <Reveal key={h.title} delay={i * 70}>
@@ -84,7 +84,7 @@ export default function CareersPage() {
         </div>
       </Section>
 
-      <Section tone="dark" glow="b">
+      <Section tone="dark" index="02" label="Process">
         <Reveal className="mx-auto mb-12 max-w-2xl text-center">
           <p className="text-[12.5px] font-semibold uppercase tracking-[0.16em] text-jade-700">The process</p>
           <h2 className="mt-3 text-balance text-[30px] font-semibold leading-[1.08] tracking-[-0.03em] text-ink-900 sm:text-[42px]">What happens after you apply</h2>
@@ -101,14 +101,14 @@ export default function CareersPage() {
         </ol>
       </Section>
 
-      <Section tone="canvas" id="openings" className="scroll-mt-16">
-        <SectionHeading eyebrow="Current openings" title="Roles we're hiring for" description="A snapshot of open roles. Submit your profile to hear about new openings first." badge />
+      <Section tone="light" id="openings" index="03" label="Openings" className="scroll-mt-16">
+        <SectionHeading index="03" eyebrow="Current openings" title="Roles we're hiring for" description="A snapshot of open roles. Submit your profile to hear about new openings first." badge />
         <Reveal>
           <OpeningsBoard />
         </Reveal>
       </Section>
 
-      <Section tone="surface" id="submit" className="scroll-mt-16">
+      <Section tone="light" id="submit" index="04" label="Apply" className="scroll-mt-16 !pt-0">
         <div className="grid gap-10 lg:grid-cols-[1fr_1.3fr] lg:gap-16">
           <Reveal>
             <p className="text-[12.5px] font-semibold uppercase tracking-[0.16em] text-jade-700">Apply</p>

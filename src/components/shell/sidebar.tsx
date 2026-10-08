@@ -1,14 +1,13 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
+import { BrandMark } from "@/components/brand-logo";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ChevronsLeft, ChevronsRight, KeyRound, LogOut, Search, X } from "lucide-react";
 import { Avatar } from "@/components/ui/misc";
 import { Menu, MenuDivider } from "@/components/ui/interactive";
 import { ThemeSegmented } from "@/components/theme";
-import { APP_NAME } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import type { Profile } from "@/lib/types";
 import { NAV, isActive, type NavItem } from "./nav";
@@ -50,8 +49,13 @@ export function Sidebar({
 
       <div className={cn("relative flex h-16 shrink-0 items-center", mini ? "justify-center px-0" : "justify-between px-4")}>
         <Link href="/dashboard" className="flex items-center gap-2.5">
-          <LogoMark />
-          {!mini && <span className="text-[16px] font-semibold tracking-tight text-sidebar-text">{APP_NAME}</span>}
+          <LogoMark invert />
+          {!mini && (
+            <span className="whitespace-nowrap text-[16px] tracking-[-0.03em]">
+              <span className="font-semibold text-sidebar-text">Synerax</span> <span className="font-medium text-sidebar-muted">Talent</span>
+              <span className="ember-text font-semibold">Base</span>
+            </span>
+          )}
         </Link>
         {!mini && (
           <button className="rounded-md p-1 text-sidebar-muted hover:text-sidebar-text lg:hidden" onClick={onMobileClose} aria-label="Close menu">
@@ -218,7 +222,7 @@ function NavLink({
           <span
             className={cn(
               "min-w-[20px] rounded-full px-1.5 text-center text-[11px] font-semibold tabular leading-5",
-              item.badge === "jobs" ? "bg-sidebar-line/10 text-sidebar-text/80" : "bg-saffron text-[#3A2503]"
+              item.badge === "jobs" ? "bg-sidebar-line/10 text-sidebar-text/80" : "bg-saffron text-[rgb(var(--on-accent))]"
             )}
           >
             {count}
@@ -228,8 +232,10 @@ function NavLink({
   );
 }
 
-export function LogoMark({ size = 30 }: { size?: number }) {
+export function LogoMark({ size = 30, invert }: { size?: number; invert?: boolean }) {
   return (
-    <Image src="/logo.png" alt="" width={size} height={size} className="shrink-0 object-contain" style={{ width: size, height: size }} priority aria-hidden />
+    <span className="brand inline-flex" data-brand-invert={invert ? "" : undefined}>
+      <BrandMark size={size} />
+    </span>
   );
 }

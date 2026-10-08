@@ -164,7 +164,7 @@ function ProfileCard({ p, jobId, selected, onSelect }: { p: SharedProfile; jobId
       <div className="mt-auto pt-4">
         <div className="flex flex-wrap items-center gap-2 border-t border-line pt-4">
           <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg px-1.5 py-1 text-[12.5px] text-ink-500 hover:text-ink-800">
-            <input type="checkbox" checked={selected} onChange={onSelect} className="h-4 w-4 accent-[#0F766E]" /> Compare
+            <input type="checkbox" checked={selected} onChange={onSelect} className="h-4 w-4 accent-[rgb(var(--jade))]" /> Compare
           </label>
           <TimeAgo date={p.shared_at} prefix="Shared " className="text-[12px] text-ink-400" />
           <div className="ml-auto flex flex-wrap items-center gap-2">

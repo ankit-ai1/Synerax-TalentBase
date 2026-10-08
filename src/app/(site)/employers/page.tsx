@@ -38,8 +38,8 @@ export default function EmployersPage() {
       </PageHero>
 
       {/* Benefits bento */}
-      <Section tone="canvas">
-        <SectionHeading eyebrow="Why Synerax" title="Why companies partner with us" />
+      <Section tone="light" index="01" label="Why us">
+        <SectionHeading index="01" eyebrow="Why Synerax" title="Why companies partner with us" />
         <BentoGrid>
           {e.reasons.map((r, i) => (
             <BentoTile
@@ -56,7 +56,7 @@ export default function EmployersPage() {
       </Section>
 
       {/* SLA — dark */}
-      <Section tone="dark" glow="b">
+      <Section tone="dark" index="02" label="Commitments">
         <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
           <Reveal>
             <p className="text-[12.5px] font-semibold uppercase tracking-[0.16em] text-jade-700">Our commitments</p>
@@ -79,19 +79,19 @@ export default function EmployersPage() {
       </Section>
 
       {/* Hiring timeline */}
-      <Section tone="surface">
-        <SectionHeading eyebrow="Hiring process" title="What working with us looks like" />
+      <Section tone="light" index="03" label="Process">
+        <SectionHeading index="03" eyebrow="Hiring process" title="What working with us looks like" />
         <ScrollTimeline items={e.hiringSteps.map((s, i) => ({ ...s, tag: `Step ${i + 1}` }))} />
       </Section>
 
       {/* Models */}
-      <Section tone="canvas" id="models" className="scroll-mt-16">
-        <SectionHeading eyebrow="Engagement models" title="Choose the model that fits" description="Not sure which is right? We'll recommend one after a short call." />
+      <Section tone="dark" id="models" index="04" label="Models" className="scroll-mt-16">
+        <SectionHeading index="04" eyebrow="Engagement models" title="Choose the model that fits" description="Not sure which is right? We'll recommend one after a short call." />
         <ModelsTable />
       </Section>
 
       {/* Request form */}
-      <Section tone="surface" id="request" className="scroll-mt-16">
+      <Section tone="light" id="request" index="05" label="Request" className="scroll-mt-16">
         <div className="grid gap-10 lg:grid-cols-[1fr_1.3fr] lg:gap-16">
           <Reveal>
             <p className="text-[12.5px] font-semibold uppercase tracking-[0.16em] text-jade-700">Request talent</p>

@@ -48,6 +48,7 @@ import { Chip, MatchRing, SkillChip } from "@/components/portal-ui/kit";
 import { ChipInput, SelectField, Switch, TextArea, TextField } from "@/components/ui/fields";
 import { JobAlertsToggle, OpenToWorkToggle } from "@/components/portal/profile-toggles";
 import { cn, fileSize, formatDate, friendlyError } from "@/lib/utils";
+import { CvAutofill, type CvKey, type CvSuggestion } from "@/components/resume/cv-autofill";
 
 type Row = Record<string, string | boolean>;
 const s = (v: unknown) => (v === null || v === undefined ? "" : String(v));
@@ -312,6 +313,21 @@ export function ProfileEditor({ me, skillsMaster }: { me: MyProfile; skillsMaste
     setNewSkill("");
   };
 
+  // "Fill from CV": empty fields only (after the candidate confirms), or one accepted "CV says" value
+  const CV_KEYS: CvKey[] = ["first_name", "last_name", "dob", "phone", "linkedin_url", "github_url", "portfolio_url", "current_city", "total_experience", "current_designation", "current_company", "highest_qualification", "notice_period_days", "serving_notice", "last_working_day", "current_ctc", "expected_ctc"];
+  const applyCv = async (values: CvSuggestion[], newSkills: string[] = []) => {
+    const candidate = Object.fromEntries(values.map((v) => [v.key, v.value]));
+    const merged = [...skills, ...newSkills.map((name, i) => ({ name, years: "", level: "Intermediate", is_primary: skills.filter((x) => x.is_primary).length + i < 3 }))];
+    const p: Record<string, unknown> = {};
+    if (values.length) p.candidate = candidate;
+    if (newSkills.length) p.skills = merged.map((x) => ({ name: x.name, years: x.years, level: x.level, is_primary: x.is_primary }));
+    if (!Object.keys(p).length) return;
+    if (await save("cv", p)) {
+      setC((prev) => ({ ...prev, ...candidate }));
+      if (newSkills.length) setSkills(merged);
+    }
+  };
+
   const updateRow = (setter: React.Dispatch<React.SetStateAction<Row[]>>, i: number, k: string, v: string | boolean) =>
     setter((p) => p.map((r, j) => (j === i ? { ...r, [k]: v } : r)));
   const removeRow = (setter: React.Dispatch<React.SetStateAction<Row[]>>, i: number) => setter((p) => p.filter((_, j) => j !== i));
@@ -354,6 +370,15 @@ export function ProfileEditor({ me, skillsMaster }: { me: MyProfile; skillsMaste
             <JobAlertsToggle initial={c0.job_alerts} />
           </div>
         </div>
+
+        <CvAutofill
+          allowCurrentCv={me.documents.some((d) => d.doc_type === "Resume")}
+          keys={CV_KEYS}
+          current={c as Partial<Record<CvKey, unknown>>}
+          currentSkills={skills.map((x) => x.name)}
+          onFillEmpty={(values, newSkills) => applyCv(values, newSkills)}
+          onAccept={(v) => applyCv([v])}
+        />
 
         <Section
           id="basic"

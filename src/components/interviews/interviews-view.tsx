@@ -128,7 +128,7 @@ export function InterviewsView({ interviews, meId }: { interviews: any[]; meId: 
 }
 
 function Count({ n, warn }: { n: number; warn?: boolean }) {
-  return <span className={cn("rounded-full px-1.5 text-[11px] tabular", warn && n ? "bg-saffron text-[#3A2503]" : "bg-surface-3 text-ink-500")}>{n}</span>;
+  return <span className={cn("rounded-full px-1.5 text-[11px] tabular", warn && n ? "bg-saffron text-[rgb(var(--on-accent))]" : "bg-surface-3 text-ink-500")}>{n}</span>;
 }
 
 export function InterviewRow({ i, compact }: { i: any; compact?: boolean }) {

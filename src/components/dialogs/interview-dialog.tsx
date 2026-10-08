@@ -222,7 +222,7 @@ export function InterviewDialog({ prefill, me, onClose }: { prefill: InterviewPr
         {!prefill.id && (
           <label className="flex cursor-pointer items-center gap-2.5 rounded-lg border border-line bg-surface-2 px-3 py-2.5 text-[13px] text-ink-700">
             <input type="checkbox" checked={sendWa} onChange={(e) => setSendWa(e.target.checked)} className="h-4 w-4 accent-[rgb(var(--jade))]" />
-            <MessageCircle className="h-4 w-4 text-[#25D366]" />
+            <MessageCircle className="h-4 w-4 text-[#2F7D4A]" />
             Send the candidate a WhatsApp confirmation after saving
           </label>
         )}

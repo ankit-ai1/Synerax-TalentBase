@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, m } from "motion/react";
@@ -10,12 +9,13 @@ import { site } from "@/content/site";
 import { ThemeToggle } from "@/components/theme";
 import { cn } from "@/lib/utils";
 import { SiteIcon } from "./ui";
+import { BrandLogo } from "@/components/brand-logo";
 
 export function Logo({ className }: { className?: string }) {
   return (
-    <Link href="/" className={cn("flex shrink-0 items-center gap-2.5", className)} aria-label={`${site.name} home`}>
-      <Image src="/logo.png" alt="" width={34} height={34} className="h-[34px] w-[34px] object-contain" priority />
-      <span className="text-[19px] font-semibold tracking-[-0.02em] text-ink-900">{site.name}</span>
+    <Link href="/" className={cn("flex shrink-0 items-center", className)} aria-label={`${site.name} home`}>
+      <BrandLogo className="hidden sm:inline-flex" />
+      <BrandLogo variant="mark" className="sm:hidden" />
     </Link>
   );
 }
@@ -117,14 +117,14 @@ export function SiteNavbar() {
         className={cn(
           "sticky top-0 border-b transition-[background-color,border-color,box-shadow,backdrop-filter] duration-300",
           open ? "z-[60]" : "z-50",
-          scrolled || mega ? "border-line bg-canvas/75 shadow-[0_10px_30px_-18px_rgb(0_0_0/0.25)] backdrop-blur-xl" : "border-transparent bg-transparent"
+          scrolled || mega || open ? "border-line bg-canvas/80 shadow-[0_10px_30px_-18px_rgb(20_12_4/0.25)] backdrop-blur-xl" : "border-transparent bg-transparent"
         )}
         onMouseLeave={scheduleClose}
       >
         <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-3 focus:z-50 focus:rounded-lg focus:bg-surface focus:px-3 focus:py-2 focus:text-sm">
           Skip to content
         </a>
-        <nav className="mx-auto flex h-16 max-w-[1200px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8" aria-label="Main">
+        <nav className="site-container wide flex h-16 items-center justify-between gap-4" aria-label="Main">
           <Logo />
 
           <ul className="hidden items-center gap-0.5 lg:flex">
@@ -140,12 +140,12 @@ export function SiteNavbar() {
                       aria-controls={`mega-${k}`}
                       className={cn(
                         "relative flex items-center gap-1 rounded-lg px-3 py-2 text-[14px] font-medium transition-colors",
-                        active(l.href) || mega === k ? "text-ink-900" : "text-ink-500 hover:text-ink-900"
+                        active(l.href) ? "text-[rgb(var(--accent-b))]" : mega === k ? "text-ink-900" : "text-ink-500 hover:text-ink-900"
                       )}
                     >
                       {l.label}
                       <ChevronDown className={cn("h-3.5 w-3.5 transition-transform duration-200", mega === k && "rotate-180")} aria-hidden />
-                      {active(l.href) && <m.span layoutId="nav-underline" className="absolute inset-x-3 -bottom-[13px] h-0.5 rounded-full bg-saffron" />}
+                      {active(l.href) && <m.span layoutId="nav-underline" className="absolute inset-x-3 -bottom-[13px] h-0.5 rounded-full bg-[rgb(var(--accent-b))]" />}
                     </button>
                   ) : (
                     <Link
@@ -153,11 +153,11 @@ export function SiteNavbar() {
                       aria-current={active(l.href) ? "page" : undefined}
                       className={cn(
                         "relative block rounded-lg px-3 py-2 text-[14px] font-medium transition-colors",
-                        active(l.href) ? "text-ink-900" : "text-ink-500 hover:text-ink-900"
+                        active(l.href) ? "text-[rgb(var(--accent-b))]" : "text-ink-500 hover:text-ink-900"
                       )}
                     >
                       {l.label}
-                      {active(l.href) && <m.span layoutId="nav-underline" className="absolute inset-x-3 -bottom-[13px] h-0.5 rounded-full bg-saffron" />}
+                      {active(l.href) && <m.span layoutId="nav-underline" className="absolute inset-x-3 -bottom-[13px] h-0.5 rounded-full bg-[rgb(var(--accent-b))]" />}
                     </Link>
                   )}
                 </li>
@@ -168,13 +168,13 @@ export function SiteNavbar() {
           <div className="flex items-center gap-1.5">
             <ThemeToggle />
             {!loggedIn && (
-              <Link href="/register" className="hidden h-10 items-center rounded-xl px-3 text-[14px] font-semibold text-ink-700 hover:bg-surface-3 hover:text-ink-900 xl:inline-flex">
+              <Link href="/register" className="hidden h-10 items-center rounded-xl px-3 text-[14px] font-semibold text-ink-900 hover:bg-surface-3 xl:inline-flex">
                 Register
               </Link>
             )}
             <Link
               href={account.href}
-              className="group hidden h-10 items-center gap-1.5 rounded-xl bg-ink-900 px-4 text-[14px] font-semibold text-surface transition-colors hover:bg-ink-800 sm:inline-flex"
+              className="group hidden h-10 items-center gap-1.5 rounded-xl bg-ink-900 px-4 text-[14px] font-semibold text-[rgb(var(--cream))] transition-colors hover:bg-ink-800 dark:text-surface sm:inline-flex"
             >
               {account.label}
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden />
@@ -202,9 +202,9 @@ export function SiteNavbar() {
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
               onMouseEnter={() => openMega(mega)}
-              className="absolute inset-x-0 top-full hidden border-b border-line bg-canvas shadow-[0_24px_48px_-24px_rgb(0_0_0/0.35)] backdrop-blur-xl lg:block"
+              className="absolute inset-x-0 top-full hidden border-b border-line bg-canvas shadow-[0_24px_48px_-24px_rgb(20_12_4/0.35)] backdrop-blur-xl lg:block"
             >
-              <div className="mx-auto grid max-w-[1200px] grid-cols-[1fr_260px] gap-8 px-8 py-7">
+              <div className="site-container wide grid grid-cols-[1fr_300px] gap-8 py-7">
                 <ul className="grid grid-cols-2 gap-1 xl:grid-cols-3">
                   {MEGA[mega].items.map((it) => (
                     <li key={it.title}>
@@ -221,13 +221,13 @@ export function SiteNavbar() {
                   ))}
                 </ul>
                 <div className="section-dark relative flex flex-col justify-between overflow-hidden rounded-2xl p-5">
-                  <div aria-hidden className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-[#159487]/40 blur-3xl" />
+                  <div aria-hidden className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-[rgb(var(--p-500)/0.4)] blur-3xl" />
                   <div className="relative">
                     <p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-jade-700">{MEGA[mega].title}</p>
                     <p className="mt-2 text-[15px] font-semibold leading-snug text-ink-900">Not sure where to start? We&apos;ll recommend the right model in one call.</p>
                   </div>
                   <div className="relative mt-5 space-y-2">
-                    <Link href={MEGA[mega].footer.href} className="flex items-center justify-between rounded-lg bg-white/[0.06] px-3 py-2 text-[13px] font-medium text-ink-800 hover:bg-white/10">
+                    <Link href={MEGA[mega].footer.href} className="flex items-center justify-between rounded-lg bg-fg/[0.06] px-3 py-2 text-[13px] font-medium text-ink-800 hover:bg-fg/10">
                       {MEGA[mega].footer.label} <ArrowRight className="h-3.5 w-3.5" aria-hidden />
                     </Link>
                     <Link href="/contact" className="flex items-center justify-between rounded-lg bg-jade px-3 py-2 text-[13px] font-semibold text-white hover:brightness-110">

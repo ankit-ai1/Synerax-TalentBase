@@ -141,10 +141,10 @@ export function Reports({ data, isAdmin }: { data: any; isAdmin: boolean }) {
           <CardHeader title="Last 12 months" description="Each metric has its own scale — for spotting trends" />
           <div className="grid grid-cols-2 gap-x-6 gap-y-5 p-5">
             {[
-              { key: "added", label: "Candidates added", color: "#64748B" },
-              { key: "submitted", label: "Submitted", color: "#6366F1" },
-              { key: "interviews", label: "Interviews", color: "#8B5CF6" },
-              { key: "joined", label: "Joined", color: "#0F766E" },
+              { key: "added", label: "Candidates added", color: "#857358" },
+              { key: "submitted", label: "Submitted", color: "#9A5A1E" },
+              { key: "interviews", label: "Interviews", color: "#713600" },
+              { key: "joined", label: "Joined", color: "rgb(var(--jade))" },
             ].map((m) => {
               const total = monthly.reduce((s: number, r: any) => s + r[m.key], 0);
               return (
@@ -184,7 +184,7 @@ export function Reports({ data, isAdmin }: { data: any; isAdmin: boolean }) {
                     <span className="truncate text-[13px] text-ink-600">{r.source}</span>
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <div className="h-2 rounded-r bg-[#94A3B8]" style={{ width: `${Math.max(2, (r.added / max) * 100)}%` }} title={`Added: ${r.added}`} />
+                        <div className="h-2 rounded-r bg-[#A39370]" style={{ width: `${Math.max(2, (r.added / max) * 100)}%` }} title={`Added: ${r.added}`} />
                         <span className="text-[11px] tabular text-ink-500">{r.added}</span>
                       </div>
                       <div className="flex items-center gap-2">
@@ -200,7 +200,7 @@ export function Reports({ data, isAdmin }: { data: any; isAdmin: boolean }) {
               })}
               <div className="flex gap-4 pt-1 text-xs text-ink-500">
                 <span className="flex items-center gap-1.5">
-                  <span className="h-2.5 w-2.5 rounded-sm bg-[#94A3B8]" /> Added
+                  <span className="h-2.5 w-2.5 rounded-sm bg-[#A39370]" /> Added
                 </span>
                 <span className="flex items-center gap-1.5">
                   <span className="h-2.5 w-2.5 rounded-sm bg-jade" /> Placed
@@ -222,20 +222,20 @@ export function Reports({ data, isAdmin }: { data: any; isAdmin: boolean }) {
                 <>
                   <div className="flex h-3 gap-0.5 overflow-hidden rounded-full">
                     {[
-                      ["Selected", "#059669"],
-                      ["On Hold", "#F59E0B"],
-                      ["Rejected", "#EF4444"],
-                      ["Pending", "#94A3B8"],
+                      ["Selected", "#2F7D4A"],
+                      ["On Hold", "#CE7D38"],
+                      ["Rejected", "#B3261E"],
+                      ["Pending", "#A39370"],
                     ].map(([r, c]) =>
                       results[r] ? <div key={r} style={{ width: `${(results[r] / totalResults) * 100}%`, background: c }} title={`${r}: ${results[r]}`} /> : null
                     )}
                   </div>
                   <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
                     {[
-                      ["Selected", "#059669"],
-                      ["On Hold", "#F59E0B"],
-                      ["Rejected", "#EF4444"],
-                      ["Pending", "#94A3B8"],
+                      ["Selected", "#2F7D4A"],
+                      ["On Hold", "#CE7D38"],
+                      ["Rejected", "#B3261E"],
+                      ["Pending", "#A39370"],
                     ].map(([r, c]) => (
                       <div key={r} className="flex items-center gap-2 text-xs text-ink-600">
                         <span className="h-2.5 w-2.5 rounded-sm" style={{ background: c }} />

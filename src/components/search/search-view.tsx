@@ -564,7 +564,7 @@ export function SearchView({ skills, roles, isAdmin, meId }: { skills: Skill[]; 
 
       {sel.size > 0 && (
         <div className="fixed inset-x-0 bottom-5 z-30 flex justify-center px-4 lg:pl-[var(--sidebar-w,248px)]">
-          <div className="flex max-w-full items-center gap-1 overflow-x-auto rounded-2xl border border-white/10 bg-[#111729] p-1.5 pl-4 text-white shadow-pop animate-pop-in dark:bg-[#232B42]">
+          <div className="flex max-w-full items-center gap-1 overflow-x-auto rounded-2xl border border-white/10 bg-[#38240D] p-1.5 pl-4 text-white shadow-pop animate-pop-in dark:bg-[#46301A]">
             <span className="mr-2 whitespace-nowrap text-sm font-semibold">{sel.size} selected</span>
             <BarBtn icon={<Briefcase className="h-4 w-4" />} onClick={() => dialogs.openAddToJob(ids, afterBulk)}>
               Add to job

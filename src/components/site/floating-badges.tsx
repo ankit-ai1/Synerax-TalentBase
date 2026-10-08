@@ -2,7 +2,7 @@ import { CalendarCheck, CheckCircle2, Sparkles, UserCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const ICONS = { check: CheckCircle2, calendar: CalendarCheck, sparkles: Sparkles, user: UserCheck };
-const TONES = { jade: "text-jade", saffron: "text-saffron", violet: "text-violet-500", sky: "text-sky-500" };
+const TONES = { jade: "text-jade", saffron: "text-saffron", violet: "text-ink-500", sky: "text-ink-500" };
 
 export type FloatingBadge = {
   title: string;

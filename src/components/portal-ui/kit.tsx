@@ -149,7 +149,7 @@ export function SkillChip({ name, years, tone = "ink", className }: { name: stri
 
 // ---------------------------------------------------------------- avatar
 const GRADIENTS = [
-  "from-teal-400 to-emerald-600",
+  "from-[rgb(var(--p-400))] to-[rgb(var(--p-700))]",
   "from-amber-400 to-orange-600",
   "from-sky-400 to-indigo-600",
   "from-fuchsia-400 to-purple-600",
@@ -217,7 +217,7 @@ export function Sparkline({ data, className, tone = "jade" }: { data: number[]; 
   const pts = data.map((v, i) => [i * step, h - 3 - (v / max) * (h - 6)] as const);
   const line = pts.map((p, i) => `${i ? "L" : "M"}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(" ");
   const area = `${line} L${w},${h} L0,${h} Z`;
-  const color = { jade: "rgb(var(--jade))", saffron: "rgb(var(--saffron))", violet: "#8b5cf6" }[tone];
+  const color = { jade: "rgb(var(--jade))", saffron: "rgb(var(--saffron))", violet: "#713600" }[tone];
   const id = `spark-${tone}`;
   return (
     <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" className={cn("h-7 w-full overflow-visible", className)} aria-hidden>

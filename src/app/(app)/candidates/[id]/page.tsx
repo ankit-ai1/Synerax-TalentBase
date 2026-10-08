@@ -21,6 +21,7 @@ import { describeActivity } from "@/lib/activity";
 import { Avatar, Badge, Card, CardHeader, EmptyState } from "@/components/ui/misc";
 import { JoiningTimeline } from "@/components/candidate/joining-timeline";
 import { DocumentsPanel } from "@/components/candidate/documents-panel";
+import { ReparseCvButton } from "@/components/resume/reparse-cv";
 import { NotesPanel } from "@/components/candidate/notes-panel";
 import { MoreActions, ProfileTabs, RatingControl, Sensitive, StatusControl } from "@/components/candidate/profile-client";
 import { age, cn, formatDate, formatDateTime, fullName, lpa, timeAgo, years } from "@/lib/utils";
@@ -516,6 +517,14 @@ export default async function CandidatePage({ params }: { params: Promise<{ id: 
               >
                 View resume
               </a>
+            )}
+            {resume && (
+              <ReparseCvButton
+                candidateId={c.id}
+                current={Object.fromEntries(
+                  ["first_name", "last_name", "email", "phone", "linkedin_url", "github_url", "portfolio_url", "current_city", "total_experience", "current_designation", "current_company", "highest_qualification", "notice_period_days", "serving_notice", "last_working_day", "current_ctc", "expected_ctc", "dob"].map((k) => [k, (c as any)[k] ?? ""])
+                )}
+              />
             )}
             <Link href={`/candidates/${c.id}/edit`} className="inline-flex h-10 items-center gap-2 rounded-lg bg-ink-900 px-4 text-sm font-medium text-surface shadow-sm hover:bg-ink-800">
               <Pencil className="h-4 w-4" /> Edit

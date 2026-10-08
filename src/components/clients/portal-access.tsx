@@ -22,7 +22,7 @@ export type ClientLogin = {
 };
 
 function CredentialsDialog({ email, password, onClose }: { email: string; password: string; onClose: () => void }) {
-  const text = `Synerax Talent client portal\nSign in: ${window.location.origin}/login\nEmail: ${email}\nTemporary password: ${password}\n\nPlease change your password after signing in (account menu → Change password).`;
+  const text = `Synerax TalentBase client portal\nSign in: ${window.location.origin}/login\nEmail: ${email}\nTemporary password: ${password}\n\nPlease change your password after signing in (account menu → Change password).`;
   return (
     <Dialog
       open
