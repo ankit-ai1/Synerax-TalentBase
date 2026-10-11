@@ -11,6 +11,7 @@ import {
   KeyRound,
   LayoutDashboard,
   LogOut,
+  MessagesSquare,
   PlusCircle,
   Search,
   UserRound,
@@ -21,10 +22,11 @@ import { MotionProvider } from "@/components/site/motion";
 import { Menu, MenuDivider } from "@/components/ui/interactive";
 import { Avatar } from "@/components/portal-ui/kit";
 import { cn } from "@/lib/utils";
+import { useChatUnread } from "@/lib/chat/hooks";
 
-const ICONS = { dashboard: LayoutDashboard, jobs: Briefcase, search: Search, applications: ClipboardList, profile: UserRound, post: PlusCircle, bell: Bell } satisfies Record<string, LucideIcon>;
+const ICONS = { dashboard: LayoutDashboard, jobs: Briefcase, search: Search, applications: ClipboardList, profile: UserRound, post: PlusCircle, bell: Bell, messages: MessagesSquare } satisfies Record<string, LucideIcon>;
 export type PortalIcon = keyof typeof ICONS;
-export type PortalNavItem = { href: string; label: string; /** shorter label for the phone tab bar */ short?: string; exact?: boolean; icon?: PortalIcon; /** sub-paths owned by another item */ exclude?: string[] };
+export type PortalNavItem = { href: string; label: string; /** shorter label for the phone tab bar */ short?: string; exact?: boolean; icon?: PortalIcon; /** sub-paths owned by another item */ exclude?: string[]; /** live unread badge */ badge?: "messages" };
 
 /** Branded layout for the candidate and client portals */
 export function PortalShell({
@@ -45,6 +47,8 @@ export function PortalShell({
   const path = usePathname();
   const active = (n: PortalNavItem) => (n.exact ? path === n.href : (path === n.href || path.startsWith(n.href + "/")) && !n.exclude?.some((x) => path === x || path.startsWith(x + "/")));
   const home = nav[0]?.href ?? "/";
+  const unread = useChatUnread(0, nav.some((n) => n.badge === "messages"));
+  const badge = (n: PortalNavItem) => (n.badge === "messages" ? unread : 0);
 
   return (
     <MotionProvider>
@@ -83,6 +87,11 @@ export function PortalShell({
                     )}
                     {Icon && <Icon className={cn("relative h-4 w-4", on ? "text-jade-700" : "")} aria-hidden />}
                     <span className="relative">{n.label}</span>
+                    {badge(n) > 0 && (
+                      <span className="relative flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-saffron px-1 text-[10px] font-bold text-[rgb(var(--on-accent))]" aria-label={`${badge(n)} unread`}>
+                        {badge(n) > 9 ? "9+" : badge(n)}
+                      </span>
+                    )}
                   </Link>
                 );
               })}
@@ -149,7 +158,10 @@ export function PortalShell({
               return (
                 <Link key={n.href} href={n.href} aria-current={on ? "page" : undefined} className="relative flex flex-col items-center gap-0.5 py-2 text-[11px] font-medium">
                   {on && <m.span layoutId={`tab-${area}`} className="absolute inset-x-5 top-0 h-0.5 rounded-full bg-jade" aria-hidden />}
-                  <Icon className={cn("h-5 w-5", on ? "text-jade-700" : "text-ink-400")} aria-hidden />
+                  <span className="relative">
+                    <Icon className={cn("h-5 w-5", on ? "text-jade-700" : "text-ink-400")} aria-hidden />
+                    {badge(n) > 0 && <span className="absolute -right-1.5 -top-1 h-2.5 w-2.5 rounded-full bg-saffron ring-2 ring-surface" aria-label="Unread messages" />}
+                  </span>
                   <span className={on ? "text-ink-900" : "text-ink-500"}>{n.short ?? n.label}</span>
                 </Link>
               );

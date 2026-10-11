@@ -21,6 +21,7 @@ import { Button, LinkButton } from "@/components/ui/button";
 import { Card, EmptyState, ScoreRing, StageBadge } from "@/components/ui/misc";
 import { Checkbox, Menu, MenuItem } from "@/components/ui/interactive";
 import { InterviewRow } from "@/components/interviews/interviews-view";
+import { MessageButton } from "@/components/chat/message-button";
 import { ACTIVE_STAGES, STAGES, STAGE_STYLE } from "@/lib/constants";
 import { cn, dayLabel, formatDate, formatTime, friendlyError, lpa, timeAgo } from "@/lib/utils";
 
@@ -39,8 +40,9 @@ export function CandidateQuickActions({ c }: { c: Cand }) {
       <Button variant="secondary" size="sm" onClick={() => d.openInterview({ candidate: opt })}>
         <CalendarPlus className="h-3.5 w-3.5" /> Interview
       </Button>
+      <MessageButton kind="candidate" id={c.id} label="Message candidate" variant="soft" />
       <Button variant="secondary" size="sm" onClick={() => d.openMessage({ candidates: [c] })}>
-        <MessageCircle className="h-3.5 w-3.5" /> Message
+        <MessageCircle className="h-3.5 w-3.5" /> WhatsApp / Email
       </Button>
       {c.phone && (
         <a href={`tel:${c.phone}`} className="inline-flex h-8 items-center gap-1.5 rounded-md border border-line bg-surface px-3 text-[13px] font-medium text-ink-800 shadow-card hover:bg-surface-2">

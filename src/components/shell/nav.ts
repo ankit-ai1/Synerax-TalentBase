@@ -12,6 +12,8 @@ import {
   LayoutGrid,
   Mail,
   MessageSquareText,
+  MessagesSquare,
+  Bot,
   Tags,
   Users,
   UsersRound,
@@ -21,7 +23,7 @@ export type NavItem = {
   href: string;
   label: string;
   icon: React.ComponentType<{ className?: string }>;
-  badge?: "tasks" | "interviews" | "jobs" | "review";
+  badge?: "tasks" | "interviews" | "jobs" | "review" | "messages";
   /** sub-paths that belong to another nav item */
   exclude?: string[];
   exact?: boolean;
@@ -30,7 +32,10 @@ export type NavItem = {
 export const NAV: { label: string; admin?: boolean; items: NavItem[] }[] = [
   {
     label: "Overview",
-    items: [{ href: "/dashboard", label: "Dashboard", icon: LayoutGrid, exact: true }],
+    items: [
+      { href: "/dashboard", label: "Dashboard", icon: LayoutGrid, exact: true },
+      { href: "/messages", label: "Messages", icon: MessagesSquare, badge: "messages" },
+    ],
   },
   {
     label: "Recruiting",
@@ -60,6 +65,7 @@ export const NAV: { label: string; admin?: boolean; items: NavItem[] }[] = [
       { href: "/admin/users", label: "Team & access", icon: Users },
       { href: "/admin/masters", label: "Skills & roles", icon: Tags },
       { href: "/admin/email", label: "Email settings", icon: Mail },
+      { href: "/admin/chatbot", label: "Chatbot & chat", icon: Bot },
       { href: "/admin/activity", label: "Activity log", icon: History },
     ],
   },

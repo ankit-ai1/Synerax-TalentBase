@@ -11,6 +11,8 @@ export const EMAIL_EVENTS = [
   { key: "staff_candidate_applied", audience: "synerax", label: "Candidate applied via the portal" },
   { key: "staff_candidate_withdrew", audience: "synerax", label: "Candidate withdrew an application" },
   { key: "staff_daily_digest", audience: "synerax", label: "Daily digest of new registrations" },
+  { key: "chat_unread_staff", audience: "synerax", label: "Unread chat message (after 10 min, max 1 per conversation per hour)" },
+  { key: "staff_chatbot_lead", audience: "synerax", label: "New \"Hire talent\" lead from the website chatbot" },
   // to clients
   { key: "client_login_created", audience: "client", label: "Portal login created / password reset" },
   { key: "client_job_received", audience: "client", label: "Job received (pending review)" },
@@ -20,6 +22,7 @@ export const EMAIL_EVENTS = [
   { key: "client_pending_reminder", audience: "client", label: "Reminder: shared profiles pending over 48 h" },
   { key: "client_candidate_joined", audience: "client", label: "Candidate joined" },
   { key: "client_comment", audience: "client", label: "Synerax replied on a profile" },
+  { key: "chat_unread_client", audience: "client", label: "Unread chat message from Synerax (after 10 min, max 1 per hour)" },
   // to candidates
   { key: "candidate_welcome", audience: "candidate", label: "Welcome after registration" },
   { key: "candidate_profile_reminder", audience: "candidate", label: "Incomplete-profile reminder (after 3 days, max 2)" },
@@ -31,6 +34,7 @@ export const EMAIL_EVENTS = [
   { key: "candidate_offer", audience: "candidate", label: "Offer" },
   { key: "candidate_joined", audience: "candidate", label: "Joined — congratulations" },
   { key: "candidate_job_alerts", audience: "candidate", label: "New matching jobs (opt-in, max daily)" },
+  { key: "chat_unread_candidate", audience: "candidate", label: "Unread chat message from the recruiter (after 10 min, max 1 per hour)" },
   // system
   { key: "test", audience: "system", label: "Test email" },
 ] as const satisfies readonly { key: string; audience: EmailAudience; label: string }[];

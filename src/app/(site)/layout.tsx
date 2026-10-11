@@ -6,6 +6,7 @@ import { SiteFooter } from "@/components/site/footer";
 import { RevealObserver } from "@/components/site/reveal";
 import { ScrollTopRing, SmoothScroll } from "@/components/site/effects";
 import { RouteWipe } from "@/components/site/connection/global";
+import { ChatLauncher } from "@/components/chat/launcher";
 
 export const metadata: Metadata = {
   title: { default: `${site.name} — ${site.tagline}`, template: `%s · ${site.name}` },
@@ -36,6 +37,7 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
         <RouteWipe />
         <div className="grain" aria-hidden />
         <ScrollTopRing />
+        <ChatLauncher placement="site" />
       </div>
     </MotionProvider>
   );

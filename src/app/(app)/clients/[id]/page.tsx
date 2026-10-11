@@ -9,6 +9,7 @@ import { Avatar, Card, CardHeader, ClientStatusBadge, EmptyState, StatTile } fro
 import { Tabs } from "@/components/ui/interactive";
 import { JobRow, JOB_LIST_SELECT } from "@/components/jobs/job-row";
 import { DeleteClientButton } from "@/components/clients/delete-client";
+import { MessageButton } from "@/components/chat/message-button";
 import { formatDate, inr, lpa, waLink } from "@/lib/utils";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -93,6 +94,7 @@ export default async function ClientPage({ params }: { params: Promise<{ id: str
           <LinkButton href={`/jobs/new?client=${c.id}`}>
             <Plus className="h-4 w-4" /> New job
           </LinkButton>
+          <MessageButton kind="client" id={c.id} className="h-10 rounded-lg px-4 text-sm" />
           <LinkButton href={`/clients/${c.id}/edit`} variant="secondary">
             <Pencil className="h-4 w-4" /> Edit
           </LinkButton>

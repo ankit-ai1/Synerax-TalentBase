@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import type { Profile } from "@/lib/types";
 import { NAV, isActive, type NavItem } from "./nav";
 import type { ShellCounts } from "./app-shell";
+import { useChatUnread } from "@/lib/chat/hooks";
 
 export function Sidebar({
   profile,
@@ -39,6 +40,9 @@ export function Sidebar({
     onMobileClose();
   }, [path]); // eslint-disable-line react-hooks/exhaustive-deps
   const current = pending ?? path;
+  // live unread-messages badge (Supabase Realtime)
+  const unread = useChatUnread(counts.messages);
+  const live: ShellCounts = { ...counts, messages: unread };
 
   const body = (mini: boolean) => (
     <div className="relative flex h-full flex-col">
@@ -95,7 +99,7 @@ export function Sidebar({
                   item={item}
                   active={isActive(current, item)}
                   mini={mini}
-                  count={item.badge ? counts[item.badge] : 0}
+                  count={item.badge ? live[item.badge] : 0}
                   onNavigate={() => item.href !== path && setPending(item.href)}
                   onPrefetch={() => router.prefetch(item.href)}
                 />

@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { requireRole } from "@/lib/auth";
 import { PortalShell, type PortalNavItem } from "@/components/portal/portal-shell";
 import { NotificationBell } from "@/components/portal/notification-bell";
+import { MessagesIcon } from "@/components/chat/messages-icon";
+import { ChatLauncher } from "@/components/chat/launcher";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -13,14 +15,16 @@ const NAV: PortalNavItem[] = [
   { href: "/portal", label: "Dashboard", short: "Home", exact: true, icon: "dashboard" },
   { href: "/portal/jobs", label: "Find jobs", short: "Jobs", icon: "search" },
   { href: "/portal/applications", label: "My applications", short: "Applications", icon: "applications" },
+  { href: "/portal/messages", label: "Messages", short: "Messages", icon: "messages", badge: "messages" },
   { href: "/portal/profile", label: "My profile", short: "Profile", icon: "profile" },
 ];
 
 export default async function CandidatePortalLayout({ children }: { children: React.ReactNode }) {
   const profile = await requireRole("candidate");
   return (
-    <PortalShell area="Candidate portal" nav={NAV} user={{ name: profile.full_name, email: profile.email }} profileHref="/portal/profile" actions={<NotificationBell allHref="/portal/notifications" />}>
+    <PortalShell area="Candidate portal" nav={NAV} user={{ name: profile.full_name, email: profile.email }} profileHref="/portal/profile" actions={<><MessagesIcon href="/portal/messages" /><NotificationBell allHref="/portal/notifications" /></>}>
       {children}
+      <ChatLauncher />
     </PortalShell>
   );
 }

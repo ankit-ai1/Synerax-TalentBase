@@ -31,7 +31,10 @@ export default function PrivacyPage() {
         },
         {
           heading: "3. Sharing",
-          body: ["We do not sell your personal information. We share it only with employers (for candidates, with consent), service providers who help us operate, or when required by law."],
+          body: [
+            "We do not sell your personal information. We share it only with employers (for candidates, with consent), service providers who help us operate, or when required by law.",
+            "Questions you type into our chat assistant are processed by Google's Gemini service to understand what you are asking. We remove email addresses, phone numbers, ID numbers and links before sending, and we never send your profile, applications or any other data from our systems — please don't type passwords or bank details into the chat.",
+          ],
         },
         {
           heading: "4. Retention & security",

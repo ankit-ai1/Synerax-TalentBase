@@ -192,6 +192,58 @@ Demo logins use `@example.com` addresses, so no real emails are sent. Their CVs 
 
 ---
 
+## Chat & chatbot (free)
+
+Live 1:1 chat (Supabase Realtime, free plan) and a rule-based chatbot (no AI, no paid service).
+
+**Who can talk to whom** — enforced in the database (RLS + functions), not only in the UI:
+- **Staff ↔ candidate**: only staff can start it. Admins by default; turn on *HR can chat with candidates* in **Admin → Chatbot & chat**. Candidates can reply in their own thread but can never start one.
+- **Staff ↔ client**: one shared thread per client company (every client user of that company sees it). Clients may start it; staff too.
+- **Client ↔ candidate**: impossible.
+
+**Setup (one time)**
+1. Supabase → SQL Editor → run `supabase/migrations/005_chat.sql` (safe to re-run).
+2. Unread-message e-mails (sent when a message stays unread 10+ minutes, max one per conversation per hour): open `supabase/migrations/005b_chat_cron.sql`, replace `YOUR_SITE_URL` and `YOUR_CRON_SECRET`, run it. This uses Supabase's free `pg_cron` because Vercel's free plan only runs crons once a day.
+3. The assistant is described in the next section.
+
+**Where things are**
+- Staff: **Messages** in the sidebar (unread badge), *Message candidate* on profiles and pipeline cards, *Message client* on client pages.
+- Portals: **Messages** page + header icon; floating assistant bottom-right (also on the public website for visitors).
+- Chatbot answers: `src/data/bot-faq.ts` (edit freely) + answers admins add in **Admin → Chatbot & chat**, where unanswered questions are listed too.
+- Attachments go to Google Drive → `Chat attachments` folder (max 4 MB) and are streamed only to people in that conversation.
+
+**Tests**
+```bash
+npm run seed:portals && npm run seed:chat
+npm run test:chat                # security: every forbidden case with real logins
+npm run test:e2e:chat            # two browsers, live chat + chatbot (app must be running on :3100)
+```
+
+## Chat assistant (role-aware)
+
+A floating assistant on every page (website, candidate portal, client portal, staff app — hidden on the staff Messages page). Its **mode comes from the signed-in session only**: visitor, candidate, client, HR or admin.
+
+**How it works (privacy first)**
+1. The question is cleaned on our server (emails, phone numbers, PAN/Aadhaar-like numbers, links and ids removed).
+2. **Google Gemini (free tier)** only *understands* it. It receives: the cleaned question, the last 3 cleaned messages, the role name, that role's tool names + parameter schemas, and public website/FAQ text. **Never** names, emails, phones, CVs, applications, jobs, client data or ids.
+3. Gemini picks a tool (or answers a general question from the public text). Our server checks the tool is allowed for the role, validates the parameters and runs it with **the user's own Supabase session** (RLS applies; never the service role).
+4. The result is rendered by our own templates and **never sent back to Gemini**.
+5. Actions (apply, post job, approve, create task…) only prepare a **confirmation card with a one-time token (10 min)**; only the user's click executes them.
+
+**Free fallback** (when Gemini is off, slow, errors, hits a limit or reaches `BOT_GEMINI_DAILY_LIMIT`): rules + Hinglish synonyms + typo-tolerant matching (Fuse.js) + entity extraction + local meaning-based matching with `Xenova/all-MiniLM-L6-v2`. Same tools, templates and confirmations. After two misses it hands over to a person (Messages / call-back / lead form) and logs the question for **Admin → Chatbot & chat**.
+
+**Setup**
+1. Run `supabase/migrations/006_bot.sql` (after 005).
+2. Add `GEMINI_API_KEY` (free: aistudio.google.com/apikey) to Vercel + `.env.local`. `BOT_AI_ENABLED=off` is an instant kill switch.
+3. After editing tool examples or `src/data/bot-faq.ts`: `npm run bot:index` (re-computes the embedding index).
+
+**Tests**
+```bash
+npm run test:bot:quality    # 100 tuning + 40 held-out questions; fallback (and Gemini if a key is set)
+npm run test:bot:security   # real logins per role + a malicious mock model + privacy scan of every AI request
+npm run test:e2e:bot        # Playwright, every role, desktop + mobile (app running on :3100)
+```
+
 ## Website: brand colours & partner logos
 
 **Colours.** Every brand colour lives in `src/app/globals.css` as CSS variables (the PALETTE block at the top). The website, staff app and both portals all read the same tokens, so changing the palette there restyles everything. The palette is "Graphite & Ember" (graphite neutrals, ember accent). Tailwind colour families that would bring in purple, blue, teal or gold (violet, indigo, sky, amber …) are remapped to graphite, copper and tangerine in `tailwind.config.ts`, so status colours stay on-brand. Emails and the social preview image can't read CSS variables, so they use the same colours as hex in `src/lib/email/layout.ts` and `src/app/opengraph-image.tsx`.

@@ -32,6 +32,7 @@ import { Avatar, ScoreRing, StageBadge } from "@/components/ui/misc";
 import { Menu, MenuDivider, MenuItem, MenuLabel, Segmented } from "@/components/ui/interactive";
 import { AsyncPicker, searchCandidates } from "@/components/pickers";
 import { ACTIVE_STAGES, STAGES, STAGE_STYLE } from "@/lib/constants";
+import { MessageButton } from "@/components/chat/message-button";
 import { cn, dayLabel, formatTime, friendlyError, lpa, noticeLabel, timeAgo, years } from "@/lib/utils";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -530,6 +531,7 @@ function AppCard({
           {a.origin === "Candidate applied" && <PortalBadge className="mt-1" />}
         </div>
         {a.match_score != null && <ScoreRing value={a.match_score} size={30} />}
+        <MessageButton kind="candidate" id={c.id} iconOnly variant="ghost" label={`Message ${name}`} className="opacity-0 focus:opacity-100 group-hover:opacity-100" />
         {menu}
       </div>
       <div className="mt-2.5 flex flex-wrap gap-x-3 gap-y-0.5 pl-[42px] text-[11.5px] text-ink-500">

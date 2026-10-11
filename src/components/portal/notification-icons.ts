@@ -1,4 +1,4 @@
-import { Bell, CalendarClock, FileCheck2, Send, Sparkles, Trophy, UserCheck, type LucideIcon } from "lucide-react";
+import { Bell, CalendarClock, FileCheck2, MessagesSquare, PhoneCall, Send, Sparkles, Trophy, UserCheck, type LucideIcon } from "lucide-react";
 
 /** Icon per notification type (plain module — safe for server and client components) */
 const TYPE_ICON: Record<string, LucideIcon> = {
@@ -14,5 +14,7 @@ const TYPE_ICON: Record<string, LucideIcon> = {
   candidate_application_received: FileCheck2,
   job_alert: Sparkles,
   candidate_shortlisted: UserCheck,
+  message: MessagesSquare,
+  callback_request: PhoneCall,
 };
 export const notificationIconName = (type: string): LucideIcon => TYPE_ICON[type] ?? Bell;

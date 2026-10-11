@@ -36,6 +36,9 @@ export const PUBLIC_PATHS = new Set([
   "/api/portal/register/precheck",
   "/api/resume/parse",
   "/api/cron/daily",
+  "/api/cron/chat-emails",
+  "/api/bot",
+  "/api/bot/confirm",
   "/robots.txt",
   "/sitemap.xml",
   "/opengraph-image",
@@ -59,6 +62,8 @@ export function areaOf(path: string): Area {
   if (p === "/portal" || p.startsWith("/portal/") || p.startsWith("/api/portal/")) return "portal";
   if (p === "/client" || p.startsWith("/client/") || p.startsWith("/api/client/")) return "client";
   if (p === "/account" || p.startsWith("/account/") || p.startsWith("/api/account/") || p === "/auth/signout") return "account";
+  // chat attachments: every signed-in role (the route + RLS check the conversation)
+  if (p.startsWith("/api/chat/")) return "account";
   return "staff";
 }
 

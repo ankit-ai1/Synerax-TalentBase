@@ -13,15 +13,16 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const { from, to } = istDayRange();
 
   // sidebar badges
-  const [tasks, interviews, jobs, review] = await Promise.all([
+  const [tasks, interviews, jobs, review, messages] = await Promise.all([
     supabase.from("tasks").select("id", { count: "exact", head: true }).eq("status", "Open").eq("assigned_to", profile.id).lt("due_at", to),
     supabase.from("interviews").select("id", { count: "exact", head: true }).gte("scheduled_at", from).lt("scheduled_at", to).neq("status", "Cancelled"),
     supabase.from("jobs").select("id", { count: "exact", head: true }).eq("status", "Open"),
     supabase.from("jobs").select("id", { count: "exact", head: true }).eq("status", "Pending review"),
+    supabase.rpc("chat_unread_total"),
   ]);
 
   return (
-    <AppShell profile={profile} counts={{ tasks: tasks.count ?? 0, interviews: interviews.count ?? 0, jobs: jobs.count ?? 0, review: review.count ?? 0 }}>
+    <AppShell profile={profile} counts={{ tasks: tasks.count ?? 0, interviews: interviews.count ?? 0, jobs: jobs.count ?? 0, review: review.count ?? 0, messages: typeof messages.data === "number" ? messages.data : 0 }}>
       {children}
     </AppShell>
   );

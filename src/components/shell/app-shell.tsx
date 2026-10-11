@@ -7,12 +7,14 @@ import { Topbar } from "./topbar";
 import { CommandPalette } from "./command-palette";
 import { DialogsProvider } from "@/components/dialogs/provider";
 import { cn } from "@/lib/utils";
+import { ChatLauncher } from "@/components/chat/launcher";
 
 export interface ShellCounts {
   tasks: number;
   interviews: number;
   jobs: number;
   review: number;
+  messages: number;
 }
 
 const ShellCtx = createContext<{ profile: Profile; openPalette: () => void }>({
@@ -76,6 +78,7 @@ export function AppShell({ profile, counts, children }: { profile: Profile; coun
             <main className="mx-auto max-w-[1360px] px-4 pb-16 pt-6 sm:px-6 lg:px-8 lg:pt-7">{children}</main>
           </div>
           <CommandPalette open={palette} onClose={() => setPalette(false)} isAdmin={profile.role === "admin"} />
+          <ChatLauncher placement="staff" />
         </div>
       </DialogsProvider>
     </ShellCtx.Provider>
