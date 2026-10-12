@@ -20,6 +20,7 @@ import { useTheme } from "@/components/theme";
 import { useDialogs } from "@/components/dialogs/provider";
 import { Avatar, Kbd } from "@/components/ui/misc";
 import { cn, lpa, years } from "@/lib/utils";
+import { displayPhone, parsePhone } from "@/lib/phone";
 import { NAV } from "./nav";
 
 type Item = {
@@ -123,14 +124,37 @@ export function CommandPalette({ open, onClose, isAdmin }: { open: boolean; onCl
     const t = setTimeout(async () => {
       const supabase = createClient();
       const like = `%${term.replace(/[%_]/g, "")}%`;
-      const [cands, jobs, clients] = await Promise.all([
-        supabase.rpc("search_candidates", { f: { q: term, page_size: 6 } }),
+      // mobile-number search: "+91 98765-43210", "9876543210", "+971501234567" … (national digits, 4+)
+      const national = /d{4}/.test(term.replace(/[s()-]/g, "")) && !/[a-z]/i.test(term) ? parsePhone(term).national : "";
+      const [cands, jobs, clients, byPhone] = await Promise.all([
+        national ? Promise.resolve({ data: { items: [] } }) : supabase.rpc("search_candidates", { f: { q: term, page_size: 6 } }),
         supabase.from("jobs").select("id, job_code, title, status, client:clients(name)").or(`title.ilike.${like},job_code.ilike.${like}`).limit(5),
         supabase.from("clients").select("id, name, city, client_code").ilike("name", like).limit(4),
+        national
+          ? supabase
+              .from("candidates")
+              .select("id, first_name, last_name, current_designation, headline, total_experience, expected_ctc, current_city, phone, alt_phone, whatsapp")
+              .or(`phone.ilike.%${national}%,alt_phone.ilike.%${national}%,whatsapp.ilike.%${national}%`)
+              .eq("is_archived", false)
+              .limit(8)
+          : Promise.resolve({ data: [] }),
       ]);
       if (id !== reqId.current) return;
       setLoading(false);
       const items: Item[] = [];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      for (const c of (byPhone.data ?? []) as any[]) {
+        const name = [c.first_name, c.last_name].filter(Boolean).join(" ");
+        const hit = [c.phone, c.alt_phone, c.whatsapp].find((x: string | null) => x && x.replace(/D/g, "").includes(national));
+        items.push({
+          id: "c-" + c.id,
+          group: "Candidates",
+          label: name,
+          sub: [displayPhone(hit), c.current_designation || c.headline, c.current_city].filter(Boolean).join(" · "),
+          icon: <Avatar name={name} size="xs" />,
+          run: () => go(`/candidates/${c.id}`),
+        });
+      }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       for (const c of ((cands.data as any)?.items ?? []) as any[]) {
         const name = [c.first_name, c.last_name].filter(Boolean).join(" ");

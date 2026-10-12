@@ -813,3 +813,14 @@ html.reveal-on [data-reveal].is-in .word-up { opacity: 1; transform: none; trans
 @keyframes cv-scan { 0%, 100% { top: 18%; } 50% { top: 78%; } }
 .cv-scan { animation: cv-scan 1.4s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { .cv-scan { animation: none; top: 50%; } }
+
+/* first-visit loader: static boot screen until the animated loader takes over */
+.intro-boot { display: none; }
+html[data-intro] .intro-boot {
+  display: flex; position: fixed; inset: 0; z-index: 99; align-items: center; justify-content: center;
+  background: radial-gradient(circle at 50% 50%, rgb(192 88 0 / 0.28), transparent 55%), #1F150A;
+}
+html[data-intro] .intro-boot > span { animation: intro-boot-pulse 1.4s ease-in-out infinite; }
+html[data-intro] { overflow: hidden; }
+@keyframes intro-boot-pulse { 0%, 100% { opacity: 0.55; transform: scale(0.96); } 50% { opacity: 1; transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) { html[data-intro] .intro-boot > span { animation: none; } }

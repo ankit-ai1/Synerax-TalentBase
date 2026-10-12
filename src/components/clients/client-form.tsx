@@ -7,6 +7,7 @@ import { Plus, Star, Trash2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { SelectField, TextArea, TextField } from "@/components/ui/fields";
+import { PhoneField } from "@/components/ui/phone-field";
 import { Segmented } from "@/components/ui/interactive";
 import { UserSelect } from "@/components/pickers";
 import { CLIENT_STATUSES, INDIAN_STATES, INDUSTRIES } from "@/lib/constants";
@@ -116,7 +117,7 @@ export function ClientForm({ initial }: { initial: ClientFormData }) {
                 <TextField label="Name" value={c.name} onChange={(v) => setContact(i, { name: v })} />
                 <TextField label="Designation" value={c.designation} onChange={(v) => setContact(i, { designation: v })} placeholder="HR Manager, Tech Lead…" />
                 <TextField label="Email" type="email" value={c.email} onChange={(v) => setContact(i, { email: v })} />
-                <TextField label="Phone" type="tel" value={c.phone} onChange={(v) => setContact(i, { phone: v })} />
+                <PhoneField label="Phone" value={c.phone} onChange={(v) => setContact(i, { phone: v })} />
               </div>
             </div>
           ))}

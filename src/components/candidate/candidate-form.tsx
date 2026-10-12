@@ -37,6 +37,8 @@ import {
   WORK_MODES,
 } from "@/lib/constants";
 import { cn, fileSize, friendlyError } from "@/lib/utils";
+import { isValidPhone } from "@/lib/phone";
+import { PhoneField } from "@/components/ui/phone-field";
 import type { CandidateFields, CandidateFormData, JobRole, Skill } from "@/lib/types";
 import { CvAutofill, type CvKey, type CvSuggestion } from "@/components/resume/cv-autofill";
 import { CvField } from "@/components/resume/cv-ui";
@@ -210,8 +212,8 @@ export function CandidateForm({
     if (!c.first_name.trim()) e.first_name = "First name is required";
     if (c.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(c.email.trim())) e.email = "Email is not in a valid format";
     if (c.alt_email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(c.alt_email.trim())) e.alt_email = "Email is not in a valid format";
-    const phoneOk = (p: string) => !p || /^\+?[0-9\s-]{10,15}$/.test(p.trim());
-    if (!phoneOk(c.phone)) e.phone = "Enter a 10-digit number";
+    const phoneOk = (p: string) => !p || isValidPhone(p);
+    if (!phoneOk(c.phone)) e.phone = "Enter a valid mobile number";
     if (!phoneOk(c.alt_phone)) e.alt_phone = "Invalid number";
     if (!c.email.trim() && !c.phone.trim()) e.phone = "At least one of email or phone is required";
     if (c.dob && new Date(c.dob) > new Date()) e.dob = "DOB can't be in the future";
@@ -384,15 +386,15 @@ export function CandidateForm({
               {err("alt_email")}
             </div>
             <div id="f-phone">
-              <CvField confidence={cvMeta.phone}><TextField label="Phone" type="tel" value={c.phone} onChange={(v) => set("phone", v)} placeholder="98XXXXXXXX" /></CvField>
+              <CvField confidence={cvMeta.phone}><PhoneField label="Phone" value={c.phone} onChange={(v) => set("phone", v)} /></CvField>
               {err("phone")}
             </div>
             <div id="f-alt_phone">
-              <TextField label="Alternate phone" type="tel" value={c.alt_phone} onChange={(v) => set("alt_phone", v)} />
+              <PhoneField label="Alternate phone" value={c.alt_phone} onChange={(v) => set("alt_phone", v)} />
               {err("alt_phone")}
             </div>
             <div>
-              <TextField label="WhatsApp" type="tel" value={c.whatsapp} onChange={(v) => set("whatsapp", v)} />
+              <PhoneField label="WhatsApp" value={c.whatsapp} onChange={(v) => set("whatsapp", v)} />
               {c.phone && !c.whatsapp && (
                 <button type="button" className="mt-1 text-xs font-medium text-jade-700 hover:underline" onClick={() => set("whatsapp", c.phone)}>
                   Phone number is also WhatsApp
@@ -707,7 +709,7 @@ export function CandidateForm({
                 <TextField label="Company" value={e.company} onChange={(v) => up({ company: v })} />
                 <TextField label="Designation" value={e.designation} onChange={(v) => up({ designation: v })} />
                 <TextField label="Relation" value={e.relation} onChange={(v) => up({ relation: v })} placeholder="Manager, Colleague…" />
-                <TextField label="Phone" value={e.phone} onChange={(v) => up({ phone: v })} />
+                <PhoneField label="Phone" value={e.phone} onChange={(v) => up({ phone: v })} />
                 <TextField label="Email" value={e.email} onChange={(v) => up({ email: v })} />
               </Grid>
             )}

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, EmptyState } from "@/components/ui/misc";
 import { Dialog, ConfirmDialog } from "@/components/ui/dialog";
 import { TextField } from "@/components/ui/fields";
+import { PhoneField } from "@/components/ui/phone-field";
 import { cn, formatDate } from "@/lib/utils";
 
 export type ClientLogin = {
@@ -169,7 +170,7 @@ export function PortalAccess({ clientId, clientName, logins }: { clientId: strin
         <div className="grid gap-4 sm:grid-cols-2">
           <TextField className="sm:col-span-2" label="Full name" required value={form.name} onChange={(v) => setForm({ ...form, name: v })} />
           <TextField className="sm:col-span-2" label="Work email" type="email" required value={form.email} onChange={(v) => setForm({ ...form, email: v })} />
-          <TextField label="Phone" value={form.phone} onChange={(v) => setForm({ ...form, phone: v })} />
+          <PhoneField label="Phone" value={form.phone} onChange={(v) => setForm({ ...form, phone: v })} />
           <TextField label="Designation" value={form.designation} onChange={(v) => setForm({ ...form, designation: v })} placeholder="e.g. HR Manager" />
         </div>
       </Dialog>

@@ -7,6 +7,7 @@ import { Contact, KeyRound, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { SelectField, TextField } from "@/components/ui/fields";
+import { PhoneField } from "@/components/ui/phone-field";
 import { Avatar, Badge, Card } from "@/components/ui/misc";
 import { formatDate } from "@/lib/utils";
 import type { Profile } from "@/lib/types";
@@ -232,7 +233,7 @@ export function UsersManager({ users, meId, added }: { users: Profile[]; meId: s
         {contact && (
           <div className="space-y-4">
             <TextField label="Designation" value={contact.designation} onChange={(v) => setContact({ ...contact, designation: v })} placeholder="e.g. Senior Recruiter" />
-            <TextField label="Phone / WhatsApp" value={contact.phone} onChange={(v) => setContact({ ...contact, phone: v })} placeholder="+91 98xxx xxxxx" inputMode="tel" />
+            <PhoneField label="Phone / WhatsApp" value={contact.phone} onChange={(v) => setContact({ ...contact, phone: v })} />
           </div>
         )}
       </Dialog>

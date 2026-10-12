@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { AnimatePresence, m } from "motion/react";
 import { ArrowUpRight, Bot, Check, ChevronRight, Loader2, MessageCircle, SendHorizontal, ShieldCheck, UploadCloud, X } from "lucide-react";
 import { MotionProvider } from "@/components/site/motion";
+import { PhoneField } from "@/components/ui/phone-field";
 import type { BotCard, BotChip, BotMode, BotReply, BotRequest, BotTurn } from "@/lib/bot/types";
 import { cn } from "@/lib/utils";
 
@@ -418,7 +419,9 @@ function BotFormView({ form, onSubmit }: { form: NonNullable<BotTurn["form"]>; o
             {f.label}
             {f.required && <span className="text-red-500"> *</span>}
           </span>
-          {f.type === "textarea" ? (
+          {f.type === "tel" ? (
+            <PhoneField value={v[f.name] ?? ""} onChange={(x) => setV({ ...v, [f.name]: x })} inputClassName="h-9 bg-surface-2" />
+          ) : f.type === "textarea" ? (
             <textarea rows={3} value={v[f.name] ?? ""} placeholder={f.placeholder} onChange={(e) => setV({ ...v, [f.name]: e.target.value })} className="w-full rounded-lg border border-line bg-surface-2 px-2.5 py-1.5 text-[13px] outline-none focus:border-jade/60" />
           ) : f.type === "select" ? (
             <select value={v[f.name] ?? ""} onChange={(e) => setV({ ...v, [f.name]: e.target.value })} className="h-9 w-full rounded-lg border border-line bg-surface-2 px-2 text-[13px] outline-none focus:border-jade/60">

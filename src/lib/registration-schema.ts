@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isValidPhone, normalizePhone } from "./phone";
 
 /** Candidate self-registration — shared by the wizard (client) and the API (server) */
 export const registrationSchema = z
@@ -8,8 +9,8 @@ export const registrationSchema = z
     phone: z
       .string()
       .trim()
-      .transform((v) => v.replace(/[\s-]/g, "").replace(/^(\+91|91|0)(?=\d{10}$)/, ""))
-      .pipe(z.string().regex(/^[6-9]\d{9}$/, "Enter a valid 10-digit mobile number")),
+      .transform((v) => normalizePhone(v))
+      .pipe(z.string().refine(isValidPhone, "Enter a valid mobile number")),
     current_city: z.string().trim().min(2, "Please enter your current city").max(80),
     exp_years: z.coerce.number().int().min(0).max(50),
     exp_months: z.coerce.number().int().min(0).max(11),

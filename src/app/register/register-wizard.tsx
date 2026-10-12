@@ -7,6 +7,8 @@ import { ArrowLeft, ArrowRight, Check, FileText, Loader2, MailCheck, UploadCloud
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { registrationSchema, CV_ALLOWED, CV_MAX_BYTES } from "@/lib/registration-schema";
+import { normalizePhone } from "@/lib/phone";
+import { PhoneField } from "@/components/ui/phone-field";
 import { CITIES, NOTICE_OPTIONS } from "@/lib/constants";
 import { ChipInput, SelectField, Switch, TextField } from "@/components/ui/fields";
 import { PasswordInput } from "@/components/auth/auth-shell";
@@ -347,7 +349,7 @@ export function RegisterWizard({ skills }: { skills: string[] }) {
           </div>
           <div id={`${uid}-phone`}>
             <CvField confidence={meta.phone}>
-              <TextField label="Mobile number" required value={f.phone} onChange={(v) => set("phone", v)} placeholder="10-digit mobile" inputMode="numeric" autoComplete="tel-national" maxLength={14} />
+              <PhoneField label="Mobile number" required value={f.phone} onChange={(v) => set("phone", v)} />
             </CvField>
             {err("phone")}
           </div>
@@ -518,6 +520,4 @@ export function RegisterWizard({ skills }: { skills: string[] }) {
   );
 }
 
-function normalisePhone(v: string) {
-  return v.replace(/[\s-]/g, "").replace(/^(\+91|91|0)(?=\d{10}$)/, "");
-}
+const normalisePhone = normalizePhone;

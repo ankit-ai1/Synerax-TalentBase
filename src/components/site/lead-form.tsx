@@ -7,6 +7,7 @@ import { ArrowLeft, ArrowRight, Check, Loader2, Send } from "lucide-react";
 import { toast } from "sonner";
 import { ENQUIRY_TYPES, HIRING_TYPES } from "@/lib/lead-options";
 import { cn } from "@/lib/utils";
+import { PhoneInput } from "@/components/ui/phone-field";
 
 type LeadType = "contact" | "employer" | "candidate";
 
@@ -124,6 +125,8 @@ function FieldInput({ f, uid }: { f: Field; uid: string }) {
             </option>
           ))}
         </select>
+      ) : f.type === "tel" ? (
+        <PhoneInput id={id} name={f.name} required={f.required} inputClassName="h-11" />
       ) : f.type === "textarea" ? (
         <textarea id={id} name={f.name} required={f.required} rows={4} placeholder={f.placeholder} className="field-input h-auto py-2.5" />
       ) : (
