@@ -3,7 +3,8 @@ import { ShieldAlert } from "lucide-react";
 import { site } from "@/content/site";
 import { Reveal } from "@/components/site/reveal";
 import { SpotlightCard } from "@/components/site/cards";
-import { OpeningsBoard } from "@/components/site/openings";
+import { OpeningsBoard, type Opening } from "@/components/site/openings";
+import { createClient as createSupabase } from "@supabase/supabase-js";
 import { MultiStepLeadForm } from "@/components/site/lead-form";
 import { MagneticButton } from "@/components/site/magnetic-button";
 import { IconTile, PageHero, Section, SectionHeading } from "@/components/site/ui";
@@ -48,11 +49,32 @@ function RoleChips() {
   );
 }
 
-export default function CareersPage() {
+// live openings, refreshed every 5 minutes
+export const revalidate = 300;
+
+const exp = (a?: number | null, b?: number | null) => (a != null && b != null ? `${a}–${b} yrs` : a != null ? `${a}+ yrs` : b != null ? `up to ${b} yrs` : "");
+
+/** Published, open jobs via the public RPC (public fields only — never client names, budgets or notes) */
+async function liveOpenings(): Promise<Opening[]> {
+  try {
+    const sb = createSupabase(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, { auth: { persistSession: false } });
+    const { data } = await sb.rpc("public_jobs", { f: { limit: 20 } });
+    return ((data ?? []) as { id: string; title: string; locations: string[] | null; work_mode: string | null; employment_type: string | null; exp_min: number | null; exp_max: number | null }[]).map((j) => ({
+      id: j.id,
+      title: j.title,
+      cities: j.locations ?? [],
+      mode: j.work_mode,
+      experience: exp(j.exp_min, j.exp_max),
+      type: j.employment_type,
+    }));
+  } catch {
+    return [];
+  }
+}
+
+export default async function CareersPage() {
   const c = site.careers;
-  // TODO: replace the static openings with live data — read open jobs from the `jobs` table through a public,
-  // sanitized view (e.g. `public.public_job_openings` exposing only title, city, mode, experience, type) with an
-  // anon SELECT policy. Never expose client names, CTC budgets or internal notes.
+  const openings = await liveOpenings();
 
   return (
     <>
@@ -102,9 +124,9 @@ export default function CareersPage() {
       </Section>
 
       <Section tone="light" id="openings" index="03" label="Openings" className="scroll-mt-16">
-        <SectionHeading index="03" eyebrow="Current openings" title="Roles we're hiring for" description="A snapshot of open roles. Submit your profile to hear about new openings first." badge />
+        <SectionHeading index="03" eyebrow="Current openings" title="Roles we're hiring for" description="Open roles right now. Submit your profile to hear about new openings first." />
         <Reveal>
-          <OpeningsBoard />
+          <OpeningsBoard openings={openings} />
         </Reveal>
       </Section>
 

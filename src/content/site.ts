@@ -358,15 +358,6 @@ export const site = {
       { title: "Matched roles", text: "We share roles that fit — only with your consent." },
       { title: "Interviews to joining", text: "We prepare you for each round and support you through the offer." },
     ],
-    // TODO: replace with live openings (see TODO in src/app/(site)/careers/page.tsx)
-    openings: [
-      { title: "Full-stack Developer (React, Node.js)", city: "Bengaluru", mode: "Hybrid", experience: "3–6 yrs", type: "Full-time" },
-      { title: "Relationship Manager – Retail Banking", city: "Mumbai", mode: "Onsite", experience: "2–5 yrs", type: "Full-time" },
-      { title: "QA Automation Engineer", city: "Pune", mode: "Hybrid", experience: "2–4 yrs", type: "Contract" },
-      { title: "Warehouse Supervisor", city: "Gurugram", mode: "Onsite", experience: "3–7 yrs", type: "Full-time" },
-      { title: "Staff Nurse – ICU", city: "Bengaluru", mode: "Onsite", experience: "1–4 yrs", type: "Full-time" },
-      { title: "Data Analyst (SQL, Power BI)", city: "Pune", mode: "Remote", experience: "2–5 yrs", type: "Contract" },
-    ],
   },
 
   candidates: {

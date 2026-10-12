@@ -3,17 +3,17 @@
 import { useMemo, useState } from "react";
 import { AnimatePresence, m } from "motion/react";
 import { ArrowRight, Briefcase, Clock, MapPin } from "lucide-react";
-import { site } from "@/content/site";
 import { cn } from "@/lib/utils";
 
-/** Openings with filter chips by city and type; cards re-flow with a layout animation */
-export function OpeningsBoard() {
-  const all = site.careers.openings;
-  const cities = useMemo(() => Array.from(new Set(all.map((o) => o.city))), [all]);
-  const types = useMemo(() => Array.from(new Set(all.map((o) => o.type))), [all]);
+export type Opening = { id: string; title: string; cities: string[]; mode: string | null; experience: string; type: string | null };
+
+/** Live openings (published jobs) with filter chips by city and type; cards re-flow with a layout animation */
+export function OpeningsBoard({ openings: all }: { openings: Opening[] }) {
+  const cities = useMemo(() => Array.from(new Set(all.flatMap((o) => o.cities))), [all]);
+  const types = useMemo(() => Array.from(new Set(all.map((o) => o.type).filter((t): t is string => !!t))), [all]);
   const [city, setCity] = useState<string | null>(null);
   const [type, setType] = useState<string | null>(null);
-  const list = all.filter((o) => (!city || o.city === city) && (!type || o.type === type));
+  const list = all.filter((o) => (!city || o.cities.includes(city)) && (!type || o.type === type));
 
   const Chip = ({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) => (
     <button
@@ -38,13 +38,15 @@ export function OpeningsBoard() {
             <Chip key={c} label={c} active={city === c} onClick={() => setCity(city === c ? null : c)} />
           ))}
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="mr-1 text-[12px] font-semibold uppercase tracking-[0.12em] text-ink-400">Type</span>
-          <Chip label="All" active={!type} onClick={() => setType(null)} />
-          {types.map((t) => (
-            <Chip key={t} label={t} active={type === t} onClick={() => setType(type === t ? null : t)} />
-          ))}
-        </div>
+        {types.length > 1 && (
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="mr-1 text-[12px] font-semibold uppercase tracking-[0.12em] text-ink-400">Type</span>
+            <Chip label="All" active={!type} onClick={() => setType(null)} />
+            {types.map((t) => (
+              <Chip key={t} label={t} active={type === t} onClick={() => setType(type === t ? null : t)} />
+            ))}
+          </div>
+        )}
       </div>
 
       <p className="sr-only" aria-live="polite">
@@ -54,7 +56,7 @@ export function OpeningsBoard() {
         <AnimatePresence mode="popLayout" initial={false}>
           {list.map((o) => (
             <m.li
-              key={o.title}
+              key={o.id}
               layout
               initial={{ opacity: 0, scale: 0.97 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -64,17 +66,23 @@ export function OpeningsBoard() {
               <div className="card-premium spotlight lift flex h-full flex-col p-6">
                 <div className="flex items-start justify-between gap-3">
                   <h3 className="text-[17px] font-semibold text-ink-900">{o.title}</h3>
-                  <span className={cn("shrink-0 rounded-full px-2.5 py-1 text-[12px] font-medium", o.type === "Contract" ? "bg-saffron-50 text-saffron-800" : "bg-jade-50 text-jade-700")}>
-                    {o.type}
-                  </span>
+                  {o.type && (
+                    <span className={cn("shrink-0 rounded-full px-2.5 py-1 text-[12px] font-medium", o.type === "Contract" ? "bg-saffron-50 text-saffron-800" : "bg-jade-50 text-jade-700")}>
+                      {o.type}
+                    </span>
+                  )}
                 </div>
                 <ul className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-[14px] text-ink-500">
-                  <li className="flex items-center gap-1.5">
-                    <MapPin className="h-4 w-4" aria-hidden /> {o.city} · {o.mode}
-                  </li>
-                  <li className="flex items-center gap-1.5">
-                    <Clock className="h-4 w-4" aria-hidden /> {o.experience}
-                  </li>
+                  {(o.cities.length > 0 || o.mode) && (
+                    <li className="flex items-center gap-1.5">
+                      <MapPin className="h-4 w-4" aria-hidden /> {[o.cities.join(" / "), o.mode].filter(Boolean).join(" · ")}
+                    </li>
+                  )}
+                  {o.experience && (
+                    <li className="flex items-center gap-1.5">
+                      <Clock className="h-4 w-4" aria-hidden /> {o.experience}
+                    </li>
+                  )}
                 </ul>
                 <a href="#submit" className="group mt-5 inline-flex items-center gap-1.5 text-[14px] font-semibold text-jade-700">
                   <Briefcase className="h-4 w-4" aria-hidden /> Apply with your profile
@@ -86,7 +94,7 @@ export function OpeningsBoard() {
         </AnimatePresence>
       </m.ul>
       {list.length === 0 && (
-        <p className="rounded-2xl border border-dashed border-line-strong p-8 text-center text-sm text-ink-500">No openings match these filters right now — submit your profile and we&apos;ll reach out.</p>
+        <p className="rounded-2xl border border-dashed border-line-strong p-8 text-center text-sm text-ink-500">{all.length === 0 ? "No open roles right now" : "No openings match these filters right now"} — submit your profile and we&apos;ll reach out.</p>
       )}
     </div>
   );
