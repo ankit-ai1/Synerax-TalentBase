@@ -208,7 +208,7 @@ export const jobDetails = defineTool({
     return [
       {
         text: `${j.title} — ${[j.company, where(j)].filter(Boolean).join(" · ")}${j.match != null ? ` (${j.match}% match)` : ""}`,
-        cards: [{ title: j.title, subtitle: [j.exp_min != null || j.exp_max != null ? `${j.exp_min ?? 0}–${j.exp_max ?? "any"} yrs` : "", j.salary_min ? `₹${j.salary_min}–${j.salary_max} LPA` : ""].filter(Boolean).join(" · "), lines: [(j.skills ?? []).slice(0, 6).map((s: any) => s.name ?? s).join(", "), String(j.description ?? "").slice(0, 350)].filter(Boolean), href: `/portal/jobs/${j.id}` }],
+        cards: [{ title: j.title, subtitle: [j.exp_min != null && j.exp_max != null ? `${j.exp_min}–${j.exp_max} yrs` : j.exp_min != null ? `${j.exp_min}+ yrs` : j.exp_max != null ? `up to ${j.exp_max} yrs` : "", j.salary_min ? `₹${j.salary_min}–${j.salary_max} LPA` : ""].filter(Boolean).join(" · "), lines: [(j.skills ?? []).slice(0, 6).map((s: any) => s.name ?? s).join(", "), String(j.description ?? "").slice(0, 350)].filter(Boolean), href: `/portal/jobs/${j.id}` }],
         chips: j.application_id ? [{ label: "My applications", tool: "my_applications" }] : [{ label: "Apply", tool: "apply_to_job", params: { job_id: j.id }, tone: "primary" }],
       },
     ];

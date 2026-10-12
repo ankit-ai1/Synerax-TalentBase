@@ -70,9 +70,13 @@ export function ChatLauncher({ placement = "portal" }: { placement?: keyof typeo
     });
   }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // after each reply, show it from the top: the user's last message sits at the top of the view
   useEffect(() => {
     const el = scroller.current;
-    if (el) el.scrollTop = el.scrollHeight;
+    if (!el) return;
+    const mine = el.querySelectorAll<HTMLElement>("[data-from=\"user\"]");
+    const last = mine[mine.length - 1];
+    el.scrollTo({ top: last ? Math.max(0, last.offsetTop - 12) : 0, behavior: last ? "smooth" : "auto" });
   }, [entries, busy]);
 
   const ask = useCallback(
@@ -138,6 +142,7 @@ export function ChatLauncher({ placement = "portal" }: { placement?: keyof typeo
             role="dialog"
             aria-label="Synerax assistant"
             data-testid="chatbot"
+            data-lenis-prevent
             data-mode={mode ?? ""}
           >
             <div className="flex items-center gap-3 border-b border-line bg-surface px-4 py-3">
@@ -154,10 +159,10 @@ export function ChatLauncher({ placement = "portal" }: { placement?: keyof typeo
               </button>
             </div>
 
-            <div ref={scroller} className="min-h-0 flex-1 space-y-3 overflow-y-auto px-3 py-4" aria-live="polite">
+            <div ref={scroller} className="relative min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain px-3 py-4" aria-live="polite" data-lenis-prevent>
               {entries.map((e) =>
                 e.from === "user" ? (
-                  <div key={e.id} className="flex justify-end">
+                  <div key={e.id} className="flex justify-end" data-from="user">
                     <p className="max-w-[80%] whitespace-pre-wrap rounded-2xl rounded-br-md bg-jade px-3.5 py-2 text-[13.5px] text-white">{e.text}</p>
                   </div>
                 ) : (

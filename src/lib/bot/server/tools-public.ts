@@ -8,7 +8,7 @@ import { pick, plural } from "./text";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 const ALL = ["visitor", "candidate", "client", "hr", "admin"] as const;
-const exp = (a?: number | null, b?: number | null) => (a != null || b != null ? `${a ?? 0}–${b ?? "any"} yrs` : "");
+const exp = (a?: number | null, b?: number | null) => (a != null && b != null ? `${a}–${b} yrs` : a != null ? `${a}+ yrs` : b != null ? `up to ${b} yrs` : "");
 const where = (j: any) => (j.work_mode === "Remote" ? "Remote" : [(j.locations ?? []).slice(0, 2).join(", "), j.work_mode].filter(Boolean).join(" · "));
 const salary = (j: any) => (j.salary_min || j.salary_max ? `₹${j.salary_min ?? "?"}–${j.salary_max ?? "?"} LPA` : "");
 
