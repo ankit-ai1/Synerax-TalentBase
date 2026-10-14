@@ -107,7 +107,9 @@ export default async function CandidatePage({ params }: { params: Promise<{ id: 
   const portalStatus: PortalStatus =
     c.user_id && portal?.confirmed && c.consent_at
       ? { kind: "active", lastLogin: portal.lastSignIn }
-      : c.invited_at || c.user_id
+      : c.invite_opt_out
+        ? { kind: "opted_out" }
+        : c.invited_at || c.user_id
         ? { kind: "invited", at: c.invited_at ?? null, count: c.invite_count ?? 0 }
         : { kind: "none" };
 

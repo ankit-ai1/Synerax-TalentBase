@@ -44,6 +44,7 @@ import type { CandidateFields, CandidateFormData, JobRole, Skill } from "@/lib/t
 import { CvAutofill, type CvKey, type CvSuggestion } from "@/components/resume/cv-autofill";
 import { CvField } from "@/components/resume/cv-ui";
 import { matchCity, qualificationLevel, type Confidence, type ResumeFields } from "@/lib/resume/client";
+import { InviteCheckbox, sendPortalInvites, useInvitePref } from "@/components/candidate/portal-access";
 
 const SECTIONS = [
   { id: "personal", label: "Personal details" },
@@ -85,6 +86,7 @@ export function CandidateForm({
   const dirty = useRef(false);
   // fields filled from an uploaded CV → "From your CV" badge until edited
   const [cvMeta, setCvMeta] = useState<Partial<Record<CvKey, Confidence>>>({});
+  const [invite, setInvite] = useInvitePref("add");
 
   const c = data.candidate;
   const set = <K extends keyof CandidateFields>(k: K, v: CandidateFields[K]) => {
@@ -267,6 +269,15 @@ export function CandidateForm({
     if (failed) toast.error(`${failed} file(s) failed to upload — please retry from the profile page.`);
 
     dirty.current = false;
+    // portal invite for a NEW candidate with an email (skipped server-side if the email already has an account, etc.)
+    if (mode === "create" && invite && c.email.trim()) {
+      const out = await sendPortalInvites([id as string], "add", { silent: true });
+      if (out?.invited || out?.signin) toast.success("Candidate added — portal invite sent");
+      else toast.success("Candidate added", { description: out ? `No invite: ${out.results[0]?.reason ?? "skipped"}` : undefined });
+      router.push(`/candidates/${id}`);
+      router.refresh();
+      return;
+    }
     toast.success(mode === "create" ? "Candidate added" : "Changes saved");
     router.push(`/candidates/${id}`);
     router.refresh();
@@ -732,6 +743,11 @@ export function CandidateForm({
               {" — "}
               {overall}% complete
             </p>
+            {mode === "create" && (
+              <div className="hidden md:block">
+                <InviteCheckbox checked={invite} onChange={setInvite} label="Send portal invite" />
+              </div>
+            )}
             <div className="ml-auto flex gap-2">
               <Button type="button" variant="ghost" onClick={() => router.back()}>
                 Cancel

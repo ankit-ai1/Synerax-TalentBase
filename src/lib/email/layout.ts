@@ -10,6 +10,8 @@ export type EmailContent = {
   cta?: { label: string; url: string };
   /** small grey line under the CTA */
   note?: string;
+  /** small grey link under the note (e.g. "I don't want an account") */
+  footerLink?: { label: string; url: string };
 };
 
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -50,6 +52,7 @@ export function renderEmail(c: EmailContent, senderName = "Synerax TalentBase") 
       ${c.body.map((p) => `<p style="margin:0 0 12px;font:400 15px/1.6 Arial,sans-serif;color:#4A3218">${esc(p)}</p>`).join("")}
       ${facts}${cta}
       ${c.note ? `<p style="margin:14px 0 0;font:400 12.5px/1.5 Arial,sans-serif;color:#8F7B62">${esc(c.note)}</p>` : ""}
+      ${c.footerLink ? `<p style="margin:10px 0 0;font:400 12px/1.5 Arial,sans-serif"><a href="${esc(absUrl(c.footerLink.url))}" style="color:#8F7B62;text-decoration:underline">${esc(c.footerLink.label)}</a></p>` : ""}
     </td></tr>
     <tr><td style="padding:18px 8px;font:400 12px/1.5 Arial,sans-serif;color:#8F7B62;text-align:center">
       Sent by ${brand} · <a href="${esc(siteUrl())}" style="color:#8F7B62">${esc(siteUrl().replace(/^https?:\/\//, ""))}</a><br>
@@ -65,6 +68,7 @@ export function renderEmail(c: EmailContent, senderName = "Synerax TalentBase") 
     ...(c.facts?.length ? ["", ...c.facts.map((f) => `${f.label}: ${f.value}`)] : []),
     ...(c.cta ? ["", `${c.cta.label}: ${absUrl(c.cta.url)}`] : []),
     ...(c.note ? ["", c.note] : []),
+    ...(c.footerLink ? ["", `${c.footerLink.label}: ${absUrl(c.footerLink.url)}`] : []),
     "",
     `— ${senderName} · ${siteUrl()}`,
   ].join("\n");

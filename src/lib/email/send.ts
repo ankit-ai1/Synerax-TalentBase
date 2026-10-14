@@ -42,6 +42,8 @@ export async function sendEmail(opts: {
   force?: boolean;
   /** send at most once per key (see alreadySent) */
   dedupeKey?: string;
+  /** don't send now — leave it for the queue worker (steady rate, e.g. bulk invites) */
+  queueOnly?: boolean;
 }): Promise<{ status: "sent" | "queued" | "failed" | "skipped"; error?: string }> {
   const recipients = [...new Set((Array.isArray(opts.to) ? opts.to : [opts.to]).map((x) => x.trim()).filter(Boolean))];
   if (!recipients.length) return { status: "skipped", error: "No recipient" };
@@ -73,6 +75,7 @@ export async function sendEmail(opts: {
     const { data, error } = await admin.from("emails").insert(rows).select("id");
     if (error) throw new Error(error.message);
     if (skip) return { status: "skipped", error: skip };
+    if (opts.queueOnly) return { status: "queued" };
 
     const r = await deliverNow((data ?? []).map((x) => x.id as string), settings.sender_name);
     if (r.sent === recipients.length) return { status: "sent" };

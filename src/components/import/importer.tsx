@@ -10,6 +10,7 @@ import { Card, Progress } from "@/components/ui/misc";
 import { cn } from "@/lib/utils";
 import { normalizeLoosePhone } from "@/lib/phone";
 import { checkImportRow } from "@/lib/candidate-schema";
+import { InviteCheckbox, inviteSummary, sendPortalInvites, useInvitePref } from "@/components/candidate/portal-access";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 type Field = { key: string; label: string; synonyms: string[]; required?: boolean; kind?: "number" | "date" | "text" };
@@ -129,7 +130,8 @@ export function Importer() {
   const [map, setMap] = useState<Record<number, string>>({});
   const [running, setRunning] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [result, setResult] = useState<{ imported: number; failed: number; errors: any[] } | null>(null);
+  const [result, setResult] = useState<{ imported: number; failed: number; errors: any[]; invites?: { queued: number; summary: string; note: string | null } | null } | null>(null);
+  const [invite, setInvite] = useInvitePref("import");
   const [drag, setDrag] = useState(false);
 
   async function load(f: File) {
@@ -171,7 +173,8 @@ export function Importer() {
     setRunning(true);
     setProgress(0);
     const supabase = createClient();
-    const total = { imported: 0, failed: 0, errors: [] as any[] };
+    const total = { imported: 0, failed: 0, errors: [] as any[], invites: null as { queued: number; summary: string; note: string | null } | null };
+    const created: string[] = [];
     const chunk = 50;
     for (let i = 0; i < valid.length; i += chunk) {
       const part = valid.slice(i, i + chunk);
@@ -184,8 +187,23 @@ export function Importer() {
         total.imported += d.imported;
         total.failed += d.failed;
         total.errors.push(...(d.errors ?? []).map((e: any) => ({ ...e, row: e.row + i })));
+        created.push(...((d.created ?? []) as string[]));
       }
       setProgress(Math.min(100, Math.round(((i + part.length) / valid.length) * 100)));
+    }
+    // portal invites: ONLY candidates created by this import (duplicates / skipped rows never get one)
+    if (invite && created.length) {
+      const sum = { invited: 0, signin: 0, queued: 0, skipped: {} as Record<string, number>, note: null as string | null };
+      for (let i = 0; i < created.length; i += 100) {
+        const out = await sendPortalInvites(created.slice(i, i + 100), "import", { silent: true });
+        if (!out) continue;
+        sum.invited += out.invited;
+        sum.signin += out.signin;
+        sum.queued += out.queued;
+        sum.note = out.note ?? sum.note;
+        for (const [k, n] of Object.entries(out.skipped ?? {})) sum.skipped[k] = (sum.skipped[k] ?? 0) + n;
+      }
+      total.invites = { queued: sum.invited + sum.signin, summary: inviteSummary(sum), note: sum.note };
     }
     setRunning(false);
     setResult(total);
@@ -291,6 +309,15 @@ export function Importer() {
         <p className="mt-1 text-sm text-ink-500">
           {result.failed + invalid > 0 ? `${result.failed + invalid} rows skipped (duplicate, invalid email/phone or missing name/contact)` : "All rows imported successfully."}
         </p>
+        {result.invites && (
+          <div className="mx-auto mt-4 max-w-md rounded-xl border border-line bg-surface-2/60 px-4 py-3 text-left text-[13px] text-ink-700" data-testid="import-invites">
+            <p className="font-semibold text-ink-900">
+              {result.invites.queued} portal invite{result.invites.queued === 1 ? "" : "s"} queued
+            </p>
+            {result.invites.summary && <p className="mt-0.5 text-ink-500">{result.invites.summary}</p>}
+            <p className="mt-1 text-[12px] text-ink-400">{result.invites.note ?? "They go out at a steady rate within the daily email limit."}</p>
+          </div>
+        )}
         {result.errors.length > 0 && (
           <div className="mt-6 max-h-56 overflow-y-auto rounded-xl border border-line text-left">
             <table className="w-full text-xs">
@@ -341,6 +368,9 @@ export function Importer() {
           {!running && <Upload className="h-4 w-4" />}
           Import {valid.length} candidates
         </Button>
+        <div className="w-full">
+          <InviteCheckbox checked={invite} onChange={setInvite} label="Send portal invite to newly added candidates (only new ones with an email)" />
+        </div>
       </Card>
 
       {running && (
