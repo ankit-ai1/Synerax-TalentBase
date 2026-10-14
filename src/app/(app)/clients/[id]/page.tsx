@@ -11,6 +11,7 @@ import { JobRow, JOB_LIST_SELECT } from "@/components/jobs/job-row";
 import { DeleteClientButton } from "@/components/clients/delete-client";
 import { MessageButton } from "@/components/chat/message-button";
 import { formatDate, inr, lpa, waLink } from "@/lib/utils";
+import { displayPhone, telHref } from "@/lib/phone";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
@@ -163,8 +164,8 @@ export default async function ClientPage({ params }: { params: Promise<{ id: str
                           </a>
                         )}
                         {p.phone && (
-                          <a href={`tel:${p.phone}`} className="flex items-center gap-2 text-jade-700 hover:underline">
-                            <Phone className="h-4 w-4 text-ink-400" /> {p.phone}
+                          <a href={telHref(p.phone)} className="flex items-center gap-2 text-jade-700 hover:underline">
+                            <Phone className="h-4 w-4 text-ink-400" /> {displayPhone(p.phone)}
                           </a>
                         )}
                         {wa && (

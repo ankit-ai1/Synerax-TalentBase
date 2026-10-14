@@ -61,7 +61,7 @@ export async function GET(req: Request) {
     });
     // mark even when skipped (e.g. turned off) so we don't re-check the same pair every 5 minutes
     await admin.rpc("chat_mark_emailed", { p_conversation: t.conversation_id, p_user: t.user_id });
-    if (res.status === "sent") sent++;
+    if (res.status === "sent" || res.status === "queued") sent++;
   }
   return Response.json({ ok: true, candidates: targets.length, sent });
 }

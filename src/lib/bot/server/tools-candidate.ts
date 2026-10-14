@@ -3,6 +3,7 @@ import type { BotCard, BotTurn } from "../types";
 import { defineTool, P, type BotCtx } from "./registry";
 import { remainder } from "./entities";
 import { makeMatcher, pick, plural } from "./text";
+import { parseProfileIncomplete, type ProfileGap } from "@/lib/utils";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -14,6 +15,15 @@ async function rpc<T = any>(ctx: BotCtx, fn: string, args?: Record<string, unkno
   const { data, error } = await ctx.sb.rpc(fn, args);
   if (error) throw new Error(error.message);
   return data as T;
+}
+
+/** "Complete your profile (72% → 80%) to apply" with the missing items */
+function profileGapTurn(gap: ProfileGap) {
+  const list = gap.missing.slice(0, 5).map((m) => m.label).join(", ");
+  return {
+    text: `Your profile is ${gap.percent}% complete — you need ${gap.threshold}% to apply in one click.${list ? ` Still missing: ${list}.` : ""}`,
+    link: { label: "Complete my profile", href: "/portal/profile" },
+  };
 }
 
 const appCard = (a: any): BotCard => ({
@@ -228,10 +238,20 @@ export const applyToJob = defineTool({
     const r = await resolveJob(ctx, p.job_id || p.job);
     if (!r.job) return { turns: [{ text: r.error!, chips: [{ label: "Jobs for me", tool: "recommended_jobs" }] }] };
     if (r.job.applied || r.job.application_id) return { turns: [{ text: `You've already applied to ${r.job.title}.`, chips: [{ label: "My applications", tool: "my_applications" }] }] };
+    const comp = (await rpc(ctx, "candidate_my_profile"))?.completion;
+    const min = comp?.threshold ?? 80;
+    if (comp && comp.percent < min) return { turns: [profileGapTurn({ percent: comp.percent, threshold: min, missing: comp.missing ?? [] })] };
     return { params: { job_id: r.job.id }, confirm: { title: `Apply to ${r.job.title}?`, details: [[r.job.company, where(r.job)].filter(Boolean).join(" · "), "Your current profile and CV go to the Synerax recruiter for this role."], confirmLabel: "Apply" } };
   },
   async execute(p, ctx) {
-    const id = await rpc<string>(ctx, "candidate_apply", { p_job: p.job_id });
+    let id: string;
+    try {
+      id = await rpc<string>(ctx, "candidate_apply", { p_job: p.job_id });
+    } catch (e) {
+      const gap = parseProfileIncomplete(e instanceof Error ? e.message : "");
+      if (gap) return [profileGapTurn(gap)];
+      throw e;
+    }
     ctx.defer(async () => (await import("@/lib/email/notify-events")).onCandidateApplied(id));
     return [{ text: "Done — you've applied. Your recruiter will review it and you can track it under My applications.", tone: "success", chips: [{ label: "My applications", tool: "my_applications" }, { label: "More jobs", tool: "recommended_jobs" }] }];
   },

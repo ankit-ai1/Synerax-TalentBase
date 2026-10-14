@@ -9,7 +9,7 @@ import { ENQUIRY_TYPES, HIRING_TYPES } from "@/lib/lead-options";
 import { cn } from "@/lib/utils";
 import { PhoneInput } from "@/components/ui/phone-field";
 
-type LeadType = "contact" | "employer" | "candidate";
+type LeadType = "contact" | "employer";
 
 type Field = {
   name: string;
@@ -39,7 +39,8 @@ const CONTACT_FIELDS: Field[] = [
   { name: "message", label: "Message", type: "textarea", required: true, full: true, placeholder: "How can we help?" },
 ];
 
-const STEPS: Record<"employer" | "candidate", { title: string; fields: Field[] }[]> = {
+// candidates register through the shared CandidateRegistrationForm (/register, careers page) — not a lead form
+const STEPS: Record<"employer", { title: string; fields: Field[] }[]> = {
   employer: [
     {
       title: "Company",
@@ -65,41 +66,12 @@ const STEPS: Record<"employer" | "candidate", { title: string; fields: Field[] }
       fields: [{ ...F.name, label: "Your name", full: true }, F.workEmail, F.phone],
     },
   ],
-  candidate: [
-    {
-      title: "About you",
-      fields: [F.name, F.email, F.phone, { name: "city", label: "Current city", required: true, autoComplete: "address-level2" }],
-    },
-    {
-      title: "Experience",
-      fields: [
-        { name: "currentRole", label: "Current role", required: true, placeholder: "e.g. QA Engineer" },
-        { name: "experience", label: "Total experience (years)", required: true, placeholder: "e.g. 4.5" },
-        { name: "skills", label: "Key skills", required: true, full: true, placeholder: "e.g. Java, Spring Boot, SQL, AWS" },
-      ],
-    },
-    {
-      title: "Resume",
-      fields: [
-        {
-          name: "resumeUrl",
-          label: "Resume link",
-          type: "url",
-          full: true,
-          placeholder: "https://drive.google.com/…",
-          hint: "Share a Google Drive / Dropbox / LinkedIn link. No link? Mention it below and we'll ask for your resume on our call.",
-        },
-        { name: "message", label: "Note (optional)", type: "textarea", full: true, placeholder: "Preferred roles, notice period, expected CTC…" },
-      ],
-    },
-  ],
 };
 
-const SUBMIT: Record<LeadType, string> = { contact: "Send message", employer: "Request talent", candidate: "Submit profile" };
+const SUBMIT: Record<LeadType, string> = { contact: "Send message", employer: "Request talent" };
 const SUCCESS: Record<LeadType, { title: string; text: string }> = {
   contact: { title: "Thanks — message received", text: "Our team will get back to you within one working day." },
   employer: { title: "Thanks — requirement received", text: "A Synerax account manager will call you within one working day." },
-  candidate: { title: "Thanks — profile received", text: "A recruiter will reach out when a matching role opens up." },
 };
 
 function FieldInput({ f, uid }: { f: Field; uid: string }) {
@@ -206,7 +178,7 @@ function Consent() {
   );
 }
 
-const shell = "glass relative rounded-[28px] p-6 shadow-pop sm:p-8";
+export const shell = "glass relative rounded-[28px] p-6 shadow-pop sm:p-8";
 
 /** Single-step form (contact page) */
 export function LeadForm({ type = "contact", className }: { type?: "contact"; className?: string }) {
@@ -261,8 +233,8 @@ export function LeadForm({ type = "contact", className }: { type?: "contact"; cl
   );
 }
 
-/** Multi-step form with step indicator + progress bar (employers, careers) */
-export function MultiStepLeadForm({ type, className }: { type: "employer" | "candidate"; className?: string }) {
+/** Multi-step form with step indicator + progress bar (employers) */
+export function MultiStepLeadForm({ type, className }: { type: "employer"; className?: string }) {
   const uid = useId();
   const steps = STEPS[type];
   const [step, setStep] = useState(0);

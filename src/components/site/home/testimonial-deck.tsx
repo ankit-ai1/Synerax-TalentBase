@@ -49,7 +49,7 @@ function Card({ t, idx, top }: { t: T; idx: number; top: boolean }) {
   return (
     <figure className={cn("flex h-full flex-col rounded-[28px] border border-line bg-surface p-7 shadow-[0_30px_70px_-30px_rgb(var(--deep)/0.45)] sm:p-9", top && "deck-top")}>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <span className="flex gap-0.5 text-success" aria-label={`${t.rating} out of 5 stars`}>
+        <span className="flex gap-0.5 text-success" role="img" aria-label={`${t.rating} out of 5 stars`}>
           {Array.from({ length: 5 }).map((_, i) => (
             <Star key={i} className={cn("h-[18px] w-[18px]", i < t.rating ? "fill-current" : "opacity-30")} aria-hidden />
           ))}

@@ -1,9 +1,10 @@
 /**
- * Phone numbers with a country code.
- * Storage format (backwards compatible):
- *   • India (+91): the 10-digit national number, as before — e.g. "9876543210"
- *   • every other country: "+<dial code> <national number>" — e.g. "+971 501234567"
+ * Phone numbers for every country (libphonenumber-js, full metadata).
+ * Storage format: E.164 — e.g. "+919876543210", "+971501744908".
+ * Older rows may still hold a bare Indian 10-digit number ("9876543210"); every helper here reads both.
  */
+import { AsYouType, getCountryCallingCode, isSupportedCountry, parsePhoneNumberFromString, type CountryCode } from "libphonenumber-js/max";
+
 export type Country = { iso: string; name: string; dial: string };
 
 // [ISO 3166-1 alpha-2, name, international dialling code]
@@ -60,59 +61,138 @@ const RAW: [string, string, string][] = [
 ];
 
 export const COUNTRIES: Country[] = RAW.map(([iso, name, dial]) => ({ iso, name, dial }));
-/** shown first in the dropdown (where most of our candidates and clients are) */
-export const PINNED = ["IN", "AE", "SA", "QA", "US", "GB", "SG", "AU", "CA"];
-/** which country a shared code resolves to when we only know the code */
-const PREFERRED: Record<string, string> = { "1": "US", "7": "RU", "44": "GB", "39": "IT", "47": "NO", "61": "AU", "212": "MA", "262": "RE", "358": "FI", "590": "GP", "599": "CW" };
+/** shown first in the picker (where most of our candidates and clients are) */
+export const PINNED = ["IN", "AE", "SA", "QA", "OM", "KW", "BH", "SG", "US", "GB"];
 export const DEFAULT_COUNTRY = "IN";
 
 export const byIso = (iso: string) => COUNTRIES.find((c) => c.iso === iso) ?? COUNTRIES.find((c) => c.iso === DEFAULT_COUNTRY)!;
-export const flag = (iso: string) => String.fromCodePoint(...[...iso.toUpperCase()].map((ch) => 0x1f1a5 + ch.charCodeAt(0)));
+/** SVG flag (public/flags, from country-flag-icons) — emoji flags don't render on Windows */
+export const flagSrc = (iso: string) => `/flags/${iso.toUpperCase()}.svg`;
 
-const DIALS = [...new Set(COUNTRIES.map((c) => c.dial))].sort((a, b) => b.length - a.length);
 const onlyDigits = (s: string) => s.replace(/\D/g, "");
+const asCode = (iso: string) => (isSupportedCountry(iso) ? (iso as CountryCode) : (DEFAULT_COUNTRY as CountryCode));
+const DIALS = [...new Set(COUNTRIES.map((c) => c.dial))].sort((a, b) => b.length - a.length);
+const PREFERRED: Record<string, string> = { "1": "US", "7": "RU", "44": "GB", "39": "IT", "47": "NO", "61": "AU", "212": "MA", "262": "RE", "358": "FI", "590": "GP", "599": "CW" };
 
-/** split any stored/typed value into country + national digits */
-export function parsePhone(value: string | null | undefined, fallbackIso = DEFAULT_COUNTRY): { iso: string; national: string } {
-  const v = String(value ?? "").trim();
-  if (!v) return { iso: fallbackIso, national: "" };
-  const intl = v.startsWith("+") ? onlyDigits(v) : v.startsWith("00") ? onlyDigits(v).slice(2) : null;
-  if (intl) {
-    const dial = DIALS.find((d) => intl.startsWith(d));
-    if (dial) {
-      const iso = fallbackIso !== DEFAULT_COUNTRY && byIso(fallbackIso).dial === dial ? fallbackIso : PREFERRED[dial] ?? COUNTRIES.find((c) => c.dial === dial)!.iso;
-      return { iso, national: intl.slice(dial.length) };
-    }
-  }
-  // no code → Indian number (strip a leading 0 / 91)
-  const d = onlyDigits(v);
-  return { iso: DEFAULT_COUNTRY, national: d.length === 12 && d.startsWith("91") ? d.slice(2) : d.length === 11 && d.startsWith("0") ? d.slice(1) : d };
+/** "+971…", "00971…" → "+971…"; anything else unchanged */
+const intl = (v: string) => (v.startsWith("00") ? "+" + v.slice(2) : v);
+
+/** parse a stored or typed value; numbers without a code are read as `defaultIso` (India) */
+export function parse(value: string | null | undefined, defaultIso = DEFAULT_COUNTRY) {
+  const v = intl(String(value ?? "").trim());
+  if (!v) return undefined;
+  return parsePhoneNumberFromString(v, asCode(defaultIso));
 }
 
-/** the value we store */
+/** split into country + national digits (also works for half-typed numbers) */
+export function parsePhone(value: string | null | undefined, fallbackIso = DEFAULT_COUNTRY): { iso: string; national: string } {
+  const v = intl(String(value ?? "").trim());
+  if (!v) return { iso: fallbackIso, national: "" };
+  const p = parse(v, fallbackIso);
+  if (p?.country) return { iso: p.country, national: p.nationalNumber };
+  if (v.startsWith("+")) {
+    const d = onlyDigits(v);
+    const dial = p?.countryCallingCode ?? DIALS.find((x) => d.startsWith(x));
+    if (dial) {
+      const iso = byIso(fallbackIso).dial === dial ? fallbackIso : PREFERRED[dial] ?? COUNTRIES.find((c) => c.dial === dial)?.iso ?? fallbackIso;
+      return { iso, national: d.slice(dial.length) };
+    }
+  }
+  return { iso: fallbackIso, national: p?.nationalNumber ?? onlyDigits(v) };
+}
+
+/** the value we store: E.164 when it parses, otherwise "+<code><digits>" */
 export function formatPhone(iso: string, national: string) {
   const n = onlyDigits(national);
   if (!n) return "";
-  return iso === "IN" ? n : `+${byIso(iso).dial} ${n}`;
+  const p = parsePhoneNumberFromString(n, asCode(iso));
+  return p ? p.number : `+${byIso(iso).dial}${n}`;
 }
 
-/** normalise anything typed (e.g. "+91 98765-43210", "+971501234567") to the stored format */
-export const normalizePhone = (value: string | null | undefined) => {
-  const p = parsePhone(value);
-  return formatPhone(p.iso, p.national);
-};
-
-/** India: 10 digits starting 6–9. Other countries: 4–14 digits after the code. */
-export function isValidPhone(value: string | null | undefined) {
-  const p = parsePhone(value);
-  if (!p.national) return false;
-  return p.iso === "IN" ? /^[6-9]\d{9}$/.test(p.national) : /^\d{4,14}$/.test(p.national);
+/** normalise anything typed or stored ("98765 43210", "+971 50 174 4908", "00971…") to E.164 */
+export function normalizePhone(value: string | null | undefined, defaultIso = DEFAULT_COUNTRY) {
+  const v = String(value ?? "").trim();
+  if (!v) return "";
+  const p = parse(v, defaultIso);
+  return p ? p.number : v;
 }
 
-/** human-readable: "+91 98765 43210" / "+971 501234567" */
+/** valid mobile or fixed-line number for its country (bare numbers are read as Indian) */
+export function isValidPhone(value: string | null | undefined, defaultIso = DEFAULT_COUNTRY) {
+  return !!parse(value, defaultIso)?.isValid();
+}
+
+/** inline message for an invalid number, or null when it's fine / empty */
+export function phoneError(value: string | null | undefined, iso?: string) {
+  if (!String(value ?? "").trim()) return null;
+  if (isValidPhone(value, iso)) return null;
+  const country = byIso(parse(value, iso)?.country ?? iso ?? parsePhone(value).iso);
+  return `Enter a valid mobile number for ${country.name}`;
+}
+
+/** human-readable international format: "+971 50 174 4908", "+91 98765 43210" */
 export function displayPhone(value: string | null | undefined) {
-  const p = parsePhone(value);
-  if (!p.national) return "";
-  const n = p.iso === "IN" && p.national.length === 10 ? `${p.national.slice(0, 5)} ${p.national.slice(5)}` : p.national;
-  return `+${byIso(p.iso).dial} ${n}`;
+  const v = String(value ?? "").trim();
+  if (!v) return "";
+  const p = parse(v);
+  return p ? p.formatInternational() : v;
+}
+
+/** "tel:+971501744908" */
+export function telHref(value: string | null | undefined) {
+  const n = normalizePhone(value);
+  return n ? `tel:${n.startsWith("+") ? n : onlyDigits(n)}` : undefined;
+}
+
+/** digits for wa.me (full international number, no "+") */
+export function waNumber(value: string | null | undefined) {
+  const n = normalizePhone(value);
+  return n.startsWith("+") ? onlyDigits(n) : "";
+}
+
+/** format progressively while typing (national part only) */
+export function formatAsYouType(iso: string, national: string) {
+  return new AsYouType(asCode(iso)).input(national);
+}
+
+export const dialCode = (iso: string) => (isSupportedCountry(iso) ? getCountryCallingCode(iso as CountryCode) : byIso(iso).dial);
+
+/** values a number may be stored as (E.164, and the bare 10-digit form older Indian rows used) — for duplicate checks */
+export function phoneVariants(value: string | null | undefined) {
+  const e164 = normalizePhone(value);
+  if (!e164) return [];
+  const out = new Set([e164]);
+  if (e164.startsWith("+91") && e164.length === 13) out.add(e164.slice(3));
+  return [...out];
+}
+
+/** phone-like search text ("+971 50 174 4908", "98765-43210") → national digits to match stored numbers; null otherwise */
+export function phoneSearchDigits(q: string | null | undefined) {
+  const t = String(q ?? "").trim();
+  if (!/^[\d\s()+.-]+$/.test(t) || (t.match(/\d/g)?.length ?? 0) < 4) return null;
+  return parsePhone(t).national || null;
+}
+
+/**
+ * Best guess for numbers from CVs / spreadsheets: an explicit code wins ("+971…", "00971…");
+ * otherwise Indian when it is a valid Indian number; otherwise digits that already start with a country code.
+ */
+export function normalizeLoosePhone(value: string | null | undefined) {
+  const v = String(value ?? "").trim();
+  if (!v) return "";
+  if (/^(\+|00)/.test(v)) return normalizePhone(v);
+  if (isValidPhone(v, "IN")) return normalizePhone(v, "IN");
+  const d = onlyDigits(v);
+  if (d.length >= 8 && isValidPhone("+" + d)) return normalizePhone("+" + d);
+  return normalizePhone(v, "IN");
+}
+
+/** a number found in a CV: "+<code>" / "00<code>" is parsed for that country; otherwise only Indian mobiles (+91 / 91 / 0 prefixes) */
+export function cvPhone(raw: string): string | null {
+  const t = raw.trim();
+  if (/^(\+|00)/.test(t)) return isValidPhone(t) ? normalizePhone(t) : null;
+  let d = onlyDigits(t);
+  if (d.length === 12 && d.startsWith("91")) d = d.slice(2);
+  else if (d.length === 11 && d.startsWith("0")) d = d.slice(1);
+  return /^[6-9]\d{9}$/.test(d) ? `+91${d}` : null;
 }

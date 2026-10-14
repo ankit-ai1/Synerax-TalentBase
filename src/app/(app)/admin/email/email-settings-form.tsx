@@ -56,7 +56,8 @@ export function EmailSettingsForm({
     const out = await res.json().catch(() => ({}));
     setTesting(false);
     if (!res.ok) return toast.error(out.error ?? "Could not send the test email");
-    toast.success(`Test email sent to ${testTo}`);
+    if (out.queued) toast.message(out.note ?? "Test email queued");
+    else toast.success(`Test email sent to ${testTo}`);
     router.refresh();
   }
 

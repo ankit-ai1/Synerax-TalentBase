@@ -119,15 +119,28 @@ Open http://localhost:3000 → sign in with the admin email/password from Step 1
 
 > Note: Vercel's free **Hobby** plan is officially for non-commercial use. Small internal teams do use it, but if you want to stay strictly compliant, **Netlify**'s free plan (commercial use allowed) runs the same code — no changes needed.
 
-### Step 5 — Free daily backup (important)
+### Step 5 — Backups, restore test & email worker (GitHub Actions, free)
 
-The Supabase free plan has no automatic backups, and a project is paused after 7 days without activity. `.github/workflows/backup.yml` solves both problems:
+The Supabase free plan has no automatic backups, and a project is paused after 7 days without activity. Three workflows in `.github/workflows/` take care of this:
 
-1. Supabase → **Connect** (top bar) → copy the **Session pooler** connection string (with your password filled in).
-2. GitHub repo → **Settings → Secrets and variables → Actions → New secret**: name `SUPABASE_DB_URL`, value = that string.
-3. A backup now runs every night at 2 AM (download it from the repo → Actions tab for up to 90 days).
+| Workflow | When | What |
+| --- | --- | --- |
+| `backup.yml` — *Daily DB backup* | 02:00 IST | `pg_dump` of `public` + `auth` + `storage` (custom format) + a row-count manifest, GPG-encrypted. Kept **30 days** as an artifact **and** in the Drive folder *Synerax DB Backups* (older Drive copies are deleted). Logged on **Admin → Backups**; a failure alerts every admin (in-app + email). |
+| `restore-test.yml` — *Weekly restore test* | Sunday 03:00 IST | Downloads the latest backup, decrypts it, restores it into a temporary Postgres (same major version as production) and checks tables, row counts (±5%), latest timestamps and functions. PASS / FAIL on Admin → Backups; FAIL alerts admins. |
+| `email-cron.yml` — *Email queue* | every 10 min | Calls `/api/cron/email`: retries queued emails, sends quota alerts, reads bounces. |
 
-To restore: `pg_restore --no-owner -d "<DB_URL>" backup.dump`
+**GitHub repo → Settings → Secrets and variables → Actions → New repository secret:**
+
+| Secret | Value |
+| --- | --- |
+| `SUPABASE_DB_URL` | Supabase → **Connect** → **Session pooler** URI (port 5432) with your DB password filled in |
+| `BACKUP_PASSPHRASE` | A long random passphrase (`openssl rand -base64 32`). **Store it in a password manager — without it the backups can't be opened.** |
+| `BACKUP_DRIVE_FOLDER_ID` | Create a Drive folder *Synerax DB Backups* (in the same Google account as the CV storage) and copy the id from its URL (`drive.google.com/drive/folders/<id>`) |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REFRESH_TOKEN` | Same values as in Vercel (Step 2) — used to upload the backup to Drive |
+| `APP_URL` | Your live URL, e.g. `https://staffing.synerax.in` (no trailing slash) |
+| `CRON_SECRET` | Same value as in Vercel |
+
+Then run each workflow once by hand: **Actions → Daily DB backup → Run workflow**, then **Weekly restore test → Run workflow**. Both results appear on **Admin → Backups**. Full restore steps (new project or same project, including logins): **[docs/RESTORE.md](docs/RESTORE.md)**.
 
 ### Updating an existing database to English text
 
@@ -143,7 +156,7 @@ Re-running `supabase/schema.sql` safely updates every function (including the En
 | Client | `/login` | `/client` | Staff create it: Clients → a client → **Portal access** (the login email is sent automatically) |
 | Candidate | `/login` | `/portal` | Self sign-up at `/register` (email verification required) |
 
-Existing databases: run `supabase/migrations/003_portals.sql` in the SQL Editor (safe to re-run any time).
+Existing databases: run `supabase/migrations/003_portals.sql` in the SQL Editor (safe to re-run any time), then the newer migrations in order: `007_phone_e164.sql` (international phones), `008_apply_rules.sql` (80 % profile completion to apply — change it in **Admin → App settings**), `009_backups.sql`, `010_email_queue.sql`.
 
 ### Supabase settings (one time)
 
@@ -165,9 +178,18 @@ All emails go out over plain SMTP (Gmail with an app password, Zoho, Brevo, Rese
 | `MAIL_FROM` | `hr@yourdomain.com` | Must be allowed by the SMTP account |
 | `SYNERAX_NOTIFY_EMAILS` | `hr@yourdomain.com,ops@yourdomain.com` | Team inboxes (can also be set in the app) |
 | `NEXT_PUBLIC_SITE_URL` | `https://synerax-talent-base.vercel.app` | Used for links inside emails |
-| `CRON_SECRET` | long random string | Protects the daily job |
+| `CRON_SECRET` | long random string | Protects the cron endpoints (daily job, email worker, backup log). Also a GitHub secret (Step 5). |
+| `IMAP_HOST` / `IMAP_PORT` / `IMAP_USER` / `IMAP_PASS` | `imap.gmail.com` / `993` / sender address / app password | Optional — reads bounce messages ("Mail Delivery Subsystem") from the sender's mailbox and marks those emails *bounced*. Gmail: enable IMAP in Gmail settings; the SMTP app password works. |
+| `ALERT_SMTP_HOST` / `ALERT_SMTP_PORT` / `ALERT_SMTP_USER` / `ALERT_SMTP_PASS` / `ALERT_MAIL_FROM` | a second SMTP account | Optional but recommended — quota / backup / failure alerts are sent through it, because the main account may be the one that's blocked. Without it, alerts use the main account. |
+| `EMAIL_LINK_SECRET` | long random string | Optional — signs tracked links in emails (defaults to `CRON_SECRET`) |
 
-Then open **Admin → Email settings** to send a test email, change the sender name and team inboxes, switch individual emails on/off, and see the full email log (sent / failed / skipped).
+Then open **Admin → Email settings** to send a test email, change the sender name and team inboxes, switch individual emails on/off, and see the full email log.
+
+**Queue, analytics & quota** (run `supabase/migrations/010_email_queue.sql` first):
+
+- Every email is a row in `emails` (queued → sending → sent / failed / bounced). It's sent immediately when the quota allows; otherwise `/api/cron/email` (every 10 min, `email-cron.yml`) sends it later, retrying failures with exponential backoff (1, 2, 4, 8… min, 5 attempts).
+- **Admin → Email analytics**: date range, totals, delivered / failed / bounced / queued, opens & open rate, clicks & CTR, per-day chart, per-template breakdown, failures with errors, CSV export. *Delivered = accepted by the mail server; opens are approximate* (many mail apps block or pre-load images).
+- **Quota**: set the provider, daily limit (default 2,000), rolling window (24 h), alert thresholds (80 % / 90 %) and extra alert recipients on the same page. Admins get an in-app + email alert at each threshold (once per window), when the limit is reached, and after 5 failed sends in a row or an SMTP "limit" error. At the limit nothing is lost — emails stay queued and go out automatically when the window frees up capacity. (A switch to an alternate sender account is prepared in `src/lib/email/queue.ts` → `pickSender()`.)
 
 - Emails never block the action that triggered them; failures are logged, not shown to users.
 - Each event is sent once (deduplicated), and every email also creates an in-app notification (bell icon).
@@ -278,7 +300,10 @@ src/components/shell/        ← sidebar, topbar, Ctrl+K palette
 src/components/dialogs/      ← interview, task, shortlist, message, stage dialogs
 src/lib/drive.ts             ← Google Drive helper
 scripts/get-google-refresh-token.mjs
-.github/workflows/backup.yml ← daily DB backup
+.github/workflows/backup.yml ← daily encrypted DB backup (30 days, artifact + Drive)
+.github/workflows/restore-test.yml ← weekly restore drill
+.github/workflows/email-cron.yml ← email queue worker every 10 min
+docs/RESTORE.md ← how to restore
 ```
 
 ## Common problems

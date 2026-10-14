@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, Card, EmptyState, ScoreRing, Skeleton, StatusBadge } from "@/components/ui/misc";
 import { Checkbox } from "@/components/ui/interactive";
 import { cn, friendlyError, lpa, noticeLabel, years } from "@/lib/utils";
+import { warnBelowThreshold } from "@/lib/override-warning";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const PARTS: { key: string; label: string; weight: string }[] = [
@@ -48,6 +49,7 @@ export function Matches({ jobId }: { jobId: string }) {
     setAdding(false);
     if (error) return toast.error(friendlyError(error.message));
     toast.success(`${data} candidate(s) added to pipeline`);
+    warnBelowThreshold(jobId, ids);
     setItems((l) => (l ?? []).filter((x) => !ids.includes(x.id)));
     setSel([]);
     router.refresh();

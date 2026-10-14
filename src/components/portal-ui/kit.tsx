@@ -5,6 +5,7 @@
 import Link from "next/link";
 import { ChevronRight, MapPin, Phone, Video, type LucideIcon } from "lucide-react";
 import { cn, initials } from "@/lib/utils";
+import { waNumber } from "@/lib/phone";
 
 // ---------------------------------------------------------------- time (always IST)
 const IST = "Asia/Kolkata";
@@ -175,7 +176,7 @@ export function Avatar({ name, src, size = 40, className, ring }: { name: string
 }
 
 // ---------------------------------------------------------------- match ring / progress
-export function MatchRing({ value, size = 52, stroke = 5, label = "match", className }: { value: number | null | undefined; size?: number; stroke?: number; label?: string | null; className?: string }) {
+export function MatchRing({ value, size = 52, stroke = 5, label = "match", className, marker }: { value: number | null | undefined; size?: number; stroke?: number; label?: string | null; className?: string; /** small dot on the ring at this % (e.g. the apply threshold) */ marker?: number }) {
   if (value === null || value === undefined) return null;
   const r = (size - stroke) / 2;
   const c = 2 * Math.PI * r;
@@ -185,6 +186,16 @@ export function MatchRing({ value, size = 52, stroke = 5, label = "match", class
       <svg width={size} height={size} className="-rotate-90" aria-hidden>
         <circle cx={size / 2} cy={size / 2} r={r} fill="none" strokeWidth={stroke} className="stroke-surface-3" />
         <circle cx={size / 2} cy={size / 2} r={r} fill="none" strokeWidth={stroke} strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c * (1 - value / 100)} className={cn(color, "transition-[stroke-dashoffset] duration-1000")} />
+        {marker != null && (
+          <circle
+            cx={size / 2 + r * Math.cos((2 * Math.PI * marker) / 100)}
+            cy={size / 2 + r * Math.sin((2 * Math.PI * marker) / 100)}
+            r={stroke * 0.42}
+            className="fill-ink-900 stroke-surface"
+            strokeWidth={1.5}
+            data-testid="ring-marker"
+          />
+        )}
       </svg>
       <span className="absolute inset-0 flex flex-col items-center justify-center leading-none">
         <span className="font-semibold tabular text-ink-900" style={{ fontSize: Math.max(10, size * 0.27) }}>
@@ -351,10 +362,9 @@ export function PrimaryLink({ href, children, className, variant = "primary" }: 
   );
 }
 
-/** WhatsApp deep link for an Indian number */
+/** WhatsApp deep link (full international number; bare 10-digit numbers are Indian) */
 export const waLink = (phone: string | null | undefined, text?: string) => {
-  const digits = (phone ?? "").replace(/\D/g, "");
-  if (!digits) return null;
-  const n = digits.length === 10 ? `91${digits}` : digits;
+  const n = waNumber(phone);
+  if (!n) return null;
   return `https://wa.me/${n}${text ? `?text=${encodeURIComponent(text)}` : ""}`;
 };

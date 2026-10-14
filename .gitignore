@@ -11,3 +11,6 @@ next-env.d.ts
 
 # All env files
 .env*
+
+# baseline build for before/after performance comparisons
+.next-base

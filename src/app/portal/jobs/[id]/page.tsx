@@ -5,7 +5,7 @@ import { requireRole } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { loadMyProfile } from "@/lib/portal-data";
 import { expRange, salaryLabel, type CandidateJobDetail } from "@/lib/portal-types";
-import { ApplyButton } from "@/components/portal/apply-button";
+import { ApplyButton, ApplyGateNotice } from "@/components/portal/apply-button";
 import { SaveJobButton } from "@/components/portal/ui";
 import { ProfileMissing } from "@/components/portal/profile-missing";
 import { Bar, EmptyState, Fact, Hero, MatchRing, Section, SkillChip, TimeAgo } from "@/components/portal-ui/kit";
@@ -184,6 +184,7 @@ export default async function PortalJobPage({ params }: { params: Promise<{ id: 
                 <ApplyButton jobId={job.id} applied={applied} completion={me.completion} className="flex-1" />
                 <SaveJobButton jobId={job.id} saved={job.saved} className="h-12 w-12" />
               </div>
+              {!applied && <ApplyGateNotice completion={me.completion} className="mt-3" />}
               <p className="mt-3 text-center text-[12px] text-ink-500">
                 {applied ? (
                   <Link href="/portal/applications" className="font-medium text-jade-700 hover:underline">
@@ -234,6 +235,7 @@ export default async function PortalJobPage({ params }: { params: Promise<{ id: 
 
       {/* sticky apply bar on phones/tablets */}
       <div className="fixed inset-x-0 bottom-[60px] z-30 border-t border-line bg-surface/95 px-4 py-3 backdrop-blur lg:hidden">
+        {!applied && <ApplyGateNotice completion={me.completion} compact className="mx-auto mb-2 max-w-xl" />}
         <div className="mx-auto flex max-w-xl items-center gap-2">
           <ApplyButton jobId={job.id} applied={applied} completion={me.completion} className="h-11 flex-1" />
           <SaveJobButton jobId={job.id} saved={job.saved} className="h-11 w-11" />

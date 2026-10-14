@@ -8,6 +8,8 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, Progress } from "@/components/ui/misc";
 import { cn } from "@/lib/utils";
+import { normalizeLoosePhone } from "@/lib/phone";
+import { checkImportRow } from "@/lib/candidate-schema";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 type Field = { key: string; label: string; synonyms: string[]; required?: boolean; kind?: "number" | "date" | "text" };
@@ -112,7 +114,8 @@ function buildRow(raw: string[], map: Record<number, string>) {
     r.last_name = parts.length > 1 ? parts.slice(1).join(" ") : r.last_name ?? "";
   }
   delete r.full_name;
-  if (r.phone) r.phone = r.phone.replace(/[^0-9+]/g, "").replace(/^\+?91(?=\d{10}$)/, "");
+  // any country; numbers without a code are read as Indian
+  for (const k of ["phone", "alt_phone", "whatsapp"]) if (r[k]) r[k] = normalizeLoosePhone(r[k]);
   if (r.email) r.email = r.email.toLowerCase();
   if (r.gender) r.gender = /^f/i.test(r.gender) ? "Female" : /^m/i.test(r.gender) ? "Male" : r.gender;
   return r;
@@ -158,7 +161,8 @@ export function Importer() {
   }
 
   const built = useMemo(() => rows.map((r) => buildRow(r, map)), [rows, map]);
-  const valid = built.filter((r) => r.first_name && (r.email || r.phone));
+  // same rules as registration / the staff form (src/lib/candidate-schema.ts)
+  const valid = built.filter((r) => !checkImportRow(r));
   const invalid = built.length - valid.length;
   const mappedKeys = new Set(Object.values(map).filter(Boolean));
   const hasName = mappedKeys.has("first_name") || mappedKeys.has("full_name");
@@ -285,7 +289,7 @@ export function Importer() {
         <CheckCircle2 className="mx-auto h-12 w-12 text-jade" />
         <p className="mt-4 text-2xl font-semibold text-ink-900">{result.imported} candidates imported</p>
         <p className="mt-1 text-sm text-ink-500">
-          {result.failed + invalid > 0 ? `${result.failed + invalid} rows skipped (duplicate or missing name/contact)` : "All rows imported successfully."}
+          {result.failed + invalid > 0 ? `${result.failed + invalid} rows skipped (duplicate, invalid email/phone or missing name/contact)` : "All rows imported successfully."}
         </p>
         {result.errors.length > 0 && (
           <div className="mt-6 max-h-56 overflow-y-auto rounded-xl border border-line text-left">
@@ -354,7 +358,7 @@ export function Importer() {
       {(!hasName || invalid > 0) && (
         <div className="flex items-start gap-3 rounded-xl border border-saffron/40 bg-saffron-50 px-4 py-3 text-sm text-saffron-800">
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-          {!hasName ? "Map a name column (Full name or First name)." : `${invalid} rows are missing a name or both email and phone — they will be skipped.`}
+          {!hasName ? "Map a name column (Full name or First name)." : `${invalid} rows have a missing name, no email/phone, or an invalid email/phone — they will be skipped.`}
         </div>
       )}
 

@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Priority } from "@/components/ui/misc";
 import { Segmented } from "@/components/ui/interactive";
 import { cn, friendlyError } from "@/lib/utils";
+import { warnBelowThreshold } from "@/lib/override-warning";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export function AddToJobDialog({ candidateIds, onDone, onClose }: { candidateIds: string[]; onDone?: () => void; onClose: () => void }) {
@@ -45,6 +46,7 @@ export function AddToJobDialog({ candidateIds, onDone, onClose }: { candidateIds
     toast.success(`${added} candidate(s) added to pipeline${skipped ? ` (${skipped} already there)` : ""}`, {
       action: { label: "View pipeline", onClick: () => router.push(`/jobs/${jobId}`) },
     });
+    warnBelowThreshold(jobId, candidateIds);
     onDone?.();
     router.refresh();
     onClose();

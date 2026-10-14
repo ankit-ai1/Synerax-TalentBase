@@ -1,3 +1,5 @@
+import { phoneSearchDigits } from "@/lib/phone";
+
 export interface Filters {
   q: string;
   skills: string[];
@@ -101,7 +103,8 @@ export function toQueryString(f: Filters) {
 
 /** Payload for the RPC */
 export function toRpc(f: Filters, pageSize = 20) {
-  return { ...f, page: Number(f.page) || 1, page_size: pageSize };
+  // phone searches match with or without the country code / spaces
+  return { ...f, q: phoneSearchDigits(f.q) ?? f.q, page: Number(f.page) || 1, page_size: pageSize };
 }
 
 export function activeFilterCount(f: Filters) {

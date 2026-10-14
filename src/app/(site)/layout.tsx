@@ -4,7 +4,7 @@ import { MotionProvider } from "@/components/site/motion";
 import { SiteNavbar } from "@/components/site/navbar";
 import { SiteFooter } from "@/components/site/footer";
 import { RevealObserver } from "@/components/site/reveal";
-import { ScrollTopRing, SmoothScroll } from "@/components/site/effects";
+import { PauseOffscreen, ScrollTopRing, SmoothScroll } from "@/components/site/effects";
 import { RouteWipe } from "@/components/site/connection/global";
 import { ChatLauncher } from "@/components/chat/launcher";
 import { SiteIntro } from "@/components/site/intro";
@@ -24,6 +24,22 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image" },
 };
 
+/** Organization structured data for search engines and AI agents (not visible) */
+const ORG_JSON_LD = JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "EmploymentAgency",
+  name: site.name,
+  legalName: site.legalName,
+  description: site.description,
+  url: site.url,
+  logo: `${site.url}/logo.png`,
+  email: site.contact.email,
+  telephone: site.contact.phone,
+  address: { "@type": "PostalAddress", addressLocality: "Noida", addressCountry: "IN" },
+  areaServed: "IN",
+  sameAs: Object.values(site.social).filter((u) => typeof u === "string" && u.startsWith("http")),
+});
+
 /** Public marketing website — no login required */
 export default function SiteLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -36,6 +52,7 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
             <BrandMark size={84} />
           </span>
         </div>
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ORG_JSON_LD }} />
         <SiteNavbar />
         <main id="main" className="flex-1">
           {children}
@@ -43,6 +60,7 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
         <SiteFooter />
         <RevealObserver />
         <SmoothScroll />
+        <PauseOffscreen />
         <RouteWipe />
         <div className="grain" aria-hidden />
         <ScrollTopRing />

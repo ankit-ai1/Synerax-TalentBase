@@ -37,6 +37,8 @@ export const PUBLIC_PATHS = new Set([
   "/api/resume/parse",
   "/api/cron/daily",
   "/api/cron/chat-emails",
+  "/api/cron/email",
+  "/api/backups/log",
   "/api/bot",
   "/api/bot/confirm",
   "/robots.txt",
@@ -50,7 +52,8 @@ export function normalizePath(path: string) {
 
 export function isPublicPath(path: string) {
   const p = normalizePath(path);
-  return PUBLIC_PATHS.has(p) || p.startsWith("/opengraph-image") || p.startsWith("/apple-icon") || p.startsWith("/icon");
+  // /api/e/… = email open/click tracking (anyone who got the email, signed in or not)
+  return PUBLIC_PATHS.has(p) || p.startsWith("/api/e/") || p.startsWith("/opengraph-image") || p.startsWith("/apple-icon") || p.startsWith("/icon");
 }
 
 type Area = "public" | "portal" | "client" | "account" | "staff";

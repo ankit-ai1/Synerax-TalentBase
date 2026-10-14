@@ -37,7 +37,8 @@ import {
   WORK_MODES,
 } from "@/lib/constants";
 import { cn, fileSize, friendlyError } from "@/lib/utils";
-import { isValidPhone } from "@/lib/phone";
+import { normalizePhone } from "@/lib/phone";
+import { fieldErrors, staffCandidateSchema } from "@/lib/candidate-schema";
 import { PhoneField } from "@/components/ui/phone-field";
 import type { CandidateFields, CandidateFormData, JobRole, Skill } from "@/lib/types";
 import { CvAutofill, type CvKey, type CvSuggestion } from "@/components/resume/cv-autofill";
@@ -208,14 +209,9 @@ export function CandidateForm({
   );
 
   function validate() {
-    const e: Record<string, string> = {};
-    if (!c.first_name.trim()) e.first_name = "First name is required";
-    if (c.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(c.email.trim())) e.email = "Email is not in a valid format";
-    if (c.alt_email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(c.alt_email.trim())) e.alt_email = "Email is not in a valid format";
-    const phoneOk = (p: string) => !p || isValidPhone(p);
-    if (!phoneOk(c.phone)) e.phone = "Enter a valid mobile number";
-    if (!phoneOk(c.alt_phone)) e.alt_phone = "Invalid number";
-    if (!c.email.trim() && !c.phone.trim()) e.phone = "At least one of email or phone is required";
+    // core rules shared with self-registration (src/lib/candidate-schema.ts); staff-only checks below
+    const core = staffCandidateSchema.safeParse(c);
+    const e: Record<string, string> = core.success ? {} : fieldErrors(core.error);
     if (c.dob && new Date(c.dob) > new Date()) e.dob = "DOB can't be in the future";
     if (c.pan_number && !/^[A-Za-z]{5}[0-9]{4}[A-Za-z]$/.test(c.pan_number.trim())) e.pan_number = "PAN format: ABCDE1234F";
     if (c.current_pincode && !/^[0-9]{6}$/.test(c.current_pincode.trim())) e.current_pincode = "6 digit pincode";
@@ -235,10 +231,9 @@ export function CandidateForm({
   async function save() {
     if (!validate()) return;
     setSaving(true);
-    const supabase = createClient();
     const payload = {
       id: data.id ?? null,
-      candidate: c,
+      candidate: { ...c, phone: normalizePhone(c.phone), alt_phone: normalizePhone(c.alt_phone), whatsapp: normalizePhone(c.whatsapp) },
       skills: data.skills.map(({ skill_id, years, level, is_primary }) => ({ skill_id, years, level, is_primary })),
       job_roles: data.job_roles.map(({ job_role_id, is_primary }) => ({ job_role_id, is_primary })),
       experiences: data.experiences,
@@ -247,10 +242,16 @@ export function CandidateForm({
       projects: data.projects,
       references: data.references,
     };
-    const { data: id, error } = await supabase.rpc("save_candidate", { p: payload });
-    if (error || !id) {
+    // same server path + duplicate check as every other way a candidate is created
+    const res = await fetch("/api/candidates/save", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(payload) });
+    const out = (await res.json().catch(() => ({}))) as { id?: string; error?: string; fieldErrors?: Record<string, string> };
+    const id = out.id;
+    if (!res.ok || !id) {
       setSaving(false);
-      toast.error(friendlyError(error?.message));
+      if (out.fieldErrors && Object.keys(out.fieldErrors).length) {
+        setErrors((e) => ({ ...e, ...out.fieldErrors }));
+        document.getElementById(`f-${Object.keys(out.fieldErrors)[0]}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+      } else toast.error(out.error ?? "Could not save the candidate");
       return;
     }
 
@@ -386,15 +387,13 @@ export function CandidateForm({
               {err("alt_email")}
             </div>
             <div id="f-phone">
-              <CvField confidence={cvMeta.phone}><PhoneField label="Phone" value={c.phone} onChange={(v) => set("phone", v)} /></CvField>
-              {err("phone")}
+              <CvField confidence={cvMeta.phone}><PhoneField label="Phone" value={c.phone} onChange={(v) => set("phone", v)} error={errors.phone} /></CvField>
             </div>
             <div id="f-alt_phone">
-              <PhoneField label="Alternate phone" value={c.alt_phone} onChange={(v) => set("alt_phone", v)} />
-              {err("alt_phone")}
+              <PhoneField label="Alternate phone" value={c.alt_phone} onChange={(v) => set("alt_phone", v)} error={errors.alt_phone} />
             </div>
             <div>
-              <PhoneField label="WhatsApp" value={c.whatsapp} onChange={(v) => set("whatsapp", v)} />
+              <PhoneField label="WhatsApp" value={c.whatsapp} onChange={(v) => set("whatsapp", v)} error={errors.whatsapp} />
               {c.phone && !c.whatsapp && (
                 <button type="button" className="mt-1 text-xs font-medium text-jade-700 hover:underline" onClick={() => set("whatsapp", c.phone)}>
                   Phone number is also WhatsApp

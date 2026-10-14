@@ -48,6 +48,42 @@ export function SmoothScroll() {
   return null;
 }
 
+/**
+ * Pauses LOOPING CSS animations in sections that are far off-screen (see [data-offscreen] in globals.css).
+ * They resume from the exact same frame when the section comes back near the viewport, so what you see is
+ * unchanged — the browser just stops repainting things nobody can see. One-shot entrance animations are untouched.
+ */
+export function PauseOffscreen() {
+  const path = usePathname();
+  useEffect(() => {
+    if (!("IntersectionObserver" in window)) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) e.target.removeAttribute("data-offscreen");
+          else e.target.setAttribute("data-offscreen", "");
+        }
+      },
+      { rootMargin: "300px 0px 300px 0px" }
+    );
+    const watched: Element[] = [];
+    const frame = requestAnimationFrame(() => {
+      // top-level blocks of the page: sections not nested in another section, plus the footer
+      document.querySelectorAll("#main section, body footer").forEach((el) => {
+        if (el.parentElement?.closest("section")) return;
+        io.observe(el);
+        watched.push(el);
+      });
+    });
+    return () => {
+      cancelAnimationFrame(frame);
+      io.disconnect();
+      watched.forEach((el) => el.removeAttribute("data-offscreen"));
+    };
+  }, [path]);
+  return null;
+}
+
 /** Soft glow that follows the cursor on desktop (transform only — no layout work) */
 export function CursorGlow() {
   const ref = useRef<HTMLDivElement>(null);

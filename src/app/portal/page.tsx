@@ -168,9 +168,12 @@ export default async function PortalDashboard({ searchParams }: { searchParams: 
 
         <Section className="xl:col-span-5" title="Profile strength" icon={Sparkles} href="/portal/profile" linkLabel="Improve">
           <div className="flex items-center gap-4">
-            <MatchRing value={comp.percent} size={96} stroke={8} label="complete" />
+            <MatchRing value={comp.percent} size={96} stroke={8} label="complete" marker={comp.threshold ?? 80} />
             <div className="min-w-0">
               <Chip tone={level.tone}>{level.label}</Chip>
+              <p className="mt-1 text-[12px] font-medium text-ink-500">
+                {comp.percent >= (comp.threshold ?? 80) ? "One-click apply unlocked" : `Reach ${comp.threshold ?? 80}% (●) to unlock one-click apply`}
+              </p>
               <p className="mt-1.5 text-[13px] leading-relaxed text-ink-600">
                 {comp.missing.length ? (
                   <>

@@ -4,6 +4,7 @@ import type { BotCard } from "../types";
 import { defineTool, P, type BotCtx } from "./registry";
 import { remainder } from "./entities";
 import { pick, plural } from "./text";
+import { phoneSearchDigits } from "@/lib/phone";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -43,7 +44,7 @@ export const searchCandidates = defineTool({
       const rows = await q<any[]>(ctx.sb.from("skills").select("id, name").in("name", p.skills));
       skillIds = rows.map((r) => r.id);
     }
-    const res = await q<any>(ctx.sb.rpc("search_candidates", { f: { q: p.q ?? "", skills: skillIds, locations: p.location ? [p.location] : [], exp_min: p.exp_min ?? "", exp_max: p.exp_max ?? "", notice_max: p.notice_max ?? "", page_size: 6 } }));
+    const res = await q<any>(ctx.sb.rpc("search_candidates", { f: { q: phoneSearchDigits(p.q) ?? p.q ?? "", skills: skillIds, locations: p.location ? [p.location] : [], exp_min: p.exp_min ?? "", exp_max: p.exp_max ?? "", notice_max: p.notice_max ?? "", page_size: 6 } }));
     const items = (res?.items ?? []) as any[];
     const what = [p.skills?.join(", ") || p.q, p.location && `in ${p.location}`, p.exp_min != null && `${p.exp_min}+ yrs`, p.notice_max != null && `≤${p.notice_max}d notice`].filter(Boolean).join(" ");
     if (!items.length) return [{ text: `No candidates found${what ? ` for ${what}` : ""}.`, link: { label: "Open advanced search", href: "/candidates" } }];
@@ -323,10 +324,10 @@ export const emailLogSummary = defineTool({
   keywords: /\b(e-?mails?|mail log|smtp)\b/,
   extract: (_t, e) => ({ range: e.range ?? "week" }),
   async run(p, ctx) {
-    const rows = await q<any[]>(ctx.sb.from("email_log").select("status, template, created_at").gte("created_at", since(p.range ?? "week")).limit(2000));
+    const rows = await q<any[]>(ctx.sb.from("emails").select("status, template, created_at:queued_at").gte("queued_at", since(p.range ?? "week")).limit(2000));
     const c = (s: string) => rows.filter((r) => r.status === s).length;
     const failed = rows.filter((r) => r.status === "failed").slice(0, 3);
-    return [{ text: `${plural(rows.length, "e-mail")} ${rangeWord(p.range ?? "week")}: ${c("sent")} sent, ${c("failed")} failed, ${c("skipped")} skipped.`, cards: failed.length ? [{ title: "Recent failures", lines: failed.map((f) => `${f.template} · ${day(f.created_at)}`) }] : undefined, link: { label: "Email settings & log", href: "/admin/email" } }];
+    return [{ text: `${plural(rows.length, "e-mail")} ${rangeWord(p.range ?? "week")}: ${c("sent")} sent, ${c("queued") + c("sending")} queued, ${c("failed")} failed, ${c("bounced")} bounced, ${c("skipped")} skipped.`, cards: failed.length ? [{ title: "Recent failures", lines: failed.map((f) => `${f.template} · ${day(f.created_at)}`) }] : undefined, link: { label: "Email analytics", href: "/admin/email/analytics" } }];
   },
 });
 

@@ -28,6 +28,7 @@ import { age, cn, formatDate, formatDateTime, fullName, lpa, timeAgo, years } fr
 import type { CandidateDocument } from "@/lib/types";
 import { INTERVIEW_SELECT } from "@/lib/selects";
 import { CandidateInterviews, CandidateJobs, CandidateQuickActions, CandidateTasks, ShortlistChips } from "@/components/candidate/candidate-actions";
+import { displayPhone, telHref, waNumber as toWa } from "@/lib/phone";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -100,7 +101,7 @@ export default async function CandidatePage({ params }: { params: Promise<{ id: 
       ? Math.round(((Number(c.expected_ctc) - Number(c.current_ctc)) / Number(c.current_ctc)) * 100)
       : null;
   const resume = (docs.data ?? []).find((d: any) => d.doc_type === "Resume" && !d.is_archived);
-  const waNumber = (c.whatsapp || c.phone || "").replace(/[^0-9]/g, "");
+  const waNumber = c.whatsapp || c.phone || "";
 
   const facts = [
     { label: "Experience", value: years(c.total_experience), sub: c.relevant_experience ? `${years(c.relevant_experience)} relevant` : undefined },
@@ -283,13 +284,13 @@ export default async function CandidatePage({ params }: { params: Promise<{ id: 
           <dl className="space-y-3 p-5 text-sm">
             <Row icon={<Mail className="h-4 w-4" />} value={c.email ? <a className="text-jade-700 hover:underline" href={`mailto:${c.email}`}>{c.email}</a> : null} />
             {c.alt_email && <Row icon={<Mail className="h-4 w-4" />} value={c.alt_email} muted />}
-            <Row icon={<Phone className="h-4 w-4" />} value={c.phone ? <a className="text-jade-700 hover:underline" href={`tel:${c.phone}`}>{c.phone}</a> : null} />
-            {c.alt_phone && <Row icon={<Phone className="h-4 w-4" />} value={c.alt_phone} muted />}
+            <Row icon={<Phone className="h-4 w-4" />} value={c.phone ? <a className="text-jade-700 hover:underline" href={telHref(c.phone)}>{displayPhone(c.phone)}</a> : null} />
+            {c.alt_phone && <Row icon={<Phone className="h-4 w-4" />} value={displayPhone(c.alt_phone)} muted />}
             {waNumber && (
               <Row
                 icon={<MessageCircle className="h-4 w-4" />}
                 value={
-                  <a className="text-jade-700 hover:underline" target="_blank" rel="noopener" href={`https://wa.me/${waNumber.length === 10 ? "91" + waNumber : waNumber}`}>
+                  <a className="text-jade-700 hover:underline" target="_blank" rel="noopener" href={`https://wa.me/${toWa(waNumber)}`}>
                     Message on WhatsApp
                   </a>
                 }

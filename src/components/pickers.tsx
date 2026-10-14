@@ -5,6 +5,7 @@ import { Check, ChevronsUpDown, Loader2, Search, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Avatar } from "@/components/ui/misc";
 import { cn, lpa, years } from "@/lib/utils";
+import { phoneSearchDigits } from "@/lib/phone";
 
 export type Option = { id: string; label: string; sub?: string; avatar?: boolean };
 
@@ -166,7 +167,7 @@ export function AsyncPicker({
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export const searchCandidates = async (term: string): Promise<Option[]> => {
-  const { data } = await createClient().rpc("search_candidates", { f: { q: term, page_size: 8, sort: term ? "relevance" : "recent" } });
+  const { data } = await createClient().rpc("search_candidates", { f: { q: phoneSearchDigits(term) ?? term, page_size: 8, sort: term ? "relevance" : "recent" } });
   return ((data as any)?.items ?? []).map((c: any) => ({
     id: c.id,
     label: [c.first_name, c.last_name].filter(Boolean).join(" "),

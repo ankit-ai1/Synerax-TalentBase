@@ -6,6 +6,7 @@ import { LEAD_STATUSES, LEAD_TYPES } from "@/lib/lead-options";
 import { Card, EmptyState, PageHeader } from "@/components/ui/misc";
 import { cn, formatDateTime, timeAgo } from "@/lib/utils";
 import { LeadActions } from "./lead-actions";
+import { displayPhone, telHref } from "@/lib/phone";
 
 export const metadata = { title: "Website leads" };
 
@@ -152,8 +153,8 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
                           <Mail className="h-3.5 w-3.5" aria-hidden /> {l.email}
                         </a>
                         {l.phone && (
-                          <a href={`tel:${l.phone.replace(/\s/g, "")}`} className="inline-flex items-center gap-1 hover:text-ink-800">
-                            <Phone className="h-3.5 w-3.5" aria-hidden /> {l.phone}
+                          <a href={telHref(l.phone)} className="inline-flex items-center gap-1 hover:text-ink-800">
+                            <Phone className="h-3.5 w-3.5" aria-hidden /> {displayPhone(l.phone)}
                           </a>
                         )}
                         <time dateTime={l.created_at} title={formatDateTime(l.created_at)}>

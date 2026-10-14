@@ -41,6 +41,7 @@ function PartnerLogo({ p, i, logo }: { p: Partner; i: number; logo?: string }) {
       {...(p.url ? { href: p.url, target: "_blank", rel: "noopener noreferrer" } : detail ? { tabIndex: 0 } : {})}
       className="partner-logo group/logo relative flex h-full flex-col items-center justify-center gap-2.5 overflow-hidden rounded-2xl border border-line bg-surface px-2 py-5 text-center text-ink-400 shadow-card outline-none transition-[box-shadow,border-color] duration-300 hover:shadow-pop sm:gap-3 sm:px-4 lg:py-7"
       aria-label={detail ? `${p.name} — ${detail}` : p.name}
+      role={p.url ? undefined : "img"}
     >
       {logo ? (
         // eslint-disable-next-line @next/next/no-img-element

@@ -1,31 +1,106 @@
-# Nightly database backup (free) — the Supabase free plan has no automatic backups.
-# It also keeps the project active so it is not paused after 7 days of inactivity.
-# Setup: add SUPABASE_DB_URL under GitHub repo > Settings > Secrets > Actions
-# (Supabase > Project Settings > Database > Connection string > URI, "Session pooler").
+# Nightly encrypted database backup (free) — the Supabase free plan has no automatic backups.
+# Also keeps the project active so it isn't paused after 7 days of inactivity.
+#   • pg_dump of schemas public + auth + storage (custom format, compressed) + a manifest of row counts
+#   • encrypted with GPG (AES-256, secret BACKUP_PASSPHRASE)
+#   • kept 30 days as a GitHub artifact AND in the Google Drive folder "Synerax DB Backups"
+#   • every run is logged in the app (/admin/backups); a failure alerts all admins (in-app + email)
+# Secrets: see README → "Backups". Restore: docs/RESTORE.md.
 name: Daily DB backup
 
 on:
   schedule:
-    - cron: "30 20 * * *" # 2:00 AM IST
+    - cron: "30 20 * * *" # 02:00 IST
   workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: db-backup
+  cancel-in-progress: false
 
 jobs:
   backup:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+      APP_URL: ${{ secrets.APP_URL }}
+      CRON_SECRET: ${{ secrets.CRON_SECRET }}
+      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
     steps:
-      - name: Install Postgres client
+      - uses: actions/checkout@v4
+
+      - name: Check secrets
         run: |
+          missing=""
+          for v in DB_URL BACKUP_PASSPHRASE; do [ -n "${!v}" ] || missing="$missing $v"; done
+          if [ -n "$missing" ]; then echo "::error::Missing secrets:$missing"; echo "ERROR=Missing secrets:$missing" >> "$GITHUB_ENV"; exit 1; fi
+          echo "STARTED_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_ENV"
+          echo "STAMP=$(date -u +%Y%m%d-%H%M)" >> "$GITHUB_ENV"
+
+      - name: Install Postgres 17 client (dumps Postgres 15–17 servers)
+        run: |
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl -fsSo /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list > /dev/null
           sudo apt-get update -qq
-          sudo apt-get install -y -qq postgresql-client
-      - name: Dump database
-        env:
-          DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          sudo apt-get install -y -qq postgresql-client-17
+          echo "/usr/lib/postgresql/17/bin" >> "$GITHUB_PATH"
+
+      - name: Snapshot row counts (manifest)
         run: |
-          pg_dump "$DB_URL" --schema=public --no-owner --no-privileges -Fc -f backup.dump
-          ls -lh backup.dump
-      - name: Save backup (90 din tak)
+          psql "$DB_URL" -At -v ON_ERROR_STOP=1 -f scripts/backup/snapshot.sql > manifest.json || { echo "ERROR=Could not read row counts (check SUPABASE_DB_URL)" >> "$GITHUB_ENV"; exit 1; }
+          jq '{taken_at, server_version_num, tables: (.counts | length)}' manifest.json
+
+      - name: Dump (public + auth + storage)
+        run: |
+          pg_dump "$DB_URL" --schema=public --schema=auth --schema=storage --no-owner --no-privileges -Fc -Z 6 -f db.dump 2> dump.log || { echo "ERROR=pg_dump failed: $(tail -c 400 dump.log | tr '\n' ' ')" >> "$GITHUB_ENV"; cat dump.log; exit 1; }
+          pg_restore --list db.dump > /dev/null # sanity: the archive is readable
+          ls -lh db.dump
+
+      - name: Encrypt
+        run: |
+          tar -cf - db.dump manifest.json | gpg --batch --yes --pinentry-mode loopback --passphrase "$BACKUP_PASSPHRASE" --symmetric --cipher-algo AES256 -o "talentdb-$STAMP.tar.gpg"
+          rm db.dump
+          echo "SIZE=$(stat -c %s talentdb-$STAMP.tar.gpg)" >> "$GITHUB_ENV"
+          ls -lh "talentdb-$STAMP.tar.gpg"
+
+      - name: Keep 30 days as an artifact
         uses: actions/upload-artifact@v4
         with:
-          name: talentdb-backup-${{ github.run_number }}
-          path: backup.dump
-          retention-days: 90
+          name: talentdb-backup-${{ env.STAMP }}
+          path: talentdb-${{ env.STAMP }}.tar.gpg
+          retention-days: 30
+          compression-level: 0
+
+      - name: Upload to Google Drive + delete Drive backups older than 30 days
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          BACKUP_DRIVE_FOLDER_ID: ${{ secrets.BACKUP_DRIVE_FOLDER_ID }}
+        run: |
+          set +e
+          id=$(node scripts/backup/drive.mjs upload "talentdb-$STAMP.tar.gpg"); code=$?
+          set -e
+          if [ $code -eq 3 ]; then echo "::warning::Drive upload skipped (secrets not set) — the artifact copy still exists"; echo "DRIVE=skipped" >> "$GITHUB_ENV"; exit 0; fi
+          if [ $code -ne 0 ]; then echo "ERROR=Drive upload failed (artifact copy is fine)" >> "$GITHUB_ENV"; exit 1; fi
+          echo "DRIVE=$id" >> "$GITHUB_ENV"
+          node scripts/backup/drive.mjs prune 30
+
+      - name: Log success in the app
+        if: success() && env.APP_URL != ''
+        run: |
+          jq -n --arg started "$STARTED_AT" --arg size "$SIZE" --arg loc "artifact talentdb-backup-$STAMP; drive ${DRIVE:-none}" --arg run "$RUN_URL" --slurpfile m manifest.json \
+            '{kind:"backup", status:"success", started_at:$started, size_bytes:($size|tonumber), location:$loc, run_url:$run,
+              details:{file:"talentdb-\(env.STAMP).tar.gpg", taken_at:$m[0].taken_at, server_version_num:$m[0].server_version_num, counts:$m[0].counts, latest:$m[0].latest, functions:($m[0].functions|length)}}' > log.json
+          curl -fsS -X POST "$APP_URL/api/backups/log" -H "Authorization: Bearer $CRON_SECRET" -H "content-type: application/json" --data @log.json
+
+      - name: Log failure + alert admins
+        if: failure() && env.APP_URL != ''
+        run: |
+          jq -n --arg started "${STARTED_AT:-}" --arg run "$RUN_URL" --arg err "${ERROR:-Backup workflow failed — see the run log}" \
+            '{kind:"backup", status:"failed", started_at:(if $started == "" then null else $started end), run_url:$run, details:{error:$err}}' > log.json
+          curl -fsS -X POST "$APP_URL/api/backups/log" -H "Authorization: Bearer $CRON_SECRET" -H "content-type: application/json" --data @log.json || true

@@ -1,4 +1,4 @@
-import { registrationSchema, CV_ALLOWED, CV_MAX_BYTES } from "@/lib/registration-schema";
+import { registrationSchema, CV_ALLOWED, CV_MAX_BYTES } from "@/lib/candidate-schema";
 import { finalizeRegistration, storePending } from "@/lib/registration";
 import { clientIp, rateLimited } from "@/lib/rate-limit";
 

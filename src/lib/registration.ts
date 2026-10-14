@@ -2,11 +2,12 @@ import "server-only";
 import type { User } from "@supabase/supabase-js";
 import { createAdminClient } from "@/lib/supabase/server";
 import { createFolder, findOrCreateFolder, folderExists, moveFile, rootFolderId, trashFile, uploadFile } from "@/lib/drive";
-import type { Registration } from "@/lib/registration-schema";
+import type { Registration } from "@/lib/candidate-schema";
 import { after } from "next/server";
 import { onCandidateRegistered } from "@/lib/email/notify-events";
 import { resumePlainText } from "@/lib/resume";
 import { loadCurrentCv } from "@/lib/resume/server";
+import { findDuplicateCandidate } from "@/lib/candidates/server";
 
 /**
  * Candidate self-registration.
@@ -32,16 +33,19 @@ const splitName = (full: string) => {
 const totalExperience = (y: number, m: number) => Math.round((y + m / 12) * 10) / 10;
 
 /** Pre-sign-up check so people aren't left with an account they can't use */
-export async function precheckRegistration(email: string, phone: string): Promise<string | null> {
+export type PrecheckProblem = { field: "email" | "phone"; code: "email_exists" | "phone_exists"; error: string };
+
+export async function precheckRegistration(email: string, phone: string): Promise<PrecheckProblem | null> {
   const admin = createAdminClient();
-  const [{ data: byEmail }, { data: byPhone }, { data: profile }] = await Promise.all([
-    admin.from("candidates").select("id, user_id").eq("email", email).limit(1).maybeSingle(),
-    admin.from("candidates").select("id, email").eq("phone", phone).limit(1).maybeSingle(),
+  const [byEmail, byPhone, { data: profile }] = await Promise.all([
+    findDuplicateCandidate({ email }),
+    findDuplicateCandidate({ phone }),
     admin.from("profiles").select("id").eq("email", email).limit(1).maybeSingle(),
   ]);
-  if (profile || byEmail?.user_id) return "An account already exists for this email. Please sign in instead.";
+  if (profile || byEmail?.user_id) return { field: "email", code: "email_exists", error: "An account already exists for this email." };
+  // a staff-added record with the same email is fine (it gets linked); the same phone on someone else's record is not
   if (byPhone && (byPhone.email ?? "").toLowerCase() !== email) {
-    return "This mobile number is already registered with Synerax. Sign up with the email you used before, or contact us.";
+    return { field: "phone", code: "phone_exists", error: "This mobile number is already registered with Synerax. Sign up with the email you used before, or contact us." };
   }
   return null;
 }

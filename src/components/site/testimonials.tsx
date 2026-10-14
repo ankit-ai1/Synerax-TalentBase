@@ -21,7 +21,7 @@ const GRAD = ["from-[rgb(var(--p-400))] to-[rgb(var(--p-700))]", "from-amber-400
 
 function Stars({ n }: { n: number }) {
   return (
-    <span className="flex gap-0.5 text-saffron" aria-label={`${n} out of 5 stars`}>
+    <span className="flex gap-0.5 text-saffron" role="img" aria-label={`${n} out of 5 stars`}>
       {Array.from({ length: 5 }).map((_, i) => (
         <Star key={i} className={cn("h-4 w-4", i < n ? "fill-current" : "opacity-30")} aria-hidden />
       ))}

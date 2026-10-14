@@ -9,7 +9,7 @@ export type EduItem = { degree: string; institution: string; year: string };
 export interface ResumeFields {
   full_name?: Field<string>;
   email?: Field<string>;
-  phone?: Field<string>; // 10-digit Indian mobile
+  phone?: Field<string>; // E.164, e.g. +919876543210 / +971501744908
   linkedin_url?: Field<string>;
   github_url?: Field<string>;
   portfolio_url?: Field<string>;

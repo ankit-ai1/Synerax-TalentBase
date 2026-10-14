@@ -2,6 +2,8 @@
 
 export type Completion = {
   percent: number;
+  /** minimum % needed for one-click apply (app_settings, default 80) */
+  threshold?: number;
   missing: { key: string; label: string; section: string; weight: number }[];
   optional: { key: string; label: string; section: string }[];
 };

@@ -66,11 +66,9 @@ export function SiteNavbar() {
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    // Reads the session from cookies locally (no network call). Loaded lazily so public pages stay light.
-    import("@/lib/supabase/client")
-      .then(({ createClient }) => createClient().auth.getSession())
-      .then(({ data }) => setLoggedIn(!!data.session))
-      .catch(() => {});
+    // Signed in? The Supabase session lives in an "sb-<project>-auth-token" cookie (possibly split into .0/.1 parts).
+    // Checking for it directly avoids loading the whole Supabase client on public pages.
+    setLoggedIn(/(?:^|;\s*)sb-[^=;]+-auth-token(?:\.\d+)?=[^;]+/.test(document.cookie));
     const onScroll = () => setScrolled(window.scrollY > 8);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });

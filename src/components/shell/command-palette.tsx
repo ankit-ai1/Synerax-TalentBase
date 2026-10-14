@@ -20,7 +20,7 @@ import { useTheme } from "@/components/theme";
 import { useDialogs } from "@/components/dialogs/provider";
 import { Avatar, Kbd } from "@/components/ui/misc";
 import { cn, lpa, years } from "@/lib/utils";
-import { displayPhone, parsePhone } from "@/lib/phone";
+import { displayPhone, phoneSearchDigits } from "@/lib/phone";
 import { NAV } from "./nav";
 
 type Item = {
@@ -125,7 +125,7 @@ export function CommandPalette({ open, onClose, isAdmin }: { open: boolean; onCl
       const supabase = createClient();
       const like = `%${term.replace(/[%_]/g, "")}%`;
       // mobile-number search: "+91 98765-43210", "9876543210", "+971501234567" … (national digits, 4+)
-      const national = /d{4}/.test(term.replace(/[s()-]/g, "")) && !/[a-z]/i.test(term) ? parsePhone(term).national : "";
+      const national = phoneSearchDigits(term) ?? "";
       const [cands, jobs, clients, byPhone] = await Promise.all([
         national ? Promise.resolve({ data: { items: [] } }) : supabase.rpc("search_candidates", { f: { q: term, page_size: 6 } }),
         supabase.from("jobs").select("id, job_code, title, status, client:clients(name)").or(`title.ilike.${like},job_code.ilike.${like}`).limit(5),
@@ -145,7 +145,7 @@ export function CommandPalette({ open, onClose, isAdmin }: { open: boolean; onCl
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       for (const c of (byPhone.data ?? []) as any[]) {
         const name = [c.first_name, c.last_name].filter(Boolean).join(" ");
-        const hit = [c.phone, c.alt_phone, c.whatsapp].find((x: string | null) => x && x.replace(/D/g, "").includes(national));
+        const hit = [c.phone, c.alt_phone, c.whatsapp].find((x: string | null) => x && x.replace(/\D/g, "").includes(national));
         items.push({
           id: "c-" + c.id,
           group: "Candidates",

@@ -4,6 +4,7 @@ import type { BotCard, BotTurn } from "../types";
 import { defineTool, P } from "./registry";
 import { faqsFor, searchFaq } from "./knowledge";
 import { pick, plural } from "./text";
+import { normalizePhone, phoneError } from "@/lib/phone";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -114,7 +115,15 @@ export const jobPublicDetails = defineTool({
 const leadSchema = z.object({
   name: z.string().trim().min(2).max(120),
   company: z.string().trim().min(2).max(160),
-  phone: z.string().trim().max(20).regex(/^[+\d][\d\s()-]{6,19}$/, "Enter a valid phone number"),
+  phone: z
+    .string()
+    .trim()
+    .max(30)
+    .transform((v) => normalizePhone(v))
+    .superRefine((v, ctx) => {
+      const msg = phoneError(v);
+      if (msg) ctx.addIssue({ code: "custom", message: msg });
+    }),
   email: z.string().trim().max(200).email("Enter a valid email"),
   requirement: z.string().trim().min(3).max(2000),
 });

@@ -1,0 +1,101 @@
+# Weekly restore drill — proves the backups can actually be restored.
+#   1. downloads the latest backup artifact (falls back to Google Drive), decrypts it
+#   2. restores it into a throw-away Postgres container (same major version as production, from the manifest)
+#   3. checks: key tables exist, row counts within ±5% of the counts captured at backup time,
+#      latest candidate / application / user timestamps present, every function present
+#   4. reports PASS / FAIL to the app (/admin/backups) — FAIL alerts all admins (in-app + email)
+name: Weekly restore test
+
+on:
+  schedule:
+    - cron: "30 21 * * 6" # Sunday 03:00 IST
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read # to download the backup workflow's artifacts
+
+jobs:
+  restore-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+      APP_URL: ${{ secrets.APP_URL }}
+      CRON_SECRET: ${{ secrets.CRON_SECRET }}
+      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      PGPASSWORD: restore-test
+      RESTORE_URL: postgresql://postgres:restore-test@localhost:5432/postgres
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download the latest backup
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          BACKUP_DRIVE_FOLDER_ID: ${{ secrets.BACKUP_DRIVE_FOLDER_ID }}
+        run: |
+          echo "STARTED_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_ENV"
+          mkdir -p dl
+          run_id=$(gh run list -R "$GITHUB_REPOSITORY" --workflow backup.yml --status success --limit 1 --json databaseId -q '.[0].databaseId' || true)
+          if [ -n "$run_id" ] && gh run download "$run_id" -R "$GITHUB_REPOSITORY" -D dl; then
+            src="artifact (run $run_id)"
+          else
+            node scripts/backup/drive.mjs latest dl/latest.tar.gpg || { echo "ERROR=No backup found (artifact or Drive)" >> "$GITHUB_ENV"; exit 1; }
+            src="google drive"
+          fi
+          file=$(find dl -name 'talentdb-*.tar.gpg' -o -name 'latest.tar.gpg' | head -1)
+          echo "BACKUP_FILE=$file" >> "$GITHUB_ENV"
+          echo "SOURCE=$src $(basename "$file")" >> "$GITHUB_ENV"
+
+      - name: Decrypt
+        run: |
+          mkdir -p restore
+          gpg --batch --pinentry-mode loopback --passphrase "$BACKUP_PASSPHRASE" -d "$BACKUP_FILE" | tar -x -C restore || { echo "ERROR=Could not decrypt the backup (wrong BACKUP_PASSPHRASE?)" >> "$GITHUB_ENV"; exit 1; }
+          ls -lh restore
+          major=$(( $(jq -r '.server_version_num' restore/manifest.json) / 10000 ))
+          [ "$major" -ge 15 ] || major=15
+          echo "PG_MAJOR=$major" >> "$GITHUB_ENV"
+
+      - name: Start a temporary Postgres ${{ env.PG_MAJOR }}
+        run: |
+          docker run -d --name pg -e POSTGRES_PASSWORD="$PGPASSWORD" -p 5432:5432 "postgres:$PG_MAJOR"
+          for i in $(seq 1 30); do docker exec pg pg_isready -U postgres > /dev/null 2>&1 && break; sleep 2; done
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl -fsSo /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list > /dev/null
+          sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client-17
+          echo "/usr/lib/postgresql/17/bin" >> "$GITHUB_PATH"
+
+      - name: Restore
+        run: |
+          psql "$RESTORE_URL" -v ON_ERROR_STOP=1 -f scripts/backup/restore-prep.sql
+          start=$(date +%s)
+          pg_restore --no-owner --no-privileges -d "$RESTORE_URL" restore/db.dump 2> restore.log || true
+          echo "RESTORE_SECONDS=$(( $(date +%s) - start ))" >> "$GITHUB_ENV"
+          echo "RESTORE_ERRORS=$(grep -c 'error:' restore.log || true)" >> "$GITHUB_ENV"
+          echo "pg_restore reported $(grep -c 'error:' restore.log || true) error(s) (Supabase-only extensions/roles are expected); first ones:"
+          grep 'error:' restore.log | head -20 || true
+
+      - name: Verify
+        run: |
+          set +e
+          node scripts/backup/verify.mjs restore/manifest.json "$RESTORE_URL" > result.json
+          code=$?
+          set -e
+          cat result.json
+          echo "VERIFY_CODE=$code" >> "$GITHUB_ENV"
+          [ $code -eq 0 ] || { echo "::error::Restore test FAILED"; exit 1; }
+
+      - name: Report to the app
+        if: always() && env.APP_URL != ''
+        run: |
+          status=success; [ "${{ job.status }}" = "success" ] || status=failed
+          [ -s result.json ] || echo '{}' > result.json
+          jq -n --arg status "$status" --arg started "${STARTED_AT:-}" --arg run "$RUN_URL" --arg src "${SOURCE:-}" --arg err "${ERROR:-}" \
+                --arg secs "${RESTORE_SECONDS:-0}" --arg errs "${RESTORE_ERRORS:-0}" --arg pg "${PG_MAJOR:-}" --slurpfile r result.json \
+            '{kind:"restore_test", status:$status, started_at:(if $started == "" then null else $started end), location:$src, run_url:$run,
+              details:($r[0] + {restore_seconds:($secs|tonumber), restore_errors:($errs|tonumber), postgres:$pg} + (if $err == "" then {} else {error:$err} end))}' > log.json
+          curl -fsS -X POST "$APP_URL/api/backups/log" -H "Authorization: Bearer $CRON_SECRET" -H "content-type: application/json" --data @log.json

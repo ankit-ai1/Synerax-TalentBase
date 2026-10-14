@@ -10,6 +10,7 @@ import { Dialog, ConfirmDialog } from "@/components/ui/dialog";
 import { TextField } from "@/components/ui/fields";
 import { PhoneField } from "@/components/ui/phone-field";
 import { cn, formatDate } from "@/lib/utils";
+import { displayPhone } from "@/lib/phone";
 
 export type ClientLogin = {
   id: string;
@@ -133,7 +134,7 @@ export function PortalAccess({ clientId, clientName, logins }: { clientId: strin
                   </span>
                   {l.phone && (
                     <span className="inline-flex items-center gap-1">
-                      <Phone className="h-3.5 w-3.5" aria-hidden /> {l.phone}
+                      <Phone className="h-3.5 w-3.5" aria-hidden /> {displayPhone(l.phone)}
                     </span>
                   )}
                   {l.designation && <span>{l.designation}</span>}

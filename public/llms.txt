@@ -1,0 +1,22 @@
+# Synerax TalentBase
+
+> Synerax is a staffing and recruitment partner in India (Noida). We help companies hire permanent, contract and executive talent, and help job seekers find roles that fit their skills, salary and location. Candidates never pay a fee.
+
+## Key pages
+- [Home](https://staffing.synerax.in/): overview, how hiring works, industries, FAQs
+- [Services](https://staffing.synerax.in/services): permanent hiring, contract staffing, contract-to-hire, RPO, executive search, bulk hiring
+- [Industries](https://staffing.synerax.in/industries): IT & software, BFSI, healthcare, manufacturing, retail & e-commerce, telecom, logistics
+- [Employers](https://staffing.synerax.in/employers): how we work with hiring teams
+- [Find a job](https://staffing.synerax.in/careers): current open roles
+- [Job seekers](https://staffing.synerax.in/job-seekers): how candidates are matched and supported
+- [Register as a candidate](https://staffing.synerax.in/register): free profile, CV upload
+- [About](https://staffing.synerax.in/about) · [Contact](https://staffing.synerax.in/contact)
+- [Privacy policy](https://staffing.synerax.in/privacy) · [Terms](https://staffing.synerax.in/terms)
+
+## Contact
+- Email: hr@synerax.in
+- Phone: +91 9306917180 (Mon–Sat, 9 AM – 8 PM IST)
+
+## Notes for agents
+- The candidate portal (/portal), client portal (/client) and staff app require sign-in and must not be crawled.
+- Open roles are listed on /careers; do not infer salaries — budgets are not published.

@@ -24,6 +24,7 @@ import { InterviewRow } from "@/components/interviews/interviews-view";
 import { MessageButton } from "@/components/chat/message-button";
 import { ACTIVE_STAGES, STAGES, STAGE_STYLE } from "@/lib/constants";
 import { cn, dayLabel, formatDate, formatTime, friendlyError, lpa, timeAgo } from "@/lib/utils";
+import { telHref } from "@/lib/phone";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 type Cand = { id: string; first_name: string; last_name: string | null; phone: string | null; email: string | null };
@@ -45,7 +46,7 @@ export function CandidateQuickActions({ c }: { c: Cand }) {
         <MessageCircle className="h-3.5 w-3.5" /> WhatsApp / Email
       </Button>
       {c.phone && (
-        <a href={`tel:${c.phone}`} className="inline-flex h-8 items-center gap-1.5 rounded-md border border-line bg-surface px-3 text-[13px] font-medium text-ink-800 shadow-card hover:bg-surface-2">
+        <a href={telHref(c.phone)} className="inline-flex h-8 items-center gap-1.5 rounded-md border border-line bg-surface px-3 text-[13px] font-medium text-ink-800 shadow-card hover:bg-surface-2">
           <Phone className="h-3.5 w-3.5" /> Call
         </a>
       )}

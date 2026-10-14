@@ -24,6 +24,7 @@ export async function POST(req: Request) {
       cta: { label: "Open TalentBase", url: "/dashboard" },
     },
   });
+  if (r.status === "queued") return Response.json({ ok: true, queued: true, note: "Queued — the daily sending limit is reached or the mail server is busy; it goes out automatically." });
   if (r.status !== "sent") return Response.json({ error: r.error ?? "Could not send" }, { status: 502 });
   return Response.json({ ok: true });
 }

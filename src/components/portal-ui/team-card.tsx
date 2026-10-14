@@ -2,6 +2,7 @@ import { Mail, MessageCircle, Phone } from "lucide-react";
 import type { StaffContact } from "@/lib/client-types";
 import { Avatar, waLink } from "./kit";
 import { cn } from "@/lib/utils";
+import { displayPhone, telHref } from "@/lib/phone";
 
 /** A Synerax team member with one-tap call / email / WhatsApp */
 export function ContactRow({ person, message, className }: { person: StaffContact; message?: string; className?: string }) {
@@ -16,11 +17,11 @@ export function ContactRow({ person, message, className }: { person: StaffContac
           {person.designation}
           {person.role === "Account manager" && person.designation !== "Account manager" ? " · Account manager" : ""}
         </p>
-        {person.phone && <p className="truncate text-[12px] tabular text-ink-400">{person.phone}</p>}
+        {person.phone && <p className="truncate text-[12px] tabular text-ink-400">{displayPhone(person.phone)}</p>}
       </div>
       <div className="flex shrink-0 gap-1.5">
         {person.phone && (
-          <a href={`tel:${person.phone.replace(/\s/g, "")}`} className={action} aria-label={`Call ${person.name}`} title="Call">
+          <a href={telHref(person.phone)} className={action} aria-label={`Call ${person.name}`} title="Call">
             <Phone className="h-4 w-4" />
           </a>
         )}

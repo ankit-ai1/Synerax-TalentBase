@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { ENQUIRY_TYPES, HIRING_TYPES } from "./lead-options";
+import { normalizePhone, phoneError } from "./phone";
 
 export { LEAD_TYPES, LEAD_STATUSES, ENQUIRY_TYPES, HIRING_TYPES } from "./lead-options";
 
@@ -9,8 +10,12 @@ const opt = (max: number) => str(max).optional().default("");
 const phone = z
   .string()
   .trim()
-  .max(20)
-  .regex(/^[+\d][\d\s()-]{6,19}$/, "Enter a valid phone number");
+  .max(30)
+  .transform((v) => normalizePhone(v))
+  .superRefine((v, ctx) => {
+    const msg = phoneError(v);
+    if (msg) ctx.addIssue({ code: "custom", message: msg });
+  });
 
 const common = {
   name: str(120).min(2, "Please enter your name"),
@@ -41,17 +46,6 @@ export const leadSchema = z.discriminatedUnion("type", [
     hiringType: z.enum(HIRING_TYPES),
     timeline: opt(60),
     message: opt(4000),
-  }),
-  z.object({
-    type: z.literal("candidate"),
-    ...common,
-    phone,
-    currentRole: str(160).min(2, "Please enter your current role"),
-    experience: str(20).min(1, "Please enter your experience"),
-    skills: str(600).min(2, "Please list your key skills"),
-    city: str(120).min(2, "Please enter your city"),
-    resumeUrl: z.string().trim().max(500).url("Enter a valid link").optional().or(z.literal("")).default(""),
-    message: opt(2000),
   }),
 ]);
 

@@ -34,7 +34,7 @@ const TILTS = ["-rotate-6 translate-y-2", "rotate-3 -translate-y-3", "-rotate-2 
 
 function ValuesCollage() {
   return (
-    <div className="relative mx-auto grid max-w-[480px] grid-cols-2 gap-4 py-6" aria-label="Our values">
+    <div className="relative mx-auto grid max-w-[480px] grid-cols-2 gap-4 py-6" role="group" aria-label="Our values">
       {site.about.values.map((v, i) => (
         <div key={v.title} className={cn("transition-transform duration-500 hover:rotate-0", TILTS[i])}>
           <div className="glass rounded-2xl p-5 shadow-pop">

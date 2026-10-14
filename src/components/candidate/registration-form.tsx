@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, ArrowRight, Check, FileText, Loader2, MailCheck, UploadCloud, X } from "lucide-react";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
-import { registrationSchema, CV_ALLOWED, CV_MAX_BYTES } from "@/lib/registration-schema";
+import { registrationSchema, CV_ALLOWED, CV_MAX_BYTES } from "@/lib/candidate-schema";
 import { normalizePhone } from "@/lib/phone";
 import { PhoneField } from "@/components/ui/phone-field";
 import { CITIES, NOTICE_OPTIONS } from "@/lib/constants";
@@ -55,13 +55,17 @@ const EMPTY: Form = {
 const STEP1 = ["full_name", "email", "phone", "password", "current_city"] as const;
 const STEP2 = ["exp_years", "exp_months", "current_designation", "skills", "current_ctc", "expected_ctc", "notice_period_days", "last_working_day", "cv", "consent"] as const;
 
-export function RegisterWizard({ skills }: { skills: string[] }) {
+/**
+ * THE candidate registration form (CV upload → auto-fill → account). Used by /register and embedded on the
+ * careers page; validated by registrationSchema (src/lib/candidate-schema.ts) on both sides.
+ */
+export function CandidateRegistrationForm({ skills }: { skills: string[] }) {
   const router = useRouter();
   const uid = useId();
   const [step, setStep] = useState(0);
   const [f, setF] = useState<Form>(EMPTY);
   const [cv, setCv] = useState<File | null>(null);
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [errors, setErrors] = useState<Record<string, React.ReactNode>>({});
   const [showPw, setShowPw] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
@@ -152,7 +156,7 @@ export function RegisterWizard({ skills }: { skills: string[] }) {
   );
 
   const validate = (fields: readonly string[]) => {
-    const errs: Record<string, string> = {};
+    const errs: Record<string, React.ReactNode> = {};
     const res = registrationSchema.safeParse(payload);
     if (!res.success) {
       for (const issue of res.error.issues) {
@@ -185,7 +189,28 @@ export function RegisterWizard({ skills }: { skills: string[] }) {
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) {
-        toast.error(json.error ?? "Please check your details.");
+        const field = json.field === "email" || json.field === "phone" ? json.field : null;
+        if (!field) {
+          toast.error(json.error ?? "Please check your details.");
+          return;
+        }
+        const message =
+          json.code === "email_exists" ? (
+            <>
+              {json.error}{" "}
+              <Link href="/login" className="font-semibold underline">
+                Sign in instead
+              </Link>{" "}
+              ·{" "}
+              <Link href="/forgot-password" className="font-semibold underline">
+                Forgot password?
+              </Link>
+            </>
+          ) : (
+            json.error
+          );
+        setErrors((e) => ({ ...e, [field]: message }));
+        document.getElementById(`${uid}-${field}`)?.scrollIntoView({ block: "center", behavior: "smooth" });
         return;
       }
       setStep(1);
@@ -349,9 +374,8 @@ export function RegisterWizard({ skills }: { skills: string[] }) {
           </div>
           <div id={`${uid}-phone`}>
             <CvField confidence={meta.phone}>
-              <PhoneField label="Mobile number" required value={f.phone} onChange={(v) => set("phone", v)} />
+              <PhoneField label="Mobile number" required value={f.phone} onChange={(v) => set("phone", v)} error={errors.phone} />
             </CvField>
-            {err("phone")}
           </div>
           <div id={`${uid}-password`}>
             <label htmlFor={`${uid}-pw`} className="field-label">

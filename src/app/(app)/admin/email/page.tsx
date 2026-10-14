@@ -15,6 +15,9 @@ const STATUS_STYLE: Record<string, string> = {
   sent: "bg-emerald-50 text-emerald-800 dark:bg-emerald-400/10 dark:text-emerald-300",
   failed: "bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-300",
   skipped: "bg-stone-100 text-stone-600 dark:bg-stone-400/10 dark:text-stone-300",
+  queued: "bg-sky-50 text-sky-800 dark:bg-sky-400/10 dark:text-sky-300",
+  sending: "bg-sky-50 text-sky-800 dark:bg-sky-400/10 dark:text-sky-300",
+  bounced: "bg-amber-50 text-amber-800 dark:bg-amber-400/10 dark:text-amber-300",
 };
 const EVENT_LABEL: Record<string, string> = Object.fromEntries(EMAIL_EVENTS.map((e) => [e.key, e.label]));
 
@@ -22,14 +25,14 @@ export default async function EmailSettingsPage({ searchParams }: { searchParams
   const profile = await requireAdmin();
   const sp = await searchParams;
   const page = Math.max(1, Number(sp.page) || 1);
-  const status = ["sent", "failed", "skipped"].includes(sp.status ?? "") ? sp.status : undefined;
+  const status = ["queued", "sent", "failed", "bounced", "skipped"].includes(sp.status ?? "") ? sp.status : undefined;
   const q = (sp.q ?? "").trim().slice(0, 100);
   const supabase = await createClient();
 
   let logQuery = supabase
-    .from("email_log")
-    .select("id, to_email, template, subject, status, error, created_at", { count: "exact" })
-    .order("created_at", { ascending: false })
+    .from("emails")
+    .select("id, to_email, template, subject, status, error:last_error, created_at:queued_at, attempts, opened_at, bounce_reason", { count: "exact" })
+    .order("queued_at", { ascending: false })
     .range((page - 1) * PER_PAGE, page * PER_PAGE - 1);
   if (status) logQuery = logQuery.eq("status", status);
   if (q) logQuery = logQuery.ilike("to_email", `%${q.replace(/[%_,]/g, "")}%`);
@@ -84,6 +87,8 @@ export default async function EmailSettingsPage({ searchParams }: { searchParams
                 <option value="sent">Sent</option>
                 <option value="failed">Failed</option>
                 <option value="skipped">Skipped</option>
+                <option value="queued">Queued</option>
+                <option value="bounced">Bounced</option>
               </select>
               <button className="h-8 rounded-md border border-line px-3 text-[13px] font-medium text-ink-700 hover:bg-surface-2">Filter</button>
             </form>

@@ -4,6 +4,7 @@
  */
 import { BUILTIN_SKILLS, INDIAN_CITIES } from "./data";
 import type { Confidence, EduItem, Field, ParseOptions, ResumeFields, SkillDef, WorkItem } from "./types";
+import { cvPhone } from "@/lib/phone";
 
 // ------------------------------------------------------------------ text + sections
 
@@ -93,9 +94,9 @@ export function normaliseIndianMobile(raw: string): string | null {
 }
 
 export function extractPhone(text: string): Field<string> | undefined {
-  const re = /\+?\(?\d[\d\s().-]{8,16}\d/g;
+  const re = /(?:\+|00)?\(?\d[\d\s().-]{6,16}\d/g;
   for (const m of text.matchAll(re)) {
-    const n = normaliseIndianMobile(m[0]);
+    const n = cvPhone(m[0]);
     if (n) {
       // ignore digits that are part of a longer number (IDs, account numbers)
       const before = text[(m.index ?? 0) - 1] ?? " ";

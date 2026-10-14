@@ -48,7 +48,7 @@ import { Chip, MatchRing, SkillChip } from "@/components/portal-ui/kit";
 import { ChipInput, SelectField, Switch, TextArea, TextField } from "@/components/ui/fields";
 import { JobAlertsToggle, OpenToWorkToggle } from "@/components/portal/profile-toggles";
 import { cn, fileSize, formatDate, friendlyError } from "@/lib/utils";
-import { isValidPhone, normalizePhone } from "@/lib/phone";
+import { normalizePhone, phoneError } from "@/lib/phone";
 import { PhoneField } from "@/components/ui/phone-field";
 import { CvAutofill, type CvKey, type CvSuggestion } from "@/components/resume/cv-autofill";
 
@@ -212,6 +212,7 @@ export function ProfileEditor({ me, skillsMaster }: { me: MyProfile; skillsMaste
     preferred_locations: arr(c0.preferred_locations),
   });
   const set = (k: string, v: string | boolean | string[]) => setC((p) => ({ ...p, [k]: v }));
+  const [phoneErrs, setPhoneErrs] = useState<Record<string, string>>({});
 
   const [skills, setSkills] = useState(me.skills.map((x) => ({ name: x.name, years: s(x.years), level: x.level ?? "Intermediate", is_primary: x.is_primary })));
   const [newSkill, setNewSkill] = useState("");
@@ -249,7 +250,9 @@ export function ProfileEditor({ me, skillsMaster }: { me: MyProfile; skillsMaste
     const { data, error } = await createClient().rpc("candidate_update_profile", { p });
     setSaving(null);
     if (error) {
-      toast.error(friendlyError(error.message));
+      // "phone number already belongs to …" → under the mobile field
+      if (section === "contact" && /phone/i.test(error.message)) setPhoneErrs({ phone: friendlyError(error.message) });
+      else toast.error(friendlyError(error.message));
       return false;
     }
     const pct = (data as { percent?: number } | null)?.percent;
@@ -265,11 +268,20 @@ export function ProfileEditor({ me, skillsMaster }: { me: MyProfile; skillsMaste
     return save("basic", { candidate: pick(["first_name", "middle_name", "last_name", "gender", "dob", "marital_status", "nationality", "headline", "summary", "languages"]) });
   };
   const saveContact = () => {
-    const phone = normalizePhone(s(c.phone));
-    if (phone && !isValidPhone(phone)) return toast.error("Enter a valid mobile number");
-    for (const k of ["alt_phone", "whatsapp"]) if (s(c[k]) && !isValidPhone(s(c[k]))) return toast.error("Enter a valid alternate / WhatsApp number");
+    const errs: Record<string, string> = {};
+    for (const k of ["phone", "alt_phone", "whatsapp"]) {
+      const msg = phoneError(s(c[k]));
+      if (msg) errs[k] = msg;
+    }
+    setPhoneErrs(errs);
+    if (Object.keys(errs).length) return;
     return save("contact", {
-      candidate: { ...pick(["alt_phone", "whatsapp", "linkedin_url", "github_url", "portfolio_url", "current_address", "current_city", "current_state", "current_pincode"]), phone },
+      candidate: {
+        ...pick(["linkedin_url", "github_url", "portfolio_url", "current_address", "current_city", "current_state", "current_pincode"]),
+        phone: normalizePhone(s(c.phone)),
+        alt_phone: normalizePhone(s(c.alt_phone)),
+        whatsapp: normalizePhone(s(c.whatsapp)),
+      },
     });
   };
   const saveProfessional = () => {
@@ -425,9 +437,9 @@ export function ProfileEditor({ me, skillsMaster }: { me: MyProfile; skillsMaste
         >
           <div className={grid}>
             <TextField label="Email" value={s(c0.email)} onChange={() => {}} disabled hint="Your sign-in email. Contact Synerax to change it." />
-            <PhoneField label="Mobile number" value={s(c.phone)} onChange={(v) => set("phone", v)} />
-            <PhoneField label="Alternate mobile" value={s(c.alt_phone)} onChange={(v) => set("alt_phone", v)} />
-            <PhoneField label="WhatsApp" value={s(c.whatsapp)} onChange={(v) => set("whatsapp", v)} />
+            <PhoneField label="Mobile number" value={s(c.phone)} onChange={(v) => (set("phone", v), setPhoneErrs((e) => ({ ...e, phone: "" })))} error={phoneErrs.phone} />
+            <PhoneField label="Alternate mobile" value={s(c.alt_phone)} onChange={(v) => (set("alt_phone", v), setPhoneErrs((e) => ({ ...e, alt_phone: "" })))} error={phoneErrs.alt_phone} />
+            <PhoneField label="WhatsApp" value={s(c.whatsapp)} onChange={(v) => (set("whatsapp", v), setPhoneErrs((e) => ({ ...e, whatsapp: "" })))} error={phoneErrs.whatsapp} />
             <TextField label="LinkedIn URL" value={s(c.linkedin_url)} onChange={(v) => set("linkedin_url", v)} type="url" />
             <TextField label="GitHub URL" value={s(c.github_url)} onChange={(v) => set("github_url", v)} type="url" />
             <TextField className="sm:col-span-2" label="Portfolio URL" value={s(c.portfolio_url)} onChange={(v) => set("portfolio_url", v)} type="url" />

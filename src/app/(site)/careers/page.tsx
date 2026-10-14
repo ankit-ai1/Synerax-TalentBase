@@ -5,7 +5,9 @@ import { Reveal } from "@/components/site/reveal";
 import { SpotlightCard } from "@/components/site/cards";
 import { OpeningsBoard, type Opening } from "@/components/site/openings";
 import { createClient as createSupabase } from "@supabase/supabase-js";
-import { MultiStepLeadForm } from "@/components/site/lead-form";
+import { shell } from "@/components/site/lead-form";
+import { CandidateRegistrationForm } from "@/components/candidate/registration-form";
+import { createAdminClient } from "@/lib/supabase/server";
 import { MagneticButton } from "@/components/site/magnetic-button";
 import { IconTile, PageHero, Section, SectionHeading } from "@/components/site/ui";
 import { cn } from "@/lib/utils";
@@ -72,9 +74,19 @@ async function liveOpenings(): Promise<Opening[]> {
   }
 }
 
+/** skills master for the registration form's picker (non-sensitive) */
+async function skillNames() {
+  try {
+    const { data } = await createAdminClient().from("skills").select("name").order("name").limit(1000);
+    return (data ?? []).map((s) => s.name as string);
+  } catch {
+    return [];
+  }
+}
+
 export default async function CareersPage() {
   const c = site.careers;
-  const openings = await liveOpenings();
+  const [openings, skills] = await Promise.all([liveOpenings(), skillNames()]);
 
   return (
     <>
@@ -144,7 +156,9 @@ export default async function CareersPage() {
             </div>
           </Reveal>
           <Reveal delay={100}>
-            <MultiStepLeadForm type="candidate" />
+            <div id="register" className={shell}>
+              <CandidateRegistrationForm skills={skills} />
+            </div>
           </Reveal>
         </div>
       </Section>

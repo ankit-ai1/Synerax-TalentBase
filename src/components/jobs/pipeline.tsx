@@ -34,6 +34,7 @@ import { AsyncPicker, searchCandidates } from "@/components/pickers";
 import { ACTIVE_STAGES, STAGES, STAGE_STYLE } from "@/lib/constants";
 import { MessageButton } from "@/components/chat/message-button";
 import { cn, dayLabel, formatTime, friendlyError, lpa, noticeLabel, timeAgo, years } from "@/lib/utils";
+import { warnBelowThreshold } from "@/lib/override-warning";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 type App = any;
@@ -127,6 +128,7 @@ export function Pipeline({
     if (error) return toast.error(friendlyError(error.message));
     if (!data) return toast.message("This candidate is already in the pipeline");
     toast.success("Added to pipeline");
+    warnBelowThreshold(jobId, [id]);
     router.refresh();
   }
 
@@ -529,6 +531,11 @@ function AppCard({
           </Link>
           <p className="truncate text-xs text-ink-400">{[c.current_designation, c.current_company].filter(Boolean).join(" @ ") || "—"}</p>
           {a.origin === "Candidate applied" && <PortalBadge className="mt-1" />}
+          {a.below_threshold && (
+            <span className="mt-1 inline-flex items-center rounded-full bg-saffron-50 px-1.5 py-0.5 text-[10.5px] font-semibold text-saffron-800" title="Added by staff below the apply threshold (override logged)" data-testid="below-threshold">
+              Profile {a.completion_at_add}% complete
+            </span>
+          )}
         </div>
         {a.match_score != null && <ScoreRing value={a.match_score} size={30} />}
         <MessageButton kind="candidate" id={c.id} iconOnly variant="ghost" label={`Message ${name}`} className="opacity-0 focus:opacity-100 group-hover:opacity-100" />

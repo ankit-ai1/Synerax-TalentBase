@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { PORTAL_STEPS, expRange, salaryLabel, type CandidateJob, type Completion, type MyApplication } from "@/lib/portal-types";
 import { MatchRing, SkillChip, istDate, relTime } from "@/components/portal-ui/kit";
-import { ApplyButton } from "./apply-button";
+import { ApplyButton, ApplyGateNotice } from "./apply-button";
 import { cn, friendlyError } from "@/lib/utils";
 
 /** "What happens next" copy for each friendly step */
@@ -188,6 +188,7 @@ export function JobCard({ job, completion, className }: { job: CandidateJob; com
         )}
         <SaveJobButton jobId={job.id} saved={job.saved} />
       </div>
+      {!job.applied && completion && <ApplyGateNotice completion={completion} compact className="relative z-10 mt-2" />}
     </article>
   );
 }

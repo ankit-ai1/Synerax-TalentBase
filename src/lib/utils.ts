@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { waNumber } from "@/lib/phone";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -109,10 +110,25 @@ export function mask(v: string | null | undefined, visible = 4) {
   return "•".repeat(Math.max(v.length - visible, 2)) + v.slice(-visible);
 }
 
+export type ProfileGap = { percent: number; threshold: number; missing: { key: string; label: string; section: string }[] };
+
+/** candidate_apply below the completion threshold → { percent, threshold, missing } */
+export function parseProfileIncomplete(msg: string | undefined | null): ProfileGap | null {
+  if (!msg?.includes("PROFILE_INCOMPLETE:")) return null;
+  try {
+    return JSON.parse(msg.split("PROFILE_INCOMPLETE:")[1].trim()) as ProfileGap;
+  } catch {
+    return { percent: 0, threshold: 80, missing: [] };
+  }
+}
+
 /** Turns a Supabase/Postgres error into a readable message */
 export function friendlyError(msg: string | undefined | null) {
   if (!msg) return "Something went wrong. Please try again.";
+  const gap = parseProfileIncomplete(msg);
+  if (gap) return `Complete your profile (${gap.percent}% → ${gap.threshold}%) to apply.${gap.missing.length ? " Missing: " + gap.missing.map((m) => m.label).join(", ") + "." : ""}`;
   if (msg.includes("DUPLICATE:")) return msg.split("DUPLICATE:")[1].trim();
+  if (msg.includes("candidates_phone_uq")) return "This phone number is already registered with another candidate.";
   if (msg.includes("VALIDATION:")) return msg.split("VALIDATION:")[1].trim();
   if (msg.includes("invalid input syntax for type date")) return "One of the dates is in an invalid format.";
   if (msg.includes("invalid input syntax for type numeric") || msg.includes("invalid input syntax for type integer"))
@@ -164,9 +180,8 @@ export function fillTemplate(body: string, vars: Record<string, string | null | 
 }
 
 export function waLink(phone: string | null | undefined, text?: string) {
-  const n = (phone || "").replace(/[^0-9]/g, "");
-  if (!n) return null;
-  const num = n.length === 10 ? "91" + n : n;
+  const num = waNumber(phone);
+  if (!num) return null;
   return `https://wa.me/${num}${text ? `?text=${encodeURIComponent(text)}` : ""}`;
 }
 

@@ -3,19 +3,57 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Check, FileText, Loader2, Send, UploadCloud } from "lucide-react";
+import { Check, FileText, Loader2, Lock, Send, UploadCloud } from "lucide-react";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { portalRpc } from "@/lib/portal-rpc";
 import { CITIES, NOTICE_OPTIONS, QUALIFICATIONS, WORK_MODES } from "@/lib/constants";
-import type { Completion } from "@/lib/portal-types";
+import { SECTION_ANCHOR, type Completion } from "@/lib/portal-types";
 import { Dialog } from "@/components/ui/dialog";
 import { ChipInput, SelectField, Switch, TextField } from "@/components/ui/fields";
-import { cn, friendlyError } from "@/lib/utils";
+import { cn, friendlyError, parseProfileIncomplete } from "@/lib/utils";
 
 const KEY_FIELDS = new Set(["basic", "current_job", "notice", "skills", "education", "preferences", "cv"]);
 
-/** One-click apply. Profiles under 60% (or without a CV) get a quick modal for the missing key fields first. */
+import { applyThreshold, canApply } from "./apply-gate";
+export { applyThreshold, canApply };
+
+/**
+ * "Complete your profile (72% → 80%) to apply" + the missing items with links. Renders nothing once the profile
+ * reaches the threshold (app_settings.min_profile_completion_to_apply — the database enforces the same rule).
+ */
+export function ApplyGateNotice({ completion, compact, className }: { completion: Completion; compact?: boolean; className?: string }) {
+  if (canApply(completion)) return null;
+  const items = compact ? completion.missing.slice(0, 2) : completion.missing;
+  const more = completion.missing.length - items.length;
+  return (
+    <div className={cn("text-[12.5px] leading-snug text-ink-600", className)} data-testid="apply-gate">
+      <p className="font-medium text-ink-800">
+        Complete your profile ({completion.percent}% → {applyThreshold(completion)}%) to apply
+      </p>
+      {items.length > 0 && (
+        <ul className={cn("mt-1 flex flex-wrap gap-x-3 gap-y-1", !compact && "flex-col")}>
+          {items.map((m) => (
+            <li key={m.key}>
+              <Link href={SECTION_ANCHOR[m.section] ?? "/portal/profile"} className="font-medium text-jade-700 hover:underline">
+                + {m.label}
+              </Link>
+            </li>
+          ))}
+          {more > 0 && (
+            <li>
+              <Link href="/portal/profile" className="font-medium text-jade-700 hover:underline">
+                +{more} more
+              </Link>
+            </li>
+          )}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+/** One-click apply. Below the completion threshold the button is disabled (see ApplyGateNotice); profiles without a CV get a quick modal first. */
 export function ApplyButton({
   jobId,
   applied,
@@ -33,13 +71,17 @@ export function ApplyButton({
   const [open, setOpen] = useState(false);
   const missing = completion.missing.map((m) => m.key);
   const needsCv = missing.includes("cv");
-  const needsModal = needsCv || completion.percent < 60;
+  const needsModal = needsCv;
+  const gated = !canApply(completion);
 
   async function apply() {
     setBusy(true);
     const { error } = await portalRpc("candidate_apply", { p_job: jobId });
     setBusy(false);
-    if (error) return toast.error(friendlyError(error.message));
+    if (error) {
+      if (parseProfileIncomplete(error.message)) router.refresh(); // the server knows better — show the gate
+      return toast.error(friendlyError(error.message));
+    }
     setDone(true);
     setOpen(false);
     toast.success("Application sent! We'll keep you posted.");
@@ -51,6 +93,21 @@ export function ApplyButton({
       <span className={cn("inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-jade-50 px-6 text-[15px] font-semibold text-jade-700", className)}>
         <Check className="h-5 w-5" aria-hidden /> Applied
       </span>
+    );
+  }
+
+  if (gated) {
+    return (
+      <button
+        type="button"
+        disabled
+        aria-disabled
+        title={`Complete your profile (${completion.percent}% → ${applyThreshold(completion)}%) to apply`}
+        className={cn("inline-flex h-12 cursor-not-allowed items-center justify-center gap-2 rounded-xl bg-ink-200 px-6 text-[15px] font-semibold text-ink-500", className)}
+        data-testid="apply-disabled"
+      >
+        <Lock className="h-4 w-4" aria-hidden /> Apply
+      </button>
     );
   }
 

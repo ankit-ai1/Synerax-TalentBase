@@ -16,8 +16,7 @@ import {
   Bot,
   Tags,
   Users,
-  UsersRound,
-} from "lucide-react";
+  UsersRound, SlidersHorizontal, DatabaseBackup } from "lucide-react";
 
 export type NavItem = {
   href: string;
@@ -64,9 +63,12 @@ export const NAV: { label: string; admin?: boolean; items: NavItem[] }[] = [
     items: [
       { href: "/admin/users", label: "Team & access", icon: Users },
       { href: "/admin/masters", label: "Skills & roles", icon: Tags },
-      { href: "/admin/email", label: "Email settings", icon: Mail },
+      { href: "/admin/settings", label: "App settings", icon: SlidersHorizontal },
+      { href: "/admin/email", label: "Email settings", icon: Mail, exclude: ["/admin/email/analytics"] },
+      { href: "/admin/email/analytics", label: "Email analytics", icon: BarChart3 },
       { href: "/admin/chatbot", label: "Chatbot & chat", icon: Bot },
       { href: "/admin/activity", label: "Activity log", icon: History },
+      { href: "/admin/backups", label: "Backups", icon: DatabaseBackup },
     ],
   },
 ];

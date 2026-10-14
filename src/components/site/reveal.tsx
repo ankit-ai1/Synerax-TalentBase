@@ -66,7 +66,11 @@ export function RevealObserver() {
     root.classList.add("reveal-on");
     scan();
 
-    const mo = new MutationObserver(scan);
+    // DOM changes (rolling words, carousels…) happen often: rescan at most once per frame
+    let scanFrame = 0;
+    const mo = new MutationObserver(() => {
+      if (!scanFrame) scanFrame = requestAnimationFrame(() => ((scanFrame = 0), scan()));
+    });
     mo.observe(document.body, { childList: true, subtree: true });
     const showAll = () => document.querySelectorAll("[data-reveal]").forEach((el) => el.classList.add("is-in"));
     window.addEventListener("beforeprint", showAll);
@@ -77,12 +81,12 @@ export function RevealObserver() {
     const sweep = () => {
       frame = 0;
       const limit = window.innerHeight * 0.95;
-      document.querySelectorAll("[data-reveal]:not(.is-in)").forEach((el) => {
-        if (el.getBoundingClientRect().top < limit) {
-          el.classList.add("is-in");
-          io.unobserve(el);
-        }
-      });
+      // read every position first, then write (no layout thrashing)
+      const due = [...document.querySelectorAll("[data-reveal]:not(.is-in)")].filter((el) => el.getBoundingClientRect().top < limit);
+      for (const el of due) {
+        el.classList.add("is-in");
+        io.unobserve(el);
+      }
     };
     const onScroll = () => {
       if (!frame) frame = requestAnimationFrame(sweep);
@@ -95,6 +99,7 @@ export function RevealObserver() {
       io.disconnect();
       mo.disconnect();
       cancelAnimationFrame(frame);
+      cancelAnimationFrame(scanFrame);
       clearTimeout(late);
       window.removeEventListener("beforeprint", showAll);
       window.removeEventListener("scroll", onScroll);

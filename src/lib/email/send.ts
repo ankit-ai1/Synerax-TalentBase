@@ -1,32 +1,18 @@
 import "server-only";
-import nodemailer, { type Transporter } from "nodemailer";
 import { createAdminClient } from "@/lib/supabase/server";
 import { renderEmail, type EmailContent } from "./layout";
 import type { EmailEventKey } from "./events";
+import { deliverNow, smtpConfigured, trackingBase } from "./queue";
+import { addTracking, newTrackToken } from "./tracking";
+
+export { smtpConfigured };
 
 /**
  * Provider-agnostic email over SMTP (Gmail app password, Resend SMTP, …).
  * sendEmail() never throws — a failed email must never break the user's action.
- * Every attempt is written to email_log.
+ * Every email goes through the queue (public.emails): it is sent right away when the quota allows,
+ * otherwise the cron worker (/api/cron/email) sends it later with retries. Opens/clicks are tracked per recipient.
  */
-
-let transport: Transporter | null = null;
-
-export function smtpConfigured() {
-  return !!(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS);
-}
-
-function getTransport() {
-  if (transport) return transport;
-  const port = Number(process.env.SMTP_PORT || 587);
-  transport = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port,
-    secure: port === 465,
-    auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
-  });
-  return transport;
-}
 
 export type EmailSettings = { sender_name: string; notify_emails: string[]; events: Record<string, boolean> };
 
@@ -56,55 +42,51 @@ export async function sendEmail(opts: {
   force?: boolean;
   /** send at most once per key (see alreadySent) */
   dedupeKey?: string;
-}): Promise<{ status: "sent" | "failed" | "skipped"; error?: string }> {
-  const recipients = (Array.isArray(opts.to) ? opts.to : [opts.to]).map((x) => x.trim()).filter(Boolean);
+}): Promise<{ status: "sent" | "queued" | "failed" | "skipped"; error?: string }> {
+  const recipients = [...new Set((Array.isArray(opts.to) ? opts.to : [opts.to]).map((x) => x.trim()).filter(Boolean))];
   if (!recipients.length) return { status: "skipped", error: "No recipient" };
-  const admin = createAdminClient();
-  if (opts.dedupeKey && (await alreadySent(opts.dedupeKey))) return { status: "skipped", error: "Already sent" };
-
-  let status: "sent" | "failed" | "skipped" = "sent";
-  let error: string | undefined;
   try {
+    if (opts.dedupeKey && (await alreadySent(opts.dedupeKey))) return { status: "skipped", error: "Already sent" };
+    const admin = createAdminClient();
     const settings = opts.settings ?? (await getEmailSettings());
-    if (!opts.force && !eventEnabled(settings, opts.event)) {
-      status = "skipped";
-      error = "Turned off in email settings";
-    } else if (!smtpConfigured()) {
-      status = "skipped";
-      error = "SMTP is not configured";
-    } else {
-      const { html, text } = renderEmail(opts.content, settings.sender_name);
-      const fromAddr = process.env.MAIL_FROM || process.env.SMTP_USER!;
-      const from = fromAddr.includes("<") ? fromAddr : `"${settings.sender_name.replace(/"/g, "")}" <${fromAddr}>`;
-      await getTransport().sendMail({ from, to: recipients.join(", "), subject: opts.subject, html, text, attachments: opts.attachments });
-    }
-  } catch (e) {
-    status = "failed";
-    error = e instanceof Error ? e.message.slice(0, 500) : "Unknown error";
-    console.error("sendEmail failed", opts.event, error);
-  }
+    const skip = !opts.force && !eventEnabled(settings, opts.event) ? "Turned off in email settings" : !smtpConfigured() ? "SMTP is not configured" : null;
 
-  await admin
-    .from("email_log")
-    .insert(
-      recipients.map((to) => ({
-        to_email: to,
+    const { html, text } = renderEmail(opts.content, settings.sender_name);
+    const attachments = opts.attachments?.map((a) => ({ filename: a.filename, contentType: a.contentType, content: Buffer.isBuffer(a.content) ? a.content.toString("base64") : Buffer.from(a.content).toString("base64") }));
+    const base = trackingBase();
+    const rows = recipients.map((to_email) => {
+      const token = newTrackToken();
+      return {
+        to_email,
         template: opts.event,
         subject: opts.subject,
-        status,
-        error: error ?? null,
+        html: skip ? null : addTracking(html, base, token),
+        text_body: skip ? null : text,
+        attachments: skip ? null : attachments ?? null,
+        track_token: token,
+        status: skip ? "skipped" : "queued",
+        last_error: skip,
         dedupe_key: opts.dedupeKey ?? null,
         ...opts.related,
-      }))
-    )
-    .then(({ error: logErr }) => logErr && console.error("email_log insert failed", logErr.message));
+      };
+    });
+    const { data, error } = await admin.from("emails").insert(rows).select("id");
+    if (error) throw new Error(error.message);
+    if (skip) return { status: "skipped", error: skip };
 
-  return { status, error };
+    const r = await deliverNow((data ?? []).map((x) => x.id as string), settings.sender_name);
+    if (r.sent === recipients.length) return { status: "sent" };
+    return { status: "queued", error: r.error };
+  } catch (e) {
+    const error = e instanceof Error ? e.message.slice(0, 500) : "Unknown error";
+    console.error("sendEmail failed", opts.event, error);
+    return { status: "failed", error };
+  }
 }
 
-/** Has an email with this key already gone out (or been deliberately skipped)? Failed sends may be retried. */
+/** Has an email with this key already gone out, or been queued / deliberately skipped? Failed sends may be retried. */
 export async function alreadySent(key: string, prefix = false) {
-  const q = createAdminClient().from("email_log").select("id", { head: true, count: "exact" }).neq("status", "failed");
+  const q = createAdminClient().from("emails").select("id", { head: true, count: "exact" }).neq("status", "failed");
   const { count } = await (prefix ? q.like("dedupe_key", `${key.replace(/[%_]/g, "")}%`) : q.eq("dedupe_key", key));
   return (count ?? 0) > 0;
 }

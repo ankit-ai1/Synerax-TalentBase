@@ -53,6 +53,7 @@ function ServiceCard({ s, i, dark, compact }: { s: Service; i: number; dark: boo
         </ul>
         <Link href={`/services#${s.slug}`} className="group mt-auto inline-flex items-center gap-1.5 pt-7 text-[15px] font-semibold text-jade-700">
           Learn more <ArrowUpRight className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" aria-hidden />
+          <span className="sr-only"> about {s.title}</span>
         </Link>
       </div>
       <div className={cn("relative mt-7 lg:mt-0", compact ? "h-56" : "h-full min-h-[240px]")}>

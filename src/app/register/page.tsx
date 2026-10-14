@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase/server";
 import { AuthShell } from "@/components/auth/auth-shell";
-import { RegisterWizard } from "./register-wizard";
+import { CandidateRegistrationForm } from "@/components/candidate/registration-form";
 
 export const metadata: Metadata = {
   title: "Create your candidate account",
@@ -30,7 +30,7 @@ export default async function RegisterPage() {
         </>
       }
     >
-      <RegisterWizard skills={skills} />
+      <CandidateRegistrationForm skills={skills} />
     </AuthShell>
   );
 }
