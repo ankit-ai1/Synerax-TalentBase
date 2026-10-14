@@ -30,6 +30,9 @@ export async function GET(request: NextRequest) {
   const { data } = await supabase.auth.getUser();
   if (!data.user) return to("/login");
 
+  // portal invite / sign-in link sent by staff → choose a password + consent first
+  if (next === "/auth/set-password" || next === "/auth/set-password?existing=1") return to(next);
+
   // Verified candidate → create or link their profile now
   try {
     await finalizeRegistration(data.user.id);

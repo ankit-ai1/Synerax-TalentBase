@@ -29,6 +29,7 @@ import type { CandidateDocument } from "@/lib/types";
 import { INTERVIEW_SELECT } from "@/lib/selects";
 import { CandidateInterviews, CandidateJobs, CandidateQuickActions, CandidateTasks, ShortlistChips } from "@/components/candidate/candidate-actions";
 import { displayPhone, telHref, waNumber as toWa } from "@/lib/phone";
+import { PortalAccessCard, type PortalStatus } from "@/components/candidate/portal-access";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -102,6 +103,13 @@ export default async function CandidatePage({ params }: { params: Promise<{ id: 
       : null;
   const resume = (docs.data ?? []).find((d: any) => d.doc_type === "Resume" && !d.is_archived);
   const waNumber = c.whatsapp || c.phone || "";
+  // portal login: active = verified login + consent; invited = invite sent (or login linked) but not finished yet
+  const portalStatus: PortalStatus =
+    c.user_id && portal?.confirmed && c.consent_at
+      ? { kind: "active", lastLogin: portal.lastSignIn }
+      : c.invited_at || c.user_id
+        ? { kind: "invited", at: c.invited_at ?? null, count: c.invite_count ?? 0 }
+        : { kind: "none" };
 
   const facts = [
     { label: "Experience", value: years(c.total_experience), sub: c.relevant_experience ? `${years(c.relevant_experience)} relevant` : undefined },
@@ -279,6 +287,7 @@ export default async function CandidatePage({ params }: { params: Promise<{ id: 
 
       {/* right rail */}
       <div className="space-y-6">
+        <PortalAccessCard candidateId={c.id} email={c.email} status={portalStatus} />
         <Card>
           <CardHeader title="Contact" />
           <dl className="space-y-3 p-5 text-sm">

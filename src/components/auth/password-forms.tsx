@@ -145,6 +145,85 @@ export function ResetPasswordForm() {
   );
 }
 
+/**
+ * Portal invite landing (/auth/set-password): the invite link signed the candidate in; they choose a password
+ * (optional when they already had a login — the sign-in-link case) and accept the consent, then land on /portal.
+ */
+export function SetPasswordForm({ existing, needsConsent }: { existing: boolean; needsConsent: boolean }) {
+  const router = useRouter();
+  const [ready, setReady] = useState<boolean | null>(null);
+  const [pw, setPw] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [consent, setConsent] = useState(!needsConsent);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    createClient()
+      .auth.getSession()
+      .then(({ data }) => setReady(!!data.session));
+  }, []);
+
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const wantsPassword = !existing || pw.length > 0 || confirm.length > 0;
+    const problem = wantsPassword ? checkNew(pw, confirm) : null;
+    if (problem) return toast.error(problem);
+    if (!consent) return toast.error("Please accept the consent to continue");
+    setBusy(true);
+    try {
+      if (wantsPassword) {
+        const { error } = await createClient().auth.updateUser({ password: pw });
+        if (error && !/same/i.test(error.message)) throw new Error(error.message);
+      }
+      const res = await fetch("/api/portal/accept-invite", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ consent }) });
+      const out = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(out.error ?? "Something went wrong. Please try again.");
+      router.replace("/portal?welcome=invite");
+      router.refresh();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+      setBusy(false);
+    }
+  }
+
+  if (ready === null) return <div className="h-40 animate-pulse rounded-xl bg-surface-3" aria-busy="true" />;
+  if (!ready) {
+    return (
+      <div className="text-center" data-testid="invite-expired">
+        <p className="text-[15px] text-ink-700">This invite link is invalid or has expired.</p>
+        <p className="mt-2 text-[13.5px] text-ink-500">Ask the Synerax team to resend your invite, or reset your password if you already set one.</p>
+        <div className="mt-4 flex justify-center gap-4 text-sm font-semibold">
+          <Link href="/forgot-password" className="text-jade-700 hover:underline">
+            Reset password
+          </Link>
+          <Link href="/contact" className="text-jade-700 hover:underline">
+            Contact Synerax
+          </Link>
+        </div>
+      </div>
+    );
+  }
+  return (
+    <form onSubmit={onSubmit} className="space-y-4" data-testid="set-password-form">
+      {existing && <p className="text-[13.5px] text-ink-500">You already have a password. Set a new one below, or leave these empty to keep it.</p>}
+      <NewPasswordFields pw={pw} setPw={setPw} confirm={confirm} setConfirm={setConfirm} />
+      {needsConsent && (
+        <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-line bg-surface-2/60 p-3.5 text-[13.5px] text-ink-700">
+          <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-0.5 h-4 w-4 accent-[rgb(var(--jade))]" data-testid="invite-consent" />
+          <span>
+            I agree Synerax may store my profile and share it with prospective employers. Read our{" "}
+            <Link href="/privacy" className="font-semibold underline" target="_blank">
+              privacy policy
+            </Link>
+            .
+          </span>
+        </label>
+      )}
+      <SubmitButton busy={busy}>{existing ? "Continue to my profile" : "Set password & continue"}</SubmitButton>
+    </form>
+  );
+}
+
 export function ChangePasswordForm({ email, home }: { email: string; home: string }) {
   const uid = useId();
   const [current, setCurrent] = useState("");

@@ -24,6 +24,7 @@ export const EMAIL_EVENTS = [
   { key: "client_comment", audience: "client", label: "Synerax replied on a profile" },
   { key: "chat_unread_client", audience: "client", label: "Unread chat message from Synerax (after 10 min, max 1 per hour)" },
   // to candidates
+  { key: "candidate_portal_invite", audience: "candidate", label: "Portal invite (sent by staff from a candidate profile)" },
   { key: "candidate_welcome", audience: "candidate", label: "Welcome after registration" },
   { key: "candidate_profile_reminder", audience: "candidate", label: "Incomplete-profile reminder (after 3 days, max 2)" },
   { key: "candidate_application_received", audience: "candidate", label: "Application received" },

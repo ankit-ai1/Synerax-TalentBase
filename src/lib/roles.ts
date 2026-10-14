@@ -31,6 +31,7 @@ export const PUBLIC_PATHS = new Set([
   "/forgot-password",
   "/reset-password",
   "/auth/callback",
+  "/auth/set-password",
   "/api/contact",
   "/api/portal/register",
   "/api/portal/register/precheck",

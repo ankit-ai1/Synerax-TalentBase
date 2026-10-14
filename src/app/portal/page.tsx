@@ -97,10 +97,23 @@ export default async function PortalDashboard({ searchParams }: { searchParams: 
 
   return (
     <div className="portal-in grid grid-cols-1 gap-5 lg:gap-6">
-      {sp.welcome && (
-        <div className="flex items-center gap-3 rounded-2xl border border-jade/30 bg-jade-50 px-5 py-4 text-[14.5px] text-jade-700" role="status">
-          <PartyPopper className="h-5 w-5 shrink-0" aria-hidden /> Your email is verified and your profile is ready — welcome to Synerax TalentBase!
+      {sp.welcome === "invite" ? (
+        <div className="flex flex-col gap-3 rounded-2xl border border-jade/30 bg-jade-50 px-5 py-4 text-[14.5px] text-jade-700 sm:flex-row sm:items-center" role="status" data-testid="invite-welcome">
+          <PartyPopper className="h-5 w-5 shrink-0" aria-hidden />
+          <span className="flex-1">
+            Welcome to Synerax TalentBase! Your profile is {comp.percent}% complete
+            {comp.percent < (comp.threshold ?? 80) ? ` — reach ${comp.threshold ?? 80}% to apply to jobs in one click.` : "."}
+          </span>
+          <Link href="/portal/profile" className="inline-flex h-9 shrink-0 items-center justify-center rounded-xl bg-jade px-4 text-[13.5px] font-semibold text-white hover:brightness-110">
+            Complete my profile
+          </Link>
         </div>
+      ) : (
+        sp.welcome && (
+          <div className="flex items-center gap-3 rounded-2xl border border-jade/30 bg-jade-50 px-5 py-4 text-[14.5px] text-jade-700" role="status">
+            <PartyPopper className="h-5 w-5 shrink-0" aria-hidden /> Your email is verified and your profile is ready — welcome to Synerax TalentBase!
+          </div>
+        )
       )}
 
       {/* hero + strength */}

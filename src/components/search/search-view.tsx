@@ -23,6 +23,7 @@ import {
   UserPlus,
   Users,
   X,
+  Send,
 } from "lucide-react";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
@@ -48,6 +49,7 @@ import {
 } from "@/lib/constants";
 import { cn, daysUntil, formatDate, friendlyError, lpa, noticeLabel, timeAgo, years } from "@/lib/utils";
 import type { JobRole, SearchItem, SearchResult, Skill } from "@/lib/types";
+import { sendPortalInvites } from "@/components/candidate/portal-access";
 
 const SORTS = [
   { value: "relevance", label: "Best match" },
@@ -184,6 +186,13 @@ export function SearchView({ skills, roles, isAdmin, meId }: { skills: Skill[]; 
     setSel(new Map());
     fetchNow();
   };
+
+  // portal invites: candidates without email or already active are skipped server-side (summary in the toast)
+  async function inviteSelected() {
+    if (!confirm(`Email a portal invite to ${ids.length} candidate${ids.length > 1 ? "s" : ""}? Those without an email or already on the portal are skipped.`)) return;
+    const out = await sendPortalInvites(ids);
+    if (out) afterBulk();
+  }
 
   async function bulk(action: string, value?: string) {
     const { data, error } = await createClient().rpc("bulk_candidates", { p_ids: ids, p_action: action, p_value: value ?? null });
@@ -594,6 +603,9 @@ export function SearchView({ skills, roles, isAdmin, meId }: { skills: Skill[]; 
             </Menu>
             <BarBtn icon={<Tag className="h-4 w-4" />} onClick={() => setTagOpen(true)}>
               Tag
+            </BarBtn>
+            <BarBtn icon={<Send className="h-4 w-4" />} onClick={inviteSelected}>
+              Send portal invite
             </BarBtn>
             {isAdmin && (
               <a
