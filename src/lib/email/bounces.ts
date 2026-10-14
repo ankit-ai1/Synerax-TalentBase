@@ -3,7 +3,9 @@ import { ImapFlow } from "imapflow";
 import { createAdminClient } from "@/lib/supabase/server";
 import { normMessageId, parseBounce, type Bounce } from "./bounce-parse";
 
-export const imapConfigured = () => !!(process.env.IMAP_HOST && process.env.IMAP_USER && process.env.IMAP_PASS);
+// values pasted into Vercel often carry spaces (app passwords are shown as "abcd efgh …")
+const env = (k: string) => (process.env[k] ?? "").trim();
+export const imapConfigured = () => !!(env("IMAP_HOST") && env("IMAP_USER") && env("IMAP_PASS"));
 
 /** match one parsed bounce to a sent email: by the original Message-ID, else the latest email to that address (7 days) */
 export async function applyBounce(b: Bounce) {
@@ -41,10 +43,10 @@ export async function checkBounces(max = 50) {
   const admin = createAdminClient();
   const { data: q } = await admin.from("email_quota").select("imap_last_uid").eq("id", 1).maybeSingle();
   const client = new ImapFlow({
-    host: process.env.IMAP_HOST!,
-    port: Number(process.env.IMAP_PORT || 993),
-    secure: (process.env.IMAP_PORT || "993") === "993",
-    auth: { user: process.env.IMAP_USER!, pass: process.env.IMAP_PASS! },
+    host: env("IMAP_HOST"),
+    port: Number(env("IMAP_PORT") || 993),
+    secure: Number(env("IMAP_PORT") || 993) === 993,
+    auth: { user: env("IMAP_USER"), pass: env("IMAP_PASS").replace(/\s+/g, "") },
     logger: false,
   });
   let read = 0;
