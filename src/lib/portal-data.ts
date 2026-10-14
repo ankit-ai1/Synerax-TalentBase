@@ -10,7 +10,7 @@ import type { MyProfile } from "@/lib/portal-types";
 export async function loadMyProfile(userId: string): Promise<MyProfile | null> {
   const supabase = await createClient();
   let { data, error } = await supabase.rpc("candidate_my_profile");
-  if (error) {
+  if (error || !data) {
     await finalizeRegistration(userId).catch((e) => console.error("finalizeRegistration", e));
     ({ data, error } = await supabase.rpc("candidate_my_profile"));
   }

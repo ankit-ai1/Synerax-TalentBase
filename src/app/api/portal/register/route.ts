@@ -1,6 +1,7 @@
 import { registrationSchema, CV_ALLOWED, CV_MAX_BYTES } from "@/lib/candidate-schema";
 import { finalizeRegistration, storePending } from "@/lib/registration";
 import { clientIp, rateLimited } from "@/lib/rate-limit";
+import { createClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -34,7 +35,9 @@ export async function POST(req: Request) {
   if (!CV_ALLOWED.test(cv.name)) return Response.json({ error: "CV must be a PDF, DOC or DOCX file" }, { status: 415 });
 
   try {
-    const user = await storePending(userId, parsed.data, cv);
+    // a signed-in candidate finishing their own registration isn't limited to the 3-hour sign-up window
+    const { data: session } = await (await createClient()).auth.getUser();
+    const user = await storePending(userId, parsed.data, cv, { owner: session.user?.id === userId });
     // Email confirmation turned off in Supabase → the account is already verified, finish now
     if (user.email_confirmed_at) {
       const res = await finalizeRegistration(userId);

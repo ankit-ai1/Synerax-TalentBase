@@ -51,14 +51,15 @@ export async function precheckRegistration(email: string, phone: string): Promis
 }
 
 /** Validates the freshly created auth user and stores the pending registration (+ CV) */
-export async function storePending(userId: string, data: Registration, cv: File): Promise<User> {
+export async function storePending(userId: string, data: Registration, cv: File, opts: { owner?: boolean } = {}): Promise<User> {
   const admin = createAdminClient();
   const { data: res, error } = await admin.auth.admin.getUserById(userId);
   const user = res?.user;
   if (error || !user) throw new Error("Account not found. Please try again.");
   if ((user.email ?? "").toLowerCase() !== data.email) throw new Error("Account mismatch. Please try again.");
-  if (user.app_metadata?.registration_finalized_at) throw new Error("This account is already registered. Please sign in.");
-  if (Date.now() - new Date(user.created_at).getTime() > WINDOW_MS) throw new Error("This sign-up has expired. Please sign in.");
+  // the signed-in owner may redo it when their profile is gone (e.g. removed by staff); the portal only offers that when it is
+  if (user.app_metadata?.registration_finalized_at && !opts.owner) throw new Error("This account is already registered. Please sign in.");
+  if (!opts.owner && Date.now() - new Date(user.created_at).getTime() > WINDOW_MS) throw new Error("This sign-up has expired. Please sign in.");
 
   const previous = (user.app_metadata?.pending_registration as PendingRegistration | undefined)?.cv;
   const folder = await findOrCreateFolder(PENDING_FOLDER, rootFolderId());

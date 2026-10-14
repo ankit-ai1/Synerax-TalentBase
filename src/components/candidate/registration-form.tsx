@@ -59,16 +59,23 @@ const STEP2 = ["exp_years", "exp_months", "current_designation", "skills", "curr
  * THE candidate registration form (CV upload → auto-fill → account). Used by /register and embedded on the
  * careers page; validated by registrationSchema (src/lib/candidate-schema.ts) on both sides.
  */
-export function CandidateRegistrationForm({ skills }: { skills: string[] }) {
+export function CandidateRegistrationForm({
+  skills,
+  account,
+}: {
+  skills: string[];
+  /** signed-in candidate whose registration never completed: no password step, email fixed, profile saved to this account */
+  account?: { userId: string; email: string; fullName?: string };
+}) {
   const router = useRouter();
   const uid = useId();
   const [step, setStep] = useState(0);
-  const [f, setF] = useState<Form>(EMPTY);
+  const [f, setF] = useState<Form>(account ? { ...EMPTY, email: account.email, full_name: account.fullName ?? "" } : EMPTY);
   const [cv, setCv] = useState<File | null>(null);
   const [errors, setErrors] = useState<Record<string, React.ReactNode>>({});
   const [showPw, setShowPw] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
-  const [userId, setUserId] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(account?.userId ?? null);
   const [done, setDone] = useState<"verify" | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   // step "cv" comes first: upload → read → the form opens pre-filled
@@ -179,7 +186,7 @@ export function CandidateRegistrationForm({ skills }: { skills: string[] }) {
   };
 
   async function next() {
-    if (!validate(STEP1)) return;
+    if (!validate(account ? STEP1.filter((k) => k !== "password") : STEP1)) return;
     setBusy("Checking…");
     try {
       const res = await fetch("/api/portal/register/precheck", {
@@ -189,6 +196,12 @@ export function CandidateRegistrationForm({ skills }: { skills: string[] }) {
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) {
+        // finishing an existing account: its own email is of course "already registered"
+        if (account && json.code === "email_exists") {
+          setStep(1);
+          window.scrollTo({ top: 0, behavior: "smooth" });
+          return;
+        }
         const field = json.field === "email" || json.field === "phone" ? json.field : null;
         if (!field) {
           toast.error(json.error ?? "Please check your details.");
@@ -236,7 +249,7 @@ export function CandidateRegistrationForm({ skills }: { skills: string[] }) {
     const supabase = createClient();
     try {
       let id = userId;
-      let hasSession = false;
+      let hasSession = !!account;
       if (!id) {
         setBusy("Creating your account…");
         const { data, error } = await supabase.auth.signUp({
@@ -368,7 +381,7 @@ export function CandidateRegistrationForm({ skills }: { skills: string[] }) {
           </div>
           <div id={`${uid}-email`}>
             <CvField confidence={meta.email}>
-              <TextField label="Email" type="email" required value={f.email} onChange={(v) => set("email", v)} autoComplete="email" />
+              <TextField label="Email" type="email" required value={f.email} onChange={(v) => set("email", v)} autoComplete="email" disabled={!!account} />
             </CvField>
             {err("email")}
           </div>
@@ -377,6 +390,7 @@ export function CandidateRegistrationForm({ skills }: { skills: string[] }) {
               <PhoneField label="Mobile number" required value={f.phone} onChange={(v) => set("phone", v)} error={errors.phone} />
             </CvField>
           </div>
+          {!account && (
           <div id={`${uid}-password`}>
             <label htmlFor={`${uid}-pw`} className="field-label">
               Password<span className="ml-0.5 text-red-500">*</span>
@@ -385,6 +399,7 @@ export function CandidateRegistrationForm({ skills }: { skills: string[] }) {
             <p className="mt-1 text-xs text-ink-400">At least 8 characters.</p>
             {err("password")}
           </div>
+          )}
           <div id={`${uid}-current_city`}>
             <CvField confidence={meta.current_city}>
               <TextField label="Current city" required value={f.current_city} onChange={(v) => set("current_city", v)} list={`${uid}-cities`} autoComplete="address-level2" />
