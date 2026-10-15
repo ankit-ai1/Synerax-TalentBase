@@ -14,28 +14,44 @@ const fancyPointer = () =>
 /** Lenis smooth scrolling — desktop only, loaded after the page is interactive, off for reduced motion */
 export function SmoothScroll() {
   const path = usePathname();
-  const lenis = useRef<{ scrollTo: (t: number | string | HTMLElement, o?: object) => void; raf: (t: number) => void; destroy: () => void } | null>(null);
+  const lenis = useRef<{ scrollTo: (t: number | string | HTMLElement, o?: object) => void; raf: (t: number) => void; destroy: () => void; isScrolling: unknown } | null>(null);
 
   useEffect(() => {
     if (!fancyPointer()) return;
     let raf = 0;
     let cancelled = false;
+    let kick = () => {};
     const start = () =>
       import("lenis").then(({ default: Lenis }) => {
         if (cancelled) return;
         const l = new Lenis({ duration: 1.05, smoothWheel: true, anchors: { offset: -80 } });
         lenis.current = l as unknown as typeof lenis.current;
+        // the frame loop only runs while a smooth scroll is in progress (a wheel turn or a scrollTo) —
+        // the same scrolling, without a requestAnimationFrame every frame while the page sits still
+        let idle = 0;
         const loop = (t: number) => {
           l.raf(t);
-          raf = requestAnimationFrame(loop);
+          idle = l.isScrolling ? 0 : idle + 1;
+          raf = idle < 10 ? requestAnimationFrame(loop) : 0;
         };
-        raf = requestAnimationFrame(loop);
+        kick = () => {
+          idle = 0;
+          if (!raf) raf = requestAnimationFrame(loop);
+        };
+        const scrollTo = l.scrollTo.bind(l);
+        l.scrollTo = ((...args: Parameters<typeof l.scrollTo>) => {
+          scrollTo(...args);
+          kick();
+        }) as typeof l.scrollTo;
+        addEventListener("wheel", kick, { passive: true });
+        kick();
       });
     const idle = (window as Window & { requestIdleCallback?: (cb: () => void) => number }).requestIdleCallback;
     const handle = idle ? idle(start) : window.setTimeout(start, 600);
     return () => {
       cancelled = true;
       cancelAnimationFrame(raf);
+      removeEventListener("wheel", kick);
       if (!idle) clearTimeout(handle as number);
       lenis.current?.destroy();
       lenis.current = null;
@@ -139,7 +155,8 @@ export function ScrollTopRing() {
     const on = () => {
       if (!raf) raf = requestAnimationFrame(read);
     };
-    read();
+    // at the top the progress is 0 (the initial state) — skip the layout read during hydration
+    if (scrollY > 0) on();
     addEventListener("scroll", on, { passive: true });
     addEventListener("resize", on, { passive: true });
     return () => {

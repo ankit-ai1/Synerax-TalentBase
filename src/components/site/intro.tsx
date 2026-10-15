@@ -16,6 +16,8 @@ import { LOADER_KEY, LOADER_MS, PROMO_KEY, read, write } from "./intro-config";
 const loadViews = () => import("./intro-views");
 const IntroLayers = dynamic(() => loadViews().then((m) => m.IntroLayers), { ssr: false });
 const clearBoot = () => document.documentElement.removeAttribute("data-intro");
+// the animated loader is opaque: looping animations underneath can pause (see globals.css) — invisible either way
+const setCovered = (on: boolean) => document.documentElement.toggleAttribute("data-covered", on);
 
 export function SiteIntro() {
   const path = usePathname();
@@ -58,6 +60,7 @@ export function SiteIntro() {
   const onLoaderShown = useCallback(() => {
     if (shown.current) return;
     shown.current = true;
+    setCovered(true);
     clearBoot();
     timer.current = setTimeout(() => setPhase(promoDue.current ? "promo" : "done"), reduce.current ? 900 : LOADER_MS);
   }, []);
@@ -66,8 +69,14 @@ export function SiteIntro() {
   }, []);
 
   useEffect(() => {
-    if (phase === "done" || phase === "promo") clearBoot();
+    if (phase === "done" || phase === "promo") {
+      clearBoot();
+      setCovered(false); // the loader starts sliding away now — everything underneath runs again
+    }
   }, [phase]);
+  useEffect(() => () => {
+    setCovered(false);
+  }, []);
 
   // lock page scroll while an overlay is up
   useEffect(() => {

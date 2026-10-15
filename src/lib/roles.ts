@@ -56,7 +56,9 @@ export function normalizePath(path: string) {
 export function isPublicPath(path: string) {
   const p = normalizePath(path);
   // /api/e/… = email open/click tracking (anyone who got the email, signed in or not)
-  return PUBLIC_PATHS.has(p) || p.startsWith("/api/e/") || p.startsWith("/opengraph-image") || p.startsWith("/apple-icon") || p.startsWith("/icon");
+  // /.well-known/… must answer for itself (a real 404 when absent), never redirect to the login page —
+  // Lighthouse's agent-discovery audit treated that redirect as an invalid ai-catalog.json
+  return PUBLIC_PATHS.has(p) || p.startsWith("/.well-known/") || p.startsWith("/api/e/") || p.startsWith("/opengraph-image") || p.startsWith("/apple-icon") || p.startsWith("/icon");
 }
 
 type Area = "public" | "portal" | "client" | "account" | "staff";

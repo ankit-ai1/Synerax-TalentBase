@@ -47,6 +47,23 @@ export function Silk({ className, focus = [0.7, 0.5], heat = 0.32, amount = 0.55
   useEffect(() => {
     const cv = ref.current;
     if (!cv) return;
+    let dispose: (() => void) | undefined;
+    const near = new IntersectionObserver(
+      ([e]) => {
+        if (!e.isIntersecting) return;
+        near.disconnect();
+        dispose = init(cv);
+      },
+      { rootMargin: "800px 0px" }
+    );
+    near.observe(cv);
+    return () => {
+      near.disconnect();
+      dispose?.();
+    };
+  }, [focus[0], focus[1], heat, amount]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  function init(cv: HTMLCanvasElement): (() => void) | undefined {
     const gl = cv.getContext("webgl", { antialias: false, alpha: false, powerPreference: "low-power" });
     if (!gl) {
       cv.style.display = "none";
@@ -122,7 +139,12 @@ export function Silk({ className, focus = [0.7, 0.5], heat = 0.32, amount = 0.55
       gl.uniform1f(uT, (now - start) / 1000);
       gl.uniform2f(uM, mx, my);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
-      raf = visible && !reduce ? requestAnimationFrame(frame) : 0;
+      raf = running() ? requestAnimationFrame(frame) : 0;
+    };
+    const covered = () => document.hidden || document.documentElement.hasAttribute("data-intro") || document.documentElement.hasAttribute("data-covered");
+    const running = () => visible && !reduce && !covered();
+    const resume = () => {
+      if (!raf && running()) raf = requestAnimationFrame(frame);
     };
     size();
     frame(performance.now());
@@ -134,14 +156,18 @@ export function Silk({ className, focus = [0.7, 0.5], heat = 0.32, amount = 0.55
     ro.observe(cv);
     const io = new IntersectionObserver(([e]) => {
       visible = e.isIntersecting;
-      if (visible && !raf && !reduce) raf = requestAnimationFrame(frame);
+      resume();
     });
     io.observe(cv);
-    const mo = new MutationObserver(() => {
-      colours();
-      if (!raf) frame(performance.now());
+    const mo = new MutationObserver((records) => {
+      if (records.some((r) => r.attributeName === "class")) {
+        colours();
+        if (!raf) frame(performance.now());
+      }
+      resume();
     });
-    mo.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    mo.observe(document.documentElement, { attributes: true, attributeFilter: ["class", "data-intro", "data-covered"] });
+    document.addEventListener("visibilitychange", resume);
     const move = (e: PointerEvent) => {
       const r = cv.getBoundingClientRect();
       if (e.clientY < r.top || e.clientY > r.bottom) return;
@@ -154,10 +180,11 @@ export function Silk({ className, focus = [0.7, 0.5], heat = 0.32, amount = 0.55
       ro.disconnect();
       io.disconnect();
       mo.disconnect();
+      document.removeEventListener("visibilitychange", resume);
       window.removeEventListener("pointermove", move);
       gl.getExtension("WEBGL_lose_context")?.loseContext();
     };
-  }, [focus[0], focus[1], heat, amount]); // eslint-disable-line react-hooks/exhaustive-deps
+  }
   return (
     <div aria-hidden className={cn("pointer-events-none absolute inset-0 -z-10 overflow-hidden", className)}>
       <canvas ref={ref} className="h-full w-full" />

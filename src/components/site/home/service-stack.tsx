@@ -96,7 +96,7 @@ export function ServiceStack() {
     const on = () => {
       if (!raf) raf = requestAnimationFrame(read);
     };
-    read();
+    on(); // first measurement on the next frame, not during hydration (no forced layout)
     addEventListener("scroll", on, { passive: true });
     addEventListener("resize", on);
     return () => {

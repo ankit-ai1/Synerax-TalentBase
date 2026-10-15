@@ -776,8 +776,18 @@ html[data-intro] { overflow: hidden; }
 @keyframes intro-boot-pulse { 0%, 100% { opacity: 0.55; transform: scale(0.96); } 50% { opacity: 1; transform: scale(1); } }
 @media (prefers-reduced-motion: reduce) { html[data-intro] .intro-boot > span { animation: none; } }
 
-/* Performance: looping animations pause while their section is far off-screen (set by <PauseOffscreen>).
-   They resume from the same frame when scrolled back, so nothing visible changes. One-shot animations are not listed. */
-[data-offscreen] :is(.border-beam, .urgent-glow, .scan)::after, [data-offscreen] :is(.gradient-border, .btn-shimmer)::before {
+/* Performance: LOOPING animations pause while nobody can see them —
+   • their section is far off-screen ([data-offscreen], set by <PauseOffscreen>)
+   • the opaque first-visit intro covers the page (html[data-intro] boot screen, html[data-covered] animated loader)
+   They resume from the same frame afterwards, so nothing visible changes. One-shot animations are never listed. */
+[data-offscreen] :is(.mesh-a, .mesh-b, .mesh-c, .float-slow, .float-slower, .badge-cycle, .marquee-track, .orbit, .orbit-counter, .flip-page, .stack-in, .spot-sweep, .pulse-ring, .bar-grow, .slide-loop, .caret, .aurora-a, .aurora-b, .wave-dot, .cal-cell, .spot-roam, .found, .flow-x, .ember-text, .sweep, .text-gradient, .ember-sweep, .hot-pulse, .route-flow, .animate-spin, .animate-ping, .animate-bounce),
+[data-offscreen] :is(.border-beam, .urgent-glow, .scan)::after,
+[data-offscreen] :is(.gradient-border, .btn-shimmer)::before,
+html[data-intro] :is(.mesh-a, .mesh-b, .mesh-c, .float-slow, .float-slower, .badge-cycle, .marquee-track, .orbit, .orbit-counter, .flip-page, .stack-in, .spot-sweep, .pulse-ring, .bar-grow, .slide-loop, .caret, .aurora-a, .aurora-b, .wave-dot, .cal-cell, .spot-roam, .found, .flow-x, .ember-text, .sweep, .text-gradient, .ember-sweep, .hot-pulse, .route-flow, .animate-spin, .animate-ping, .animate-bounce),
+html[data-intro] :is(.border-beam, .urgent-glow, .scan)::after,
+html[data-intro] :is(.gradient-border, .btn-shimmer)::before,
+html[data-covered] :is(.mesh-a, .mesh-b, .mesh-c, .float-slow, .float-slower, .badge-cycle, .marquee-track, .orbit, .orbit-counter, .flip-page, .stack-in, .spot-sweep, .pulse-ring, .bar-grow, .slide-loop, .caret, .aurora-a, .aurora-b, .wave-dot, .cal-cell, .spot-roam, .found, .flow-x, .ember-text, .sweep, .text-gradient, .ember-sweep, .hot-pulse, .route-flow, .animate-spin, .animate-ping, .animate-bounce),
+html[data-covered] :is(.border-beam, .urgent-glow, .scan)::after,
+html[data-covered] :is(.gradient-border, .btn-shimmer)::before {
   animation-play-state: paused;
 }

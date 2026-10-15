@@ -113,7 +113,7 @@ export function FooterWordmark() {
     const on = () => {
       if (!raf) raf = requestAnimationFrame(read);
     };
-    read();
+    on(); // first measurement on the next frame, not during hydration (no forced layout)
     addEventListener("scroll", on, { passive: true });
     return () => {
       cancelAnimationFrame(raf);

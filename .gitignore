@@ -14,3 +14,4 @@ next-env.d.ts
 
 # baseline build for before/after performance comparisons
 .next-base
+perf-proof
