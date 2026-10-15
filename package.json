@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
+    "dev": "node api.js && next dev",
+    "build": "node api.js && next build",
+    "start": "node api.js && next start",
     "lint": "next lint",
     "google-token": "node scripts/get-google-refresh-token.mjs",
     "seed:portals": "node scripts/seed-portals.mjs",
@@ -25,7 +25,8 @@
     "test:unit": "tsx --test tests/phone.test.ts tests/apply-rules.test.ts tests/backup-email.test.ts",
     "test:apply-rules": "node scripts/test-apply-rules.mjs",
     "test:e2e:invite": "tsx --conditions=react-server tests/e2e-portal-invite.mts",
-    "test:e2e:import-invite": "tsx tests/e2e-import-invite.mts"
+    "test:e2e:import-invite": "tsx tests/e2e-import-invite.mts",
+    "test:e2e:kpis": "tsx tests/e2e-dashboard-kpis.mts"
   },
   "dependencies": {
     "@googleapis/drive": "^26.0.2",

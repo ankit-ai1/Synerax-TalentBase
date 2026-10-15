@@ -50,6 +50,7 @@ import {
 import { cn, daysUntil, formatDate, friendlyError, lpa, noticeLabel, timeAgo, years } from "@/lib/utils";
 import type { JobRole, SearchItem, SearchResult, Skill } from "@/lib/types";
 import { sendPortalInvites } from "@/components/candidate/portal-access";
+import { FilterChip } from "@/components/ui/filter-chip";
 
 const SORTS = [
   { value: "relevance", label: "Best match" },
@@ -84,7 +85,20 @@ const PRESETS: { label: string; apply: (f: Filters) => Filters; on: (f: Filters)
 
 type Saved = { id: string; name: string; filters: Partial<Filters>; is_shared: boolean; created_by: string };
 
-export function SearchView({ skills, roles, isAdmin, meId }: { skills: Skill[]; roles: JobRole[]; isAdmin: boolean; meId: string }) {
+export function SearchView({
+  skills,
+  roles,
+  isAdmin,
+  meId,
+  segment,
+}: {
+  skills: Skill[];
+  roles: JobRole[];
+  isAdmin: boolean;
+  meId: string;
+  /** dashboard drill-down (/candidates?segment=…): only these candidates, shown as a removable chip */
+  segment?: { key: string; label: string; ids: string[] } | null;
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const sp = useSearchParams();
@@ -144,19 +158,23 @@ export function SearchView({ skills, roles, isAdmin, meId }: { skills: Skill[]; 
   }, [qInput, f.q, update]);
 
   const fetchNow = useCallback(() => {
-    const qs = toQueryString(f);
+    const qs = [toQueryString(f), segment ? `segment=${segment.key}` : ""].filter(Boolean).join("&");
     router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
     const id = ++reqId.current;
+    if (segment && segment.ids.length === 0) {
+      setResult({ items: [], total: 0, page: 1, page_size: pageSize });
+      return;
+    }
     setLoading(true);
     createClient()
-      .rpc("search_candidates", { f: toRpc(f, pageSize) })
+      .rpc("search_candidates", { f: segment ? { ...toRpc(f, pageSize), ids: segment.ids } : toRpc(f, pageSize) })
       .then(({ data, error }) => {
         if (id !== reqId.current) return;
         setLoading(false);
         if (error) return void toast.error(friendlyError(error.message));
         setResult(data as SearchResult);
       });
-  }, [f, pathname, router, pageSize]);
+  }, [f, pathname, router, pageSize, segment]);
 
   useEffect(fetchNow, [fetchNow]);
 
@@ -395,6 +413,11 @@ export function SearchView({ skills, roles, isAdmin, meId }: { skills: Skill[]; 
         </aside>
 
         <section aria-live="polite" className="min-w-0">
+          {segment && (
+            <div className="mb-3">
+              <FilterChip label={segment.label} clearHref="/candidates" />
+            </div>
+          )}
           <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <Checkbox checked={allOnPage} indeterminate={!allOnPage && someOnPage} onChange={toggleAll} label="Select all on this page" />
@@ -403,7 +426,7 @@ export function SearchView({ skills, roles, isAdmin, meId }: { skills: Skill[]; 
                   "Searching…"
                 ) : (
                   <>
-                    <span className="font-semibold tabular text-ink-900">{total.toLocaleString("en-IN")}</span> candidate{total === 1 ? "" : "s"}
+                    <span className="font-semibold tabular text-ink-900" data-total={total}>{total.toLocaleString("en-IN")}</span> candidate{total === 1 ? "" : "s"}
                     {loading && <Loader2 className="ml-2 inline h-3.5 w-3.5 animate-spin" />}
                   </>
                 )}

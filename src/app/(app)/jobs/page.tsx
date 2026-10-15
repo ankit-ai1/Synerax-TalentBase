@@ -9,7 +9,9 @@ import { JobsList } from "@/components/jobs/jobs-list";
 export const metadata = { title: "Jobs" };
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-export default async function JobsPage() {
+export default async function JobsPage({ searchParams }: { searchParams: Promise<{ status?: string }> }) {
+  const sp = await searchParams;
+  const initialStatus = ["Pending review", "Open", "On Hold", "Draft", "Closed", "All"].includes(sp.status ?? "") ? sp.status! : "Open";
   const profile = await requireStaff();
   const supabase = await createClient();
   const [{ data: jobs }, { data: mine }] = await Promise.all([
@@ -55,7 +57,7 @@ export default async function JobsPage() {
             <StatTile label="In interview stage" value={interviewing} />
             <StatTile label="Closed / filled" value={all.filter((j) => ["Filled", "Closed"].includes(j.status)).length} accent />
           </div>
-          <JobsList jobs={all} mine={(mine ?? []).map((m) => m.job_id)} />
+          <JobsList key={initialStatus} jobs={all} mine={(mine ?? []).map((m) => m.job_id)} initialStatus={initialStatus} />
         </>
       )}
     </>

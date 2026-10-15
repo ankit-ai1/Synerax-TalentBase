@@ -7,9 +7,13 @@ import { INTERVIEW_SELECT } from "@/lib/selects";
 
 export const metadata = { title: "Interviews" };
 
-export default async function InterviewsPage() {
+const RANGES: Record<string, string> = { "7d": "Next 7 days", today: "Today" };
+
+export default async function InterviewsPage({ searchParams }: { searchParams: Promise<{ range?: string }> }) {
   const profile = await requireStaff();
   const supabase = await createClient();
+  const range = RANGES[(await searchParams).range ?? ""] ? (await searchParams).range! : null;
+  const only = range ? { label: RANGES[range], ids: (((await supabase.rpc("interview_window_ids", { p: range })).data ?? []) as string[]) } : null;
   const from = new Date(Date.now() - 60 * 86400e3).toISOString();
   const to = new Date(Date.now() + 60 * 86400e3).toISOString();
   const { data } = await supabase.from("interviews").select(INTERVIEW_SELECT).gte("scheduled_at", from).lte("scheduled_at", to).order("scheduled_at");
@@ -17,7 +21,7 @@ export default async function InterviewsPage() {
     <>
       <PageHeader title="Interviews" description="All rounds — when, who, for which job, and feedback." actions={<ScheduleButton />} />
       {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-      <InterviewsView interviews={(data ?? []) as any[]} meId={profile.id} />
+      <InterviewsView key={range ?? "all"} interviews={(data ?? []) as any[]} meId={profile.id} only={only} />
     </>
   );
 }

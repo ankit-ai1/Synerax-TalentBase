@@ -228,6 +228,7 @@ function NavLink({
               "min-w-[20px] rounded-full px-1.5 text-center text-[11px] font-semibold tabular leading-5",
               item.badge === "jobs" ? "bg-sidebar-line/10 text-sidebar-text/80" : "bg-saffron text-[rgb(var(--on-accent))]"
             )}
+            data-badge={item.badge}
           >
             {count}
           </span>

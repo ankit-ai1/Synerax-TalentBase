@@ -27,9 +27,11 @@ export const metadata = { title: "Dashboard" };
 export default async function Dashboard() {
   const profile = await requireStaff();
   const supabase = await createClient();
-  const { data } = await supabase.rpc("dashboard_stats");
+  const [{ data }, { data: counts }] = await Promise.all([supabase.rpc("dashboard_stats"), supabase.rpc("dashboard_counts")]);
+  // the KPI numbers come from the same SQL definitions as the pages the cards open (dashboard_counts)
   const s = (data ?? {}) as any;
-  const total = s.total ?? 0;
+  const k = (counts ?? {}) as any; // KPI numbers (fall back to dashboard_stats until migration 013 is applied)
+  const total = k.total ?? s.total ?? 0;
   const firstName = (profile.full_name || "").split(" ")[0];
   const hour = Number(new Date().toLocaleString("en-IN", { hour: "numeric", hour12: false, timeZone: "Asia/Kolkata" }));
   const greet = hour < 5 ? "Late night" : hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
@@ -89,9 +91,10 @@ export default async function Dashboard() {
 
       {/* KPIs */}
       <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-5">
-        <div className="col-span-2 rounded-2xl border border-line bg-surface p-5 shadow-card lg:col-span-1">
+        <div className="group relative col-span-2 rounded-2xl border border-line bg-surface p-5 shadow-card transition-all hover:-translate-y-0.5 hover:border-line-strong hover:shadow-pop lg:col-span-1" data-kpi="total">
+          <CardLink href="/candidates" label="Total candidates" />
           <p className="text-[12.5px] text-ink-500">Total candidates</p>
-          <p className="mt-1 text-[32px] font-semibold leading-none tracking-tight text-ink-900">{total.toLocaleString("en-IN")}</p>
+          <p className="mt-1 text-[32px] font-semibold leading-none tracking-tight text-ink-900" data-kpi-value>{total.toLocaleString("en-IN")}</p>
           <div className="mt-3 flex items-end justify-between gap-3">
             <p className="whitespace-nowrap text-xs text-ink-500">
               +{s.this_month} this month
@@ -104,10 +107,10 @@ export default async function Dashboard() {
             <Sparkline values={trend} />
           </div>
         </div>
-        <Kpi href="/jobs" label="Open positions" value={s.open_positions ?? 0} hint={`${s.open_jobs ?? 0} open jobs`} icon={<Briefcase className="h-4 w-4" />} />
-        <Kpi href="/candidates?statuses=Interviewing,Offered" label="Active pipeline" value={s.in_pipeline ?? 0} hint="candidates in jobs" icon={<Users className="h-4 w-4" />} />
-        <Kpi href="/interviews" label="Interviews (7 days)" value={s.upcoming_interviews ?? 0} hint={`${interviews.length} today`} icon={<CalendarClock className="h-4 w-4" />} />
-        <Kpi href="/reports?range=month" label="Placed this month" value={s.placed_month ?? 0} hint={`${s.immediate ?? 0} immediate joiners ready`} icon={<ArrowUpRight className="h-4 w-4" />} accent />
+        <Kpi id="open" href="/jobs?status=Open" label="Open positions" value={s.open_positions ?? 0} hint={`${k.open_jobs ?? s.open_jobs ?? 0} open jobs`} hintHref="/jobs?status=Open" icon={<Briefcase className="h-4 w-4" />} />
+        <Kpi id="pipeline" href="/pipeline" label="Active pipeline" value={k.in_pipeline ?? s.in_pipeline ?? 0} hint="applications in open jobs" icon={<Users className="h-4 w-4" />} />
+        <Kpi id="interviews" href="/interviews?range=7d" label="Interviews (7 days)" value={k.upcoming_interviews ?? s.upcoming_interviews ?? 0} hint={`${k.interviews_today ?? interviews.length} today`} hintHref="/interviews?range=today" icon={<CalendarClock className="h-4 w-4" />} />
+        <Kpi id="placed" href="/candidates?segment=placed_month" label="Placed this month" value={k.placed_month ?? s.placed_month ?? 0} hint={`${k.immediate ?? s.immediate ?? 0} immediate joiners ready`} hintHref="/candidates?segment=immediate" icon={<ArrowUpRight className="h-4 w-4" />} accent />
       </div>
 
       <div className="mb-6 grid gap-6 xl:grid-cols-2">
@@ -368,16 +371,31 @@ export default async function Dashboard() {
   );
 }
 
-function Kpi({ href, label, value, hint, icon, accent }: { href: string; label: string; value: number; hint?: string; icon?: React.ReactNode; accent?: boolean }) {
+/** whole-card link (an overlay, so the sub-text can carry its own link without nesting links) */
+function CardLink({ href, label }: { href: string; label: string }) {
+  return <Link href={href} aria-label={label} className="absolute inset-0 z-0 rounded-2xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[rgb(var(--jade))]" />;
+}
+
+function Kpi({ id, href, label, value, hint, hintHref, icon, accent }: { id: string; href: string; label: string; value: number; hint?: string; hintHref?: string; icon?: React.ReactNode; accent?: boolean }) {
   return (
-    <Link href={href} className="group rounded-2xl border border-line bg-surface p-5 shadow-card transition-all hover:-translate-y-0.5 hover:border-line-strong hover:shadow-pop">
-      <div className="flex items-center justify-between">
+    <div className="group relative rounded-2xl border border-line bg-surface p-5 shadow-card transition-all hover:-translate-y-0.5 hover:border-line-strong hover:shadow-pop" data-kpi={id}>
+      <CardLink href={href} label={label} />
+      <div className="pointer-events-none relative flex items-center justify-between">
         <p className="text-[12.5px] text-ink-500">{label}</p>
         <span className="text-ink-300 transition-colors group-hover:text-jade">{icon}</span>
       </div>
-      <p className={cn("mt-1 text-[32px] font-semibold leading-none tracking-tight tabular", accent ? "text-jade-700" : "text-ink-900")}>{value.toLocaleString("en-IN")}</p>
-      {hint && <p className="mt-3 text-xs text-ink-400">{hint}</p>}
-    </Link>
+      <p className={cn("pointer-events-none relative mt-1 text-[32px] font-semibold leading-none tracking-tight tabular", accent ? "text-jade-700" : "text-ink-900")} data-kpi-value>
+        {value.toLocaleString("en-IN")}
+      </p>
+      {hint &&
+        (hintHref ? (
+          <Link href={hintHref} className="relative z-10 mt-3 block w-fit text-xs text-ink-400 hover:text-jade-700 hover:underline" data-kpi-hint>
+            {hint}
+          </Link>
+        ) : (
+          <p className="pointer-events-none relative mt-3 text-xs text-ink-400">{hint}</p>
+        ))}
+    </div>
   );
 }
 

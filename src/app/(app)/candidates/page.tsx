@@ -5,11 +5,19 @@ import { getMasters } from "@/lib/data";
 import { LinkButton } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/misc";
 import { SearchView } from "@/components/search/search-view";
+import { createClient } from "@/lib/supabase/server";
+
+// dashboard drill-downs — dashboard_segment() is the same definition the dashboard card counts
+const SEGMENTS: Record<string, string> = { placed_month: "Placed this month", immediate: "Immediate joiners (notice ≤ 15 days)" };
 
 export const metadata = { title: "Candidates" };
 
-export default async function CandidatesPage() {
+export default async function CandidatesPage({ searchParams }: { searchParams: Promise<{ segment?: string }> }) {
   const [profile, { skills, roles }] = await Promise.all([requireStaff(), getMasters()]);
+  const key = (await searchParams).segment ?? "";
+  const segment = SEGMENTS[key]
+    ? { key, label: SEGMENTS[key], ids: (((await (await createClient()).rpc("dashboard_segment", { p: key })).data ?? []) as string[]) }
+    : null;
   return (
     <>
       <PageHeader
@@ -27,7 +35,7 @@ export default async function CandidatesPage() {
         }
       />
       <Suspense>
-        <SearchView skills={skills} roles={roles} isAdmin={profile.role === "admin"} meId={profile.id} />
+        <SearchView key={segment?.key ?? "all"} skills={skills} roles={roles} isAdmin={profile.role === "admin"} meId={profile.id} segment={segment} />
       </Suspense>
     </>
   );

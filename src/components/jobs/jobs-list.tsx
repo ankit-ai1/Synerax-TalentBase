@@ -6,9 +6,9 @@ import { Segmented } from "@/components/ui/interactive";
 import { JobRow } from "./job-row";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-export function JobsList({ jobs, mine }: { jobs: any[]; mine: string[] }) {
+export function JobsList({ jobs, mine, initialStatus = "Open" }: { jobs: any[]; mine: string[]; initialStatus?: string }) {
   const [q, setQ] = useState("");
-  const [status, setStatus] = useState("Open");
+  const [status, setStatus] = useState(initialStatus);
   const [who, setWho] = useState("all");
   const [client, setClient] = useState("");
   const [sort, setSort] = useState("priority");
@@ -85,6 +85,7 @@ export function JobsList({ jobs, mine }: { jobs: any[]; mine: string[] }) {
         {list.map((j) => (
           <JobRow key={j.id} job={j} />
         ))}
+        <span hidden data-rows={list.length} />
         {list.length === 0 && <p className="rounded-xl border border-dashed border-line-strong py-12 text-center text-sm text-ink-400">No jobs match this filter.</p>}
       </div>
     </>

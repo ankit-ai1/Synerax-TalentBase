@@ -20,6 +20,7 @@ import { useDialogs } from "@/components/dialogs/provider";
 import { Avatar, Card, EmptyState, ResultBadge, Stars } from "@/components/ui/misc";
 import { Menu, MenuItem, Segmented } from "@/components/ui/interactive";
 import { cn, dayLabel, formatTime, friendlyError, istDateKey, todayIST } from "@/lib/utils";
+import { FilterChip } from "@/components/ui/filter-chip";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const MODE_ICON: Record<string, React.ReactNode> = {
@@ -28,7 +29,7 @@ const MODE_ICON: Record<string, React.ReactNode> = {
   "In-person": <MapPin className="h-3.5 w-3.5" />,
 };
 
-export function InterviewsView({ interviews, meId }: { interviews: any[]; meId: string }) {
+export function InterviewsView({ interviews, meId, only }: { interviews: any[]; meId: string; /** dashboard drill-down: exactly these interviews */ only?: { label: string; ids: string[] } | null }) {
   const [tab, setTab] = useState<"upcoming" | "feedback" | "past">("upcoming");
   const [who, setWho] = useState("all");
   const now = Date.now();
@@ -37,7 +38,8 @@ export function InterviewsView({ interviews, meId }: { interviews: any[]; meId: 
   const upcoming = base.filter((i) => i.status === "Scheduled" && new Date(i.scheduled_at).getTime() + i.duration_min * 60e3 >= now);
   const feedback = base.filter((i) => (i.status === "Scheduled" && new Date(i.scheduled_at).getTime() + i.duration_min * 60e3 < now) || (i.status === "Completed" && i.result === "Pending"));
   const past = base.filter((i) => !upcoming.includes(i) && !feedback.includes(i)).reverse();
-  const list = tab === "upcoming" ? upcoming : tab === "feedback" ? feedback : past;
+  const onlySet = only ? new Set(only.ids) : null;
+  const list = onlySet ? base.filter((i) => onlySet.has(i.id)) : tab === "upcoming" ? upcoming : tab === "feedback" ? feedback : past;
 
   // next 7 days density
   const today = todayIST();
@@ -75,6 +77,9 @@ export function InterviewsView({ interviews, meId }: { interviews: any[]; meId: 
       </div>
 
       <div className="mb-4 flex flex-wrap items-center gap-2">
+        {only ? (
+          <FilterChip label={only.label} count={list.length} clearHref="/interviews" />
+        ) : (
         <Segmented
           value={tab}
           onChange={setTab}
@@ -84,6 +89,7 @@ export function InterviewsView({ interviews, meId }: { interviews: any[]; meId: 
             { value: "past", label: <>Past <Count n={past.length} /></> },
           ]}
         />
+        )}
         <Segmented
           size="sm"
           className="ml-auto"
@@ -105,7 +111,7 @@ export function InterviewsView({ interviews, meId }: { interviews: any[]; meId: 
           />
         </Card>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-6" data-rows={list.length}>
           {groups.map((g) => (
             <section key={g.key}>
               <h3 className="mb-2 flex items-baseline gap-2 text-sm font-semibold text-ink-700">
