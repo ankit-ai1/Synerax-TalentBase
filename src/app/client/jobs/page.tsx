@@ -11,8 +11,9 @@ export default async function ClientJobsPage({ searchParams }: { searchParams: P
   await requireRole("client");
   const sp = await searchParams;
   const supabase = await createClient();
-  const { data } = await supabase.rpc("client_jobs");
+  const [{ data }, { data: me }] = await Promise.all([supabase.rpc("client_jobs"), supabase.rpc("client_me")]);
   const jobs = (data ?? []) as ClientJob[];
+  const role = (me as { user?: { role?: string } } | null)?.user?.role ?? "client_admin";
   const shared = jobs.reduce((s, j) => s + j.shared, 0);
   const hired = jobs.reduce((s, j) => s + j.joined, 0);
 
@@ -23,12 +24,14 @@ export default async function ClientJobsPage({ searchParams }: { searchParams: P
         title="My jobs"
         subtitle={jobs.length ? `${jobs.length} job${jobs.length === 1 ? "" : "s"} · ${shared} profiles shared by Synerax · ${hired} hired` : "Every role you share with Synerax and the profiles we send."}
         actions={
-          <PrimaryLink href="/client/jobs/new">
-            <Plus className="h-4 w-4" aria-hidden /> Post a job
-          </PrimaryLink>
+          role !== "ta_coordinator" ? (
+            <PrimaryLink href="/client/jobs/new">
+              <Plus className="h-4 w-4" aria-hidden /> Post a job
+            </PrimaryLink>
+          ) : undefined
         }
       />
-      <JobsExplorer jobs={jobs} initialTab={sp.tab} />
+      <JobsExplorer jobs={jobs} initialTab={sp.tab} role={role} />
     </div>
   );
 }

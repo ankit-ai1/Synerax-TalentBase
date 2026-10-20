@@ -15,6 +15,12 @@ export const EMAIL_EVENTS = [
   { key: "staff_chatbot_lead", audience: "synerax", label: "New \"Hire talent\" lead from the website chatbot" },
   // to clients
   { key: "client_login_created", audience: "client", label: "Portal login created / password reset" },
+  { key: "client_team_invite", audience: "client", label: "Team member invited (set-password link)" },
+  { key: "client_task_assigned", audience: "client", label: "Task assigned to a team member" },
+  { key: "client_task_due", audience: "client", label: "Task due tomorrow / overdue" },
+  { key: "client_job_transferred", audience: "client", label: "Job transferred to a team member" },
+  { key: "client_interview_scheduled", audience: "client", label: "Interview round scheduled (team)" },
+  { key: "client_feedback_added", audience: "client", label: "Interview feedback added (team)" },
   { key: "client_job_received", audience: "client", label: "Job received (pending review)" },
   { key: "client_job_published", audience: "client", label: "Job published" },
   { key: "client_profiles_shared", audience: "client", label: "Profiles shared (one email per share)" },

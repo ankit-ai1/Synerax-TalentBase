@@ -149,7 +149,7 @@ export function ResetPasswordForm() {
  * Portal invite landing (/auth/set-password): the invite link signed the candidate in; they choose a password
  * (optional when they already had a login — the sign-in-link case) and accept the consent, then land on /portal.
  */
-export function SetPasswordForm({ existing, needsConsent }: { existing: boolean; needsConsent: boolean }) {
+export function SetPasswordForm({ existing, needsConsent, mode = "candidate" }: { existing: boolean; needsConsent: boolean; /** client = team member invited to the client portal */ mode?: "candidate" | "client" }) {
   const router = useRouter();
   const [ready, setReady] = useState<boolean | null>(null);
   const [pw, setPw] = useState("");
@@ -175,10 +175,10 @@ export function SetPasswordForm({ existing, needsConsent }: { existing: boolean;
         const { error } = await createClient().auth.updateUser({ password: pw });
         if (error && !/same/i.test(error.message)) throw new Error(error.message);
       }
-      const res = await fetch("/api/portal/accept-invite", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ consent }) });
+      const res = await fetch(mode === "client" ? "/api/client/accept-invite" : "/api/portal/accept-invite", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ consent }) });
       const out = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(out.error ?? "Something went wrong. Please try again.");
-      router.replace("/portal?welcome=invite");
+      router.replace(mode === "client" ? "/client" : "/portal?welcome=invite");
       router.refresh();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Something went wrong. Please try again.");

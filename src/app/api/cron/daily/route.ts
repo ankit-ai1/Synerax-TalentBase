@@ -1,6 +1,7 @@
 import { createAdminClient } from "@/lib/supabase/server";
 import { alreadySent, getEmailSettings, notify, sendEmail } from "@/lib/email/send";
 import { clientRecipients } from "@/lib/email/notify-events";
+import { notifyClientUsers } from "@/lib/client-team";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -35,6 +36,7 @@ export async function GET(req: Request) {
   await run("profileReminders", () => profileReminders(settings));
   await run("clientReminders", () => clientReminders(settings));
   await run("jobAlerts", () => jobAlerts(settings));
+  await run("clientTaskReminders", () => clientTaskReminders());
   return Response.json({ ok: true, ...result });
 }
 
@@ -137,14 +139,16 @@ async function clientReminders(settings: Awaited<ReturnType<typeof getEmailSetti
     .lte("shared_at", since(48))
     .gt("shared_at", since(72))
     .is("job.client_deleted_at", null);
+  // grouped per job: each reminder goes only to the people involved in that job (owner, collaborators, assignees, admins)
   const byClient = new Map<string, any[]>();
   for (const a of (data ?? []) as any[]) {
     if (!a.job?.client_id) continue;
-    byClient.set(a.job.client_id, [...(byClient.get(a.job.client_id) ?? []), a]);
+    byClient.set(a.job.id, [...(byClient.get(a.job.id) ?? []), a]);
   }
   let sent = 0;
-  for (const [clientId, list] of byClient) {
-    const people = await clientRecipients(clientId);
+  for (const [, list] of byClient) {
+    const clientId = list[0].job.client_id as string;
+    const people = await clientRecipients(clientId, list[0].job.id);
     if (!people.length) continue;
     const n = list.length;
     const jobId = list[0].job.id;
@@ -154,7 +158,7 @@ async function clientReminders(settings: Awaited<ReturnType<typeof getEmailSetti
       to: people.map((p) => p.email),
       event: "client_pending_reminder",
       settings,
-      dedupeKey: `pending:${clientId}:${dayKey()}`,
+      dedupeKey: `pending:${jobId}:${dayKey()}`,
       related: { client_id: clientId },
       subject: `Reminder: ${n} profile${n === 1 ? "" : "s"} waiting for your review`,
       content: {
@@ -196,6 +200,37 @@ async function jobAlerts(settings: Awaited<ReturnType<typeof getEmailSettings>>)
         cta: { label: "View & apply", url: "/portal/jobs" },
         note: "You get these because job alerts are on. Turn them off anytime in your profile.",
       },
+    });
+    sent++;
+  }
+  return sent;
+}
+
+/** Client team tasks: due tomorrow (IST) or overdue → the assignee only, once per task per kind */
+async function clientTaskReminders() {
+  const admin = createAdminClient();
+  const tomorrow = new Date(Date.now() + 5.5 * 3600e3 + 86400e3).toISOString().slice(0, 10);
+  const { data } = await admin
+    .from("client_tasks")
+    .select("id, title, due_at, client_id, job_id, assignee:client_users!client_tasks_assigned_to_fkey(user_id, status)")
+    .in("status", ["todo", "in_progress"])
+    .not("due_at", "is", null)
+    .lte("due_at", `${tomorrow}T23:59:59+05:30`);
+  let sent = 0;
+  for (const t of (data ?? []) as any[]) {
+    if (!t.assignee?.user_id || t.assignee.status === "deactivated") continue;
+    const overdue = new Date(t.due_at).getTime() < Date.now();
+    const kind = overdue ? "overdue" : "due";
+    if (await alreadySent(`client-task:${t.id}:${kind}`, true)) continue; // in-app + email once per task and kind
+    await notifyClientUsers([t.assignee.user_id], {
+      event: "client_task_due",
+      title: overdue ? `Overdue: ${t.title}` : `Due tomorrow: ${t.title}`,
+      body: overdue ? "This task is past its due date." : "This task is due tomorrow.",
+      link: "/client/tasks",
+      cta: "Open my tasks",
+      clientId: t.client_id,
+      jobId: t.job_id,
+      dedupeKey: `client-task:${t.id}:${kind}`,
     });
     sent++;
   }

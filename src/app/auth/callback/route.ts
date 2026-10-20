@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
   if (!data.user) return to("/login");
 
   // portal invite / sign-in link sent by staff → choose a password + consent first
-  if (next === "/auth/set-password" || next === "/auth/set-password?existing=1") return to(next);
+  if (next === "/auth/set-password" || next === "/auth/set-password?existing=1" || next === "/auth/set-password?mode=client") return to(next);
 
   // Verified candidate → create or link their profile now
   try {

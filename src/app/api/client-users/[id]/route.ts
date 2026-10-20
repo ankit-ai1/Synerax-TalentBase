@@ -3,12 +3,17 @@ import { createAdminClient } from "@/lib/supabase/server";
 import { tempPassword } from "@/lib/passwords";
 import { after } from "next/server";
 import { onClientLogin } from "@/lib/email/notify-events";
+import { createClient } from "@/lib/supabase/server";
+import { CLIENT_ROLES, notifyClientUsers, resendClientInvite, setClientLoginBlocked } from "@/lib/client-team";
 
 export const runtime = "nodejs";
 
 type Ctx = { params: Promise<{ id: string }> };
 
-/** Staff: activate/deactivate a client login, reset its password, or edit name/phone/designation */
+/**
+ * Staff: edit name/phone/designation, change role, deactivate (handing jobs + open tasks to another member),
+ * reactivate, resend the invite, or reset the password.
+ */
 export async function PATCH(req: Request, { params }: Ctx) {
   const a = await apiStaff();
   if ("error" in a) return a.error;
@@ -16,8 +21,42 @@ export async function PATCH(req: Request, { params }: Ctx) {
   const body = await req.json().catch(() => ({}));
   const admin = createAdminClient();
 
-  const { data: cu } = await admin.from("client_users").select("id, user_id").eq("id", id).maybeSingle();
+  const { data: cu } = await admin.from("client_users").select("id, user_id, client_id, role").eq("id", id).maybeSingle();
   if (!cu) return Response.json({ error: "Login not found" }, { status: 404 });
+
+  if (body.action === "role") {
+    if (!CLIENT_ROLES.includes(body.role)) return Response.json({ error: "Invalid role" }, { status: 400 });
+    if (cu.role === "client_admin" && body.role !== "client_admin") {
+      const { count } = await admin.from("client_users").select("id", { count: "exact", head: true }).eq("client_id", cu.client_id).eq("role", "client_admin").neq("status", "deactivated");
+      if ((count ?? 0) <= 1) return Response.json({ error: "The company needs at least one active admin." }, { status: 400 });
+    }
+    await admin.from("client_users").update({ role: body.role }).eq("id", id);
+    await admin.rpc("client_log_activity_as", { p_client: cu.client_id, p_actor: a.profile.id, p_action: "member_role_changed", p_details: { member: id, from: cu.role, to: body.role } });
+    return Response.json({ ok: true });
+  }
+  if (body.action === "deactivate") {
+    const { data, error } = await (await createClient()).rpc("client_member_deactivate", { p_member: id, p_transfer_to: body.transfer_to ?? null });
+    if (error) return Response.json({ error: error.message.replace(/^VALIDATION:s*/, "") }, { status: 400 });
+    await setClientLoginBlocked(id, true);
+    const r = data as { jobs: number; tasks: number; to: { user_id: string } | null };
+    if (r.to && (r.jobs || r.tasks)) {
+      await notifyClientUsers([r.to.user_id], { event: "client_job_transferred", title: `${r.jobs} job${r.jobs === 1 ? "" : "s"} and ${r.tasks} task${r.tasks === 1 ? "" : "s"} were handed over to you`, body: "Synerax moved them to you when a team member left.", link: "/client/jobs", cta: "Open my jobs", clientId: cu.client_id });
+    }
+    return Response.json({ ok: true, ...r });
+  }
+  if (body.action === "reactivate") {
+    const { error } = await (await createClient()).rpc("client_member_reactivate", { p_member: id });
+    if (error) return Response.json({ error: error.message }, { status: 400 });
+    await setClientLoginBlocked(id, false);
+    return Response.json({ ok: true });
+  }
+  if (body.action === "resend") {
+    try {
+      return Response.json({ ok: true, ...(await resendClientInvite(id, a.profile.id)) });
+    } catch (e) {
+      return Response.json({ error: e instanceof Error ? e.message : "Could not resend" }, { status: 400 });
+    }
+  }
 
   const edits: Record<string, unknown> = {};
   if (typeof body.name === "string" && body.name.trim()) edits.name = body.name.trim().slice(0, 120);

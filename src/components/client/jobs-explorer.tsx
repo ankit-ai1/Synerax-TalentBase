@@ -38,7 +38,27 @@ function MiniFunnel({ j }: { j: ClientJob }) {
   );
 }
 
-export function JobsExplorer({ jobs, initialTab }: { jobs: ClientJob[]; initialTab?: string }) {
+/** who posted it, and why the viewer can see it (shared / assigned) */
+function Ownership({ j }: { j: ClientJob }) {
+  if (!j.owner && !j.collab && !j.assigned) return null;
+  return (
+    <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[12px] text-ink-400" data-testid="posted-by">
+      {j.owner && <span>Posted by {j.mine ? "you" : j.owner.name}</span>}
+      {j.collab && <span className="rounded-full bg-sky-50 px-1.5 py-0.5 text-[10.5px] font-semibold text-sky-800 dark:bg-sky-400/10 dark:text-sky-300">{j.collab === "edit" ? "Shared · can edit" : "Shared · view only"}</span>}
+      {!j.mine && !j.collab && j.assigned && <span className="rounded-full bg-violet-50 px-1.5 py-0.5 text-[10.5px] font-semibold text-violet-800 dark:bg-violet-400/10 dark:text-violet-300">Assigned to you</span>}
+    </p>
+  );
+}
+
+export function JobsExplorer({ jobs: allJobs, initialTab, role }: { jobs: ClientJob[]; initialTab?: string; role?: string }) {
+  const isAdmin = role === "client_admin";
+  // scope: client_admin → All jobs / My jobs / by member · everyone else → My jobs / Shared with me
+  const [scope, setScope] = useState<string>(isAdmin ? "all" : allJobs.some((j) => j.mine) ? "mine" : "shared");
+  const [member, setMember] = useState("");
+  const owners = useMemo(() => Array.from(new Map(allJobs.filter((j) => j.owner).map((j) => [j.owner!.id, j.owner!.name])).entries()).sort((a, b) => a[1].localeCompare(b[1])), [allJobs]);
+  const jobs = allJobs.filter((j) =>
+    scope === "mine" ? j.mine : scope === "shared" ? !j.mine : isAdmin && member ? j.owner?.id === member : true
+  );
   const [tab, setTab] = useState<string>(TABS.some((t) => t.id === initialTab) ? initialTab! : "all");
   const [q, setQ] = useState("");
   const [mode, setMode] = useState("");
@@ -49,8 +69,42 @@ export function JobsExplorer({ jobs, initialTab }: { jobs: ClientJob[]; initialT
   const def = TABS.find((t) => t.id === tab) ?? TABS[0];
   const list = jobs.filter((j) => def.match(j)).filter((j) => (!mode || j.work_mode === mode) && (!q || `${j.title} ${j.job_code} ${j.locations.join(" ")} ${(j.skills ?? []).join(" ")}`.toLowerCase().includes(q.toLowerCase())));
 
+  const scopes = isAdmin
+    ? [
+        { id: "all", label: "All jobs", n: allJobs.length },
+        { id: "mine", label: "My jobs", n: allJobs.filter((j) => j.mine).length },
+      ]
+    : [
+        { id: "mine", label: "My jobs", n: allJobs.filter((j) => j.mine).length },
+        { id: "shared", label: "Shared with me", n: allJobs.filter((j) => !j.mine).length },
+      ];
   return (
     <div>
+      {role && (
+        <div className="mb-4 flex flex-wrap items-center gap-2" role="tablist" aria-label="Whose jobs">
+          {scopes.map((s) => (
+            <button
+              key={s.id}
+              role="tab"
+              aria-selected={scope === s.id}
+              onClick={() => (setScope(s.id), setMember(""))}
+              className={cn("rounded-full border px-3.5 py-1.5 text-[13px] font-medium transition-colors", scope === s.id ? "border-jade bg-jade-50 text-jade-700" : "border-line text-ink-600 hover:border-line-strong")}
+            >
+              {s.label} <span className="tabular text-ink-400">{s.n}</span>
+            </button>
+          ))}
+          {isAdmin && owners.length > 0 && (
+            <select value={member} onChange={(e) => (setMember(e.target.value), setScope("all"))} className="field-input h-9 w-auto pr-8 text-[13px]" aria-label="Filter by member">
+              <option value="">By member: everyone</option>
+              {owners.map(([id, name]) => (
+                <option key={id} value={id}>
+                  {name}
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
+      )}
       <div className="mb-5 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div className="-mx-1 flex gap-1 overflow-x-auto px-1 pb-1 [scrollbar-width:none]" role="tablist" aria-label="Job status">
           {TABS.map((t) => {
@@ -102,7 +156,11 @@ export function JobsExplorer({ jobs, initialTab }: { jobs: ClientJob[]; initialT
 
       {list.length === 0 ? (
         jobs.length === 0 ? (
-          <EmptyState icon={Briefcase} title="No jobs yet" text="Post your first requirement — Synerax reviews it and starts sourcing within one working day." action={{ href: "/client/jobs/new", label: "Post your first job" }} />
+          allJobs.length === 0 ? (
+            <EmptyState icon={Briefcase} title="No jobs yet" text={role === "ta_coordinator" ? "Jobs appear here when your admin assigns you an interview or follow-up." : "Post your first requirement — Synerax reviews it and starts sourcing within one working day."} action={role === "ta_coordinator" ? undefined : { href: "/client/jobs/new", label: "Post your first job" }} />
+          ) : (
+            <EmptyState icon={Search} title={scope === "shared" ? "Nothing shared with you yet" : "No jobs here"} text={scope === "shared" ? "Jobs appear here when a colleague adds you as a collaborator or assigns you a task." : "Try the other tab."} compact />
+          )
         ) : (
           <EmptyState icon={Search} title="No jobs in this view" text="Try another tab or clear the search." compact />
         )
@@ -117,6 +175,7 @@ export function JobsExplorer({ jobs, initialTab }: { jobs: ClientJob[]; initialT
                     <div className="min-w-0">
                       <p className="font-mono text-[11px] text-ink-400">{j.job_code}</p>
                       <h3 className="mt-0.5 truncate text-[16px] font-semibold text-ink-900">{j.title}</h3>
+                      <Ownership j={j} />
                     </div>
                     <Chip tone={JOB_STATUS_TONE[j.status] ?? "ink"} pulse={j.status === "Pending review"}>
                       {j.status}
@@ -194,6 +253,7 @@ export function JobsExplorer({ jobs, initialTab }: { jobs: ClientJob[]; initialT
                       <p className="text-[11.5px] text-ink-400">
                         {j.job_code} · {[j.locations.slice(0, 2).join(", "), j.work_mode].filter(Boolean).join(" · ")}
                       </p>
+                      <Ownership j={j} />
                     </td>
                     <td className="px-3 py-3">
                       <Chip tone={JOB_STATUS_TONE[j.status] ?? "ink"}>{j.status}</Chip>

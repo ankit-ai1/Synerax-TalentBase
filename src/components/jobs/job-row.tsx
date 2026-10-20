@@ -3,10 +3,11 @@ import { CalendarDays, MapPin, Users } from "lucide-react";
 import { AvatarStack, JobStatusBadge, Priority } from "@/components/ui/misc";
 import { ACTIVE_STAGES, STAGE_STYLE } from "@/lib/constants";
 import { cn, daysUntil, formatDate } from "@/lib/utils";
+import { roleLabel } from "@/lib/client-labels";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export const JOB_LIST_SELECT =
-  "id, job_code, title, status, priority, openings, locations, work_mode, exp_min, exp_max, ctc_min, ctc_max, target_date, opened_at, created_at, client:clients(id, name), applications(stage), job_assignees(user:profiles(full_name))";
+  "id, job_code, title, status, priority, openings, locations, work_mode, exp_min, exp_max, ctc_min, ctc_max, target_date, opened_at, created_at, client:clients(id, name), owner:client_users!jobs_posted_by_client_user_fkey(name, role), applications(stage), job_assignees(user:profiles(full_name))";
 
 export function stageCounts(apps: { stage: string }[]) {
   const c: Record<string, number> = {};
@@ -56,6 +57,11 @@ export function JobRow({ job }: { job: any }) {
         <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-ink-500">
           <span className="font-medium text-ink-700">{job.client?.name ?? "Internal"}</span>
           <span className="font-mono text-xs text-ink-400">{job.job_code}</span>
+          {job.owner && (
+            <span className="text-ink-500" data-testid="job-owner">
+              Posted by {job.owner.name} ({roleLabel(job.owner.role)})
+            </span>
+          )}
           {(job.locations ?? []).length > 0 && (
             <span className="inline-flex items-center gap-1">
               <MapPin className="h-3.5 w-3.5 text-ink-400" />

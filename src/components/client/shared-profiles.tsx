@@ -16,6 +16,9 @@ import { Avatar, Chip, EmptyState, MODE_ICON, MatchRing, SkillChip, TimeAgo, ist
 import { DecisionActions } from "./decision-actions";
 import { decisionChip } from "@/lib/client-format";
 import { cn, friendlyError, lpa, noticeLabel, years } from "@/lib/utils";
+import { AddRoundButton, FeedbackPanel } from "./interview-panel";
+import { AssignTaskButton } from "./assign-task";
+import type { ClientMember } from "@/lib/client-labels";
 
 type Filter = "all" | "pending" | "approved" | "closed";
 
@@ -177,7 +180,7 @@ function ProfileCard({ p, jobId, selected, onSelect }: { p: SharedProfile; jobId
                 </span>
               ) : null}
             </Link>
-            {p.decision === "Pending" && <DecisionActions applicationId={p.application_id} name={p.name} size="sm" />}
+            {p.decision === "Pending" && p.can_act !== false && <DecisionActions applicationId={p.application_id} name={p.name} size="sm" />}
           </div>
         </div>
       </div>
@@ -242,13 +245,21 @@ function CompareTable({ profiles, jobId }: { profiles: SharedProfile[]; jobId: s
 }
 
 /** Decision, interviews (with feedback) and final result for one shared profile — used on the candidate brief page */
-export function ProfileWorkflow({ p }: { p: SharedProfile }) {
+export function ProfileWorkflow({
+  p,
+  team,
+}: {
+  p: SharedProfile;
+  /** client teams: assign a task from this candidate */
+  team?: { members: Pick<ClientMember, "id" | "name" | "role" | "me" | "status">[]; canAssignOthers: boolean; job: { id: string; title: string } };
+}) {
   const router = useRouter();
   const [dialog, setDialog] = useState<null | "select" | "notselect" | { feedback: ClientInterview }>(null);
   const [feedback, setFeedback] = useState("");
   const [rating, setRating] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
-  const canFinal = p.decision === "Approved" && p.stage === "Interview";
+  const canAct = p.can_act !== false;
+  const canFinal = canAct && p.decision === "Approved" && p.stage === "Interview";
 
   const run = async (fn: () => PromiseLike<{ error: { message: string } | null }>, ok: string) => {
     setBusy(true);
@@ -264,7 +275,16 @@ export function ProfileWorkflow({ p }: { p: SharedProfile }) {
 
   return (
     <div className="space-y-4">
-      {p.decision === "Pending" && (
+      {(team || !["Joined", "Closed"].includes(p.stage)) && (
+        <div className="flex flex-wrap gap-2">
+          {!["Joined", "Closed"].includes(p.stage) && <AddRoundButton applicationId={p.application_id} name={p.name} />}
+          {team && <AssignTaskButton members={team.members} canAssignOthers={team.canAssignOthers} job={team.job} application={{ id: p.application_id, name: p.name }} />}
+        </div>
+      )}
+      {p.decision === "Pending" && !canAct && (
+        <p className="rounded-2xl bg-surface-2 px-4 py-3 text-[13px] text-ink-600">Waiting for a decision from the job owner — you can schedule rounds, add feedback and comment.</p>
+      )}
+      {p.decision === "Pending" && canAct && (
         <div className="rounded-2xl border border-saffron/40 bg-saffron-50/60 p-4">
           <p className="text-[14px] font-semibold text-ink-900">Your decision</p>
           <p className="mb-3 text-[12.5px] text-ink-600">Approve to interview, or reject with a reason — Synerax uses it to refine the shortlist.</p>
@@ -416,6 +436,10 @@ export function ProfileWorkflow({ p }: { p: SharedProfile }) {
 type Comment = { id: string; body: string; author_role: "client" | "staff"; author: string; created_at: string; mine: boolean };
 
 /** Conversation with Synerax about one profile */
+export function ProfileFeedback({ p }: { p: SharedProfile }) {
+  return <FeedbackPanel applicationId={p.application_id} items={p.feedback_list ?? []} rounds={p.interviews.map((i) => ({ id: i.id, round: i.round, scheduled_at: i.scheduled_at }))} />;
+}
+
 export function Thread({ applicationId }: { applicationId: string }) {
   const [items, setItems] = useState<Comment[] | null>(null);
   const [text, setText] = useState("");

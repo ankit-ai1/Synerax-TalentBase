@@ -1,9 +1,7 @@
 import { z } from "zod";
 import { apiStaff } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/server";
-import { tempPassword } from "@/lib/passwords";
-import { after } from "next/server";
-import { onClientLogin } from "@/lib/email/notify-events";
+import { CLIENT_ROLES, inviteClientMember } from "@/lib/client-team";
 
 export const runtime = "nodejs";
 
@@ -13,42 +11,21 @@ const schema = z.object({
   email: z.string().trim().toLowerCase().email("Enter a valid email"),
   phone: z.string().trim().max(20).optional().default(""),
   designation: z.string().trim().max(120).optional().default(""),
+  role: z.enum(CLIENT_ROLES).optional(),
 });
 
-/** Staff (admin/HR) create a client-portal login for one of their clients */
+/** Staff (admin/HR): add a member to a client's team — invite email with a set-password link. The first member is the company admin. */
 export async function POST(req: Request) {
   const a = await apiStaff();
   if ("error" in a) return a.error;
   const parsed = schema.safeParse(await req.json().catch(() => ({})));
   if (!parsed.success) return Response.json({ error: parsed.error.issues[0]?.message ?? "Please check the form" }, { status: 400 });
-  const { client_id, name, email, phone, designation } = parsed.data;
-
-  const admin = createAdminClient();
-  const { data: client } = await admin.from("clients").select("id, name").eq("id", client_id).maybeSingle();
-  if (!client) return Response.json({ error: "Client not found" }, { status: 404 });
-
-  const password = tempPassword();
-  const { data, error } = await admin.auth.admin.createUser({ email, password, email_confirm: true, user_metadata: { full_name: name } });
-  if (error || !data.user) {
-    const msg = error?.message.includes("already") ? "A user with this email already exists" : error?.message ?? "Could not create the login";
-    return Response.json({ error: msg }, { status: 400 });
+  const { client_id, role, ...rest } = parsed.data;
+  const { count } = await createAdminClient().from("client_users").select("id", { count: "exact", head: true }).eq("client_id", client_id).eq("role", "client_admin").neq("status", "deactivated");
+  try {
+    const r = await inviteClientMember({ clientId: client_id, ...rest, role: role ?? (count ? "recruiter" : "client_admin"), invitedBy: a.profile.id });
+    return Response.json({ ok: true, ...r });
+  } catch (e) {
+    return Response.json({ error: e instanceof Error ? e.message : "Could not add the member" }, { status: 400 });
   }
-  const userId = data.user.id;
-
-  // The sign-up trigger always creates a 'candidate' profile — set the real role server-side
-  const { error: pErr } = await admin.from("profiles").upsert({ id: userId, email, full_name: name, role: "client", is_active: true });
-  const { data: cu, error: cuErr } = pErr
-    ? { data: null, error: pErr }
-    : await admin
-        .from("client_users")
-        .insert({ client_id, user_id: userId, name, phone: phone || null, designation: designation || null, created_by: a.profile.id })
-        .select("id")
-        .single();
-  if (cuErr || !cu) {
-    await admin.auth.admin.deleteUser(userId).catch(() => {});
-    return Response.json({ error: cuErr?.message ?? "Could not link the login to the client" }, { status: 500 });
-  }
-
-  after(() => onClientLogin(userId, email, name, password, false));
-  return Response.json({ ok: true, id: cu.id, email, password });
 }

@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { ConfirmDialog, Dialog } from "@/components/ui/dialog";
 import { cn, friendlyError } from "@/lib/utils";
 
-export function ClientJobActions({ jobId, title, canEdit, status }: { jobId: string; title: string; canEdit: boolean; status: string }) {
+export function ClientJobActions({ jobId, title, canEdit, status, canDelete = true }: { jobId: string; title: string; canEdit: boolean; status: string; canDelete?: boolean }) {
   const router = useRouter();
   const [closing, setClosing] = useState(false);
   const [reason, setReason] = useState<string>("");
@@ -52,9 +52,11 @@ export function ClientJobActions({ jobId, title, canEdit, status }: { jobId: str
           <Archive className="h-3.5 w-3.5" /> Close job
         </Button>
       )}
+      {canDelete && (
       <Button variant="secondary" size="md" onClick={() => setDeleting(true)} aria-label="Delete job">
         <Trash2 className="h-3.5 w-3.5" /> Delete
       </Button>
+      )}
 
       <Dialog
         open={closing}

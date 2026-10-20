@@ -48,6 +48,7 @@ import { ContactRow } from "@/components/portal-ui/team-card";
 import { DecisionActions } from "@/components/client/decision-actions";
 import { HiringFunnel, Insights } from "@/components/client/dashboard-widgets";
 import { cn, lpa, noticeLabel, years } from "@/lib/utils";
+import { RoleOverview, type RoleExtras } from "@/components/client/role-overview";
 
 export const metadata = { title: "Dashboard" };
 
@@ -156,9 +157,11 @@ export default async function ClientDashboardPage() {
                 <Inbox className="h-4 w-4" aria-hidden /> Review profiles ({d.awaiting_decision})
               </PrimaryLink>
             )}
-            <PrimaryLink href="/client/jobs/new">
-              <Plus className="h-4 w-4" aria-hidden /> Post a job
-            </PrimaryLink>
+            {(d as unknown as RoleExtras).role !== "ta_coordinator" && (
+              <PrimaryLink href="/client/jobs/new">
+                <Plus className="h-4 w-4" aria-hidden /> Post a job
+              </PrimaryLink>
+            )}
           </div>
         </div>
       </Hero>
@@ -202,6 +205,9 @@ export default async function ClientDashboardPage() {
           spark={spark("hires")}
         />
       </div>
+
+      {/* role-specific: company overview (admin) · my work (hiring manager / recruiter / TA coordinator) */}
+      <RoleOverview x={d as unknown as RoleExtras} awaiting={d.awaiting_decision} />
 
       {/* action needed + interviews */}
       <div className="grid grid-cols-1 gap-5 lg:gap-6 xl:grid-cols-12">

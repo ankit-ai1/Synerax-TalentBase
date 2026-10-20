@@ -29,6 +29,12 @@ export type ClientJob = {
   interviews?: number;
   offered?: number;
   skills?: string[];
+  // client teams (migration 014)
+  owner?: { id: string; name: string; role: string; status: string } | null;
+  mine?: boolean;
+  collab?: "edit" | "view" | null;
+  assigned?: boolean;
+  can_act?: boolean;
 };
 
 export type ClientJobDetail = Omit<ClientJob, "shared" | "pending_decision" | "approved" | "joined" | "posted_by_client" | "days_open" | "interviews" | "offered" | "skills"> & {
@@ -39,6 +45,9 @@ export type ClientJobDetail = Omit<ClientJob, "shared" | "pending_decision" | "a
   jd_file_name: string | null;
   closed_by_client_at: string | null;
   can_edit: boolean;
+  can_act?: boolean;
+  can_manage?: boolean;
+  collaborators?: { member: { id: string; name: string; role: string; status: string }; access: "edit" | "view"; added_at: string }[];
   skills: { skill_id: string; name: string; mandatory: boolean; min_years: number | null }[];
 };
 
@@ -85,6 +94,9 @@ export type SharedProfile = {
   feedback: string | null;
   interviews: ClientInterview[];
   comments: number;
+  // client teams (migration 014)
+  feedback_list?: { id: string; round: string; interviewer_name: string | null; rating: number | null; recommendation: string | null; comments: string | null; created_at: string; by: string }[];
+  can_act?: boolean;
 };
 
 export const CLOSE_REASONS = ["Filled via Synerax", "Filled internally", "On hold", "Cancelled"] as const;

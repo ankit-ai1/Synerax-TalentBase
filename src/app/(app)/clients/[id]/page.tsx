@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { Briefcase, ChevronLeft, Globe, Mail, MapPin, MessageCircle, Pencil, Phone, Plus, Trophy } from "lucide-react";
 import { requireStaff } from "@/lib/auth";
 import { createAdminClient, createClient } from "@/lib/supabase/server";
-import { PortalAccess, type ClientLogin } from "@/components/clients/portal-access";
+import { ClientTeamTab, loadClientMembers } from "@/components/clients/client-team-tab";
 import { LinkButton } from "@/components/ui/button";
 import { Avatar, Card, CardHeader, ClientStatusBadge, EmptyState, StatTile } from "@/components/ui/misc";
 import { Tabs } from "@/components/ui/interactive";
@@ -37,15 +37,8 @@ export default async function ClientPage({ params }: { params: Promise<{ id: str
   ]);
   if (!c) notFound();
 
-  // client-portal logins (emails + last sign-in come from Supabase Auth via the service role)
-  const { data: cuRows } = await supabase.from("client_users").select("id, user_id, name, phone, designation, is_active, created_at").eq("client_id", id).order("created_at");
-  const adminDb = createAdminClient();
-  const logins: ClientLogin[] = await Promise.all(
-    (cuRows ?? []).map(async (u: any) => {
-      const { data } = await adminDb.auth.admin.getUserById(u.user_id);
-      return { ...u, email: data.user?.email ?? "—", last_sign_in_at: data.user?.last_sign_in_at ?? null };
-    })
-  );
+  // the client team (emails + last sign-in come from Supabase Auth via the service role)
+  const members = await loadClientMembers(id);
 
   const all = (jobs ?? []) as any[];
   const open = all.filter((j) => j.status === "Open");
@@ -226,9 +219,9 @@ export default async function ClientPage({ params }: { params: Promise<{ id: str
           },
           {
             id: "portal",
-            label: "Portal access",
-            count: logins.filter((l) => l.is_active).length,
-            content: <PortalAccess clientId={c.id} clientName={c.name} logins={logins} />,
+            label: "Team",
+            count: members.filter((m) => m.status !== "deactivated").length,
+            content: <ClientTeamTab clientId={c.id} members={members} />,
           },
           {
             id: "agreement",

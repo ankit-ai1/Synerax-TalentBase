@@ -26,7 +26,8 @@
     "test:apply-rules": "node scripts/test-apply-rules.mjs",
     "test:e2e:invite": "tsx --conditions=react-server tests/e2e-portal-invite.mts",
     "test:e2e:import-invite": "tsx tests/e2e-import-invite.mts",
-    "test:e2e:kpis": "tsx tests/e2e-dashboard-kpis.mts"
+    "test:e2e:kpis": "tsx tests/e2e-dashboard-kpis.mts",
+    "test:e2e:client-teams": "tsx tests/e2e-client-teams.mts"
   },
   "dependencies": {
     "@googleapis/drive": "^26.0.2",

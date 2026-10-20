@@ -28,6 +28,9 @@ import { Avatar, Chip, DateBlock, EmptyState, Fact, JOB_STATUS_TONE, MODE_ICON, 
 import { ClientJobActions } from "@/components/client/client-job-actions";
 import { SharedProfiles } from "@/components/client/shared-profiles";
 import { cn, noticeLabel } from "@/lib/utils";
+import { AssignTaskButton } from "@/components/client/assign-task";
+import { JobTeamPanel } from "@/components/client/job-team-panel";
+import type { ClientMember } from "@/lib/client-labels";
 
 export const metadata = { title: "Job" };
 
@@ -42,9 +45,16 @@ export default async function ClientJobPage({ params, searchParams }: { params: 
   const sp = await searchParams;
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
   const supabase = await createClient();
-  const [{ data: jobData }, { data: sharedData }] = await Promise.all([supabase.rpc("client_job", { p_job: id }), supabase.rpc("client_shared_candidates", { p_job: id })]);
+  const [{ data: jobData }, { data: sharedData }, { data: me }, { data: membersData }] = await Promise.all([
+    supabase.rpc("client_job", { p_job: id }),
+    supabase.rpc("client_shared_candidates", { p_job: id }),
+    supabase.rpc("client_me"),
+    supabase.rpc("client_members"),
+  ]);
   const job = jobData as ClientJobDetail | null;
   if (!job) notFound();
+  const isAdmin = (me as { user?: { role?: string } } | null)?.user?.role === "client_admin";
+  const members = (membersData ?? []) as ClientMember[];
   const shared = (sharedData ?? []) as SharedProfile[];
   const pending = shared.filter((p) => p.decision === "Pending").length;
   const joined = shared.filter((p) => p.stage === "Joined").length;
@@ -117,13 +127,16 @@ export default async function ClientJobPage({ params, searchParams }: { params: 
             </div>
             <p className="mt-0.5 flex flex-wrap items-center gap-x-2 text-[12.5px] text-ink-500">
               <span className="font-mono text-[11.5px] text-ink-400">{job.job_code}</span>
-              <span>· Posted {istDate(job.created_at)}</span>
+              <span>· Posted {istDate(job.created_at)}{job.owner ? ` by ${job.owner.name}` : ""}</span>
               {job.status === "Pending review" && <span className="text-violet-600 dark:text-violet-300">· Synerax is reviewing this job</span>}
               {overdue && <span className="font-semibold text-red-600 dark:text-red-400">· Target date passed</span>}
               {job.client_close_reason && <span>· Closed: {job.client_close_reason}</span>}
             </p>
           </div>
-          <ClientJobActions jobId={job.id} title={job.title} canEdit={job.can_edit} status={job.status} />
+          <div className="flex flex-wrap items-center gap-2">
+            <AssignTaskButton members={members} canAssignOthers={isAdmin} job={{ id: job.id, title: job.title }} />
+            {job.can_act !== false && <ClientJobActions jobId={job.id} title={job.title} canEdit={job.can_edit} status={job.status} canDelete={job.can_manage !== false} />}
+          </div>
         </div>
         <nav className="-mb-3 mt-3 flex gap-1 overflow-x-auto [scrollbar-width:none]" aria-label="Job sections">
           {tabs.map((t) => (
@@ -278,6 +291,9 @@ export default async function ClientJobPage({ params, searchParams }: { params: 
               ) : (
                 <p className="text-sm text-ink-500">None listed</p>
               )}
+            </Section>
+            <Section title="Team on this job" icon={UserCheck}>
+              <JobTeamPanel jobId={job.id} owner={job.owner ?? null} collaborators={job.collaborators ?? []} members={members} canManage={!!job.can_manage} />
             </Section>
             <Section title="Pipeline" icon={Users} href={`/client/jobs/${job.id}?tab=profiles`} linkLabel="Profiles">
               <dl className="grid grid-cols-2 gap-3">

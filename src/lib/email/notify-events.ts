@@ -26,11 +26,17 @@ const ist = (d: string | Date, withTime = true) =>
 const employerLabel = (job: any) => (job?.show_client_name && job?.client?.name ? job.client.name : "the employer");
 const safe = (name: string, fn: () => Promise<void>) => fn().catch((e) => console.error(name, e));
 
-/** Active portal users of a client → { user_id, email, name } */
-export async function clientRecipients(clientId: string | null | undefined) {
+/**
+ * Client users to tell about something → { user_id, email, name }.
+ * With a job: only the people involved in it (owner, collaborators, assignees, the company's admins — see
+ * client_job_people). Without a job: the company's admins.
+ */
+export async function clientRecipients(clientId: string | null | undefined, jobId?: string | null) {
   if (!clientId) return [];
   const admin = createAdminClient();
-  const { data } = await admin.from("client_users").select("user_id, name").eq("client_id", clientId).eq("is_active", true);
+  const { data } = jobId
+    ? await admin.rpc("client_job_people", { p_job: jobId }).then((r) => ({ data: ((r.data ?? []) as { user_id: string; name: string }[]) }))
+    : await admin.from("client_users").select("user_id, name").eq("client_id", clientId).eq("is_active", true).eq("role", "client_admin").neq("status", "deactivated");
   const out: { user_id: string; email: string; name: string }[] = [];
   for (const u of data ?? []) {
     const { data: au } = await admin.auth.admin.getUserById(u.user_id);
@@ -156,7 +162,7 @@ export function onClientJobSaved(jobId: string, isNew: boolean) {
       },
     });
     if (isNew) {
-      const people = await clientRecipients(job.client_id);
+      const people = await clientRecipients(job.client_id, job.id);
       if (!people.length) return;
       const link = `/client/jobs/${job.id}`;
       await notify(people.map((p) => p.user_id), { type: "job_received", title: `We received “${job.title}”`, body: "Our team is reviewing it — you’ll hear from us shortly.", link });
@@ -474,7 +480,7 @@ export function onStageChanged(applicationId: string) {
         },
       });
       if (job.client_id && !(await alreadySent(`${key}:client`))) {
-        const people = await clientRecipients(job.client_id);
+        const people = await clientRecipients(job.client_id, job.id);
         if (people.length) {
           await notify(people.map((p) => p.user_id), { type: "candidate_joined", title: `${fullName(c)} has joined`, body: job.title, link: `/client/jobs/${job.id}` });
           await sendEmail({
@@ -556,7 +562,7 @@ export function onInterviewSaved(interviewId: string) {
     });
 
     if (a.shared_with_client && job.client_id && !(await alreadySent(`${key}:client`))) {
-      const people = await clientRecipients(job.client_id);
+      const people = await clientRecipients(job.client_id, job.id);
       if (people.length) {
         const who = fullName(a.candidate);
         await notify(people.map((p) => p.user_id), { type: "interview_scheduled", title: `Interview ${verb}: ${who}`, body: when, link: `/client/jobs/${job.id}` });
@@ -602,7 +608,7 @@ export function onProfilesShared(applicationIds: string[]) {
     }
     for (const list of byJob.values()) {
       const job = list[0].job;
-      const people = await clientRecipients(job.client_id);
+      const people = await clientRecipients(job.client_id, job.id);
       if (!people.length) continue;
       const link = `/client/jobs/${job.id}`;
       const n = list.length;
@@ -651,7 +657,7 @@ export function onStaffComment(applicationId: string, body: string) {
   return safe("onStaffComment", async () => {
     const a = await loadApp(applicationId);
     if (!a?.shared_with_client || !a.job?.client_id) return;
-    const people = await clientRecipients(a.job.client_id);
+    const people = await clientRecipients(a.job.client_id, a.job.id);
     if (!people.length) return;
     const who = fullName(a.candidate);
     const link = `/client/jobs/${a.job.id}`;
@@ -671,7 +677,7 @@ export function onJobPublished(jobId: string) {
   return safe("onJobPublished", async () => {
     const { data: j } = await createAdminClient().from("jobs").select("id, title, job_code, client_id").eq("id", jobId).maybeSingle();
     if (!j?.client_id) return;
-    const people = await clientRecipients(j.client_id);
+    const people = await clientRecipients(j.client_id, j.id);
     if (!people.length) return;
     const link = `/client/jobs/${j.id}`;
     await notify(people.map((p) => p.user_id), { type: "job_published", title: `“${j.title}” is live`, body: "Synerax has reviewed and published your job. Shortlisted profiles will appear here.", link });

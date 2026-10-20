@@ -15,8 +15,7 @@ import {
   PlusCircle,
   Search,
   UserRound,
-  type LucideIcon,
-} from "lucide-react";
+  type LucideIcon, ListChecks, UsersRound, History } from "lucide-react";
 import { ThemeSegmented } from "@/components/theme";
 import { MotionProvider } from "@/components/site/motion";
 import { Menu, MenuDivider } from "@/components/ui/interactive";
@@ -24,9 +23,9 @@ import { Avatar } from "@/components/portal-ui/kit";
 import { cn } from "@/lib/utils";
 import { useChatUnread } from "@/lib/chat/hooks";
 
-const ICONS = { dashboard: LayoutDashboard, jobs: Briefcase, search: Search, applications: ClipboardList, profile: UserRound, post: PlusCircle, bell: Bell, messages: MessagesSquare } satisfies Record<string, LucideIcon>;
+const ICONS = { dashboard: LayoutDashboard, jobs: Briefcase, search: Search, applications: ClipboardList, profile: UserRound, post: PlusCircle, bell: Bell, messages: MessagesSquare, tasks: ListChecks, team: UsersRound, activity: History } satisfies Record<string, LucideIcon>;
 export type PortalIcon = keyof typeof ICONS;
-export type PortalNavItem = { href: string; label: string; /** shorter label for the phone tab bar */ short?: string; exact?: boolean; icon?: PortalIcon; /** sub-paths owned by another item */ exclude?: string[]; /** live unread badge */ badge?: "messages" };
+export type PortalNavItem = { href: string; label: string; /** shorter label for the phone tab bar */ short?: string; exact?: boolean; icon?: PortalIcon; /** sub-paths owned by another item */ exclude?: string[]; /** live unread badge */ badge?: "messages"; /** show in the phone tab bar (default true) */ mobile?: boolean };
 
 /** Branded layout for the candidate and client portals */
 export function PortalShell({
@@ -151,8 +150,8 @@ export function PortalShell({
           className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl md:hidden"
           aria-label={`${area} (mobile)`}
         >
-          <div className="grid" style={{ gridTemplateColumns: `repeat(${nav.length}, minmax(0, 1fr))` }}>
-            {nav.map((n) => {
+          <div className="grid" style={{ gridTemplateColumns: `repeat(${nav.filter((n) => n.mobile !== false).length}, minmax(0, 1fr))` }}>
+            {nav.filter((n) => n.mobile !== false).map((n) => {
               const on = active(n);
               const Icon = ICONS[n.icon ?? "dashboard"];
               return (

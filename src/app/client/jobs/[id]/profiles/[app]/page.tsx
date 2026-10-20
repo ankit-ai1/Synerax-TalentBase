@@ -1,13 +1,14 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Briefcase, CalendarDays, Download, FileText, GraduationCap, IndianRupee, MapPin, MessageSquare, Plane, Quote, Sparkles, Timer } from "lucide-react";
+import { ArrowLeft, Briefcase, CalendarDays, Download, FileText, GraduationCap, IndianRupee, MapPin, MessageSquare, Plane, Quote, Sparkles, Star, Timer } from "lucide-react";
 import { requireRole } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import type { ClientJobDetail, SharedProfile } from "@/lib/client-types";
 import { Avatar, Bar, Chip, EmptyState, Fact, Hero, MatchRing, Section, TimeAgo, istDate } from "@/components/portal-ui/kit";
-import { ProfileWorkflow, Thread } from "@/components/client/shared-profiles";
+import { ProfileFeedback, ProfileWorkflow, Thread } from "@/components/client/shared-profiles";
 import { decisionChip } from "@/lib/client-format";
 import { lpa, noticeLabel, years } from "@/lib/utils";
+import type { ClientMember } from "@/lib/client-labels";
 
 export const metadata = { title: "Candidate brief" };
 
@@ -25,10 +26,16 @@ export default async function CandidateBriefPage({ params }: { params: Promise<{
   const { id, app } = await params;
   if (!/^[0-9a-f-]{36}$/i.test(id) || !/^[0-9a-f-]{36}$/i.test(app)) notFound();
   const supabase = await createClient();
-  const [{ data: jobData }, { data: sharedData }] = await Promise.all([supabase.rpc("client_job", { p_job: id }), supabase.rpc("client_shared_candidates", { p_job: id })]);
+  const [{ data: jobData }, { data: sharedData }, { data: me }, { data: members }] = await Promise.all([
+    supabase.rpc("client_job", { p_job: id }),
+    supabase.rpc("client_shared_candidates", { p_job: id }),
+    supabase.rpc("client_me"),
+    supabase.rpc("client_members"),
+  ]);
   const job = jobData as ClientJobDetail | null;
   const p = ((sharedData ?? []) as SharedProfile[]).find((x) => x.application_id === app);
   if (!job || !p) notFound();
+  const team = { members: (members ?? []) as ClientMember[], canAssignOthers: (me as { user?: { role?: string } } | null)?.user?.role === "client_admin", job: { id: job.id, title: job.title } };
 
   const chip = decisionChip(p);
   const maxYears = Math.max(1, ...p.skills.map((s) => Number(s.years) || 0));
@@ -182,10 +189,13 @@ export default async function CandidateBriefPage({ params }: { params: Promise<{
         <div className="min-w-0 space-y-5 xl:col-span-4">
           <div className="space-y-5 xl:sticky xl:top-24">
             <Section title="Decision & interviews" icon={CalendarDays}>
-              <ProfileWorkflow p={p} />
+              <ProfileWorkflow p={p} team={team} />
               {p.decision !== "Pending" && !p.interviews.length && p.stage !== "Offered" && p.stage !== "Joined" && p.decision !== "Rejected" && (
                 <p className="text-[13px] text-ink-500">Synerax will schedule the interview and share the details here.</p>
               )}
+            </Section>
+            <Section title="Feedback" icon={Star} count={p.feedback_list?.length ?? 0}>
+              <ProfileFeedback p={p} />
             </Section>
             <Section title="Discuss with Synerax" icon={MessageSquare} count={p.comments}>
               <Thread applicationId={p.application_id} />

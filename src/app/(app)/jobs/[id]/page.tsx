@@ -2,7 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Building2, CalendarDays, ChevronLeft, GraduationCap, IndianRupee, MapPin, Pencil, Timer, Users } from "lucide-react";
 import { requireStaff } from "@/lib/auth";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient, createClient } from "@/lib/supabase/server";
+import { roleLabel } from "@/lib/client-labels";
+import { displayPhone, telHref } from "@/lib/phone";
 import { describeActivity } from "@/lib/activity";
 import { APP_SELECT } from "@/lib/selects";
 import { LinkButton } from "@/components/ui/button";
@@ -31,7 +33,7 @@ export default async function JobPage({ params }: { params: Promise<{ id: string
   const [{ data: j }, { data: apps }, { data: logs }] = await Promise.all([
     supabase
       .from("jobs")
-      .select("*, client:clients(id, name, client_code), role:job_roles(name), job_skills(is_mandatory, min_years, skill:skills(id, name)), job_assignees(user_id, user:profiles(id, full_name)), creator:profiles!jobs_created_by_fkey(full_name)")
+      .select("*, client:clients(id, name, client_code), role:job_roles(name), job_skills(is_mandatory, min_years, skill:skills(id, name)), job_assignees(user_id, user:profiles(id, full_name)), creator:profiles!jobs_created_by_fkey(full_name), owner:client_users!jobs_posted_by_client_user_fkey(id, user_id, name, role, phone)")
       .eq("id", id)
       .maybeSingle(),
     supabase.from("applications").select(APP_SELECT).eq("job_id", id).order("position").order("stage_changed_at", { ascending: false }),
@@ -43,6 +45,8 @@ export default async function JobPage({ params }: { params: Promise<{ id: string
       .limit(60),
   ]);
   if (!j) notFound();
+  // the client contact for this job = whoever posted it in the client portal (email from Auth via the service role)
+  const ownerEmail = j.owner?.user_id ? (await createAdminClient().auth.admin.getUserById(j.owner.user_id)).data.user?.email ?? null : null;
 
   const counts = stageCounts((apps ?? []) as any[]);
   const joined = counts.Joined ?? 0;
@@ -84,6 +88,27 @@ export default async function JobPage({ params }: { params: Promise<{ id: string
                 <span>Internal</span>
               )}
               <span className="font-mono text-xs text-ink-400">{j.job_code}</span>
+              {j.owner && (
+                <span data-testid="job-owner">
+                  Posted by <b className="font-medium text-ink-700">{j.owner.name}</b> ({roleLabel(j.owner.role)})
+                  {ownerEmail && (
+                    <>
+                      {" · "}
+                      <a href={`mailto:${ownerEmail}`} className="text-jade-700 hover:underline">
+                        {ownerEmail}
+                      </a>
+                    </>
+                  )}
+                  {j.owner.phone && (
+                    <>
+                      {" · "}
+                      <a href={telHref(j.owner.phone)} className="text-jade-700 hover:underline">
+                        {displayPhone(j.owner.phone)}
+                      </a>
+                    </>
+                  )}
+                </span>
+              )}
               {j.role?.name && <span>{j.role.name}</span>}
               <span className="text-ink-400">Opened {formatDate(j.opened_at)}</span>
               {j.target_date && j.status === "Open" && (
