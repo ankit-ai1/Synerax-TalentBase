@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -35,8 +36,10 @@ export function Dialog({
   if (!open) return null;
   const widths = { sm: "max-w-md", md: "max-w-lg", lg: "max-w-2xl" };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center p-0 sm:items-center sm:p-4" role="dialog" aria-modal="true">
+  // rendered at the end of <body>: a dialog opened inside an animated / transformed container (page headers,
+  // cards) would otherwise be positioned and clipped by that container
+  const node = (
+    <div className="fixed inset-0 z-[70] flex items-end justify-center p-0 sm:items-center sm:p-4" role="dialog" aria-modal="true">
       <div className="absolute inset-0 bg-ink-900/40 backdrop-blur-[2px] animate-fade-in" onClick={onClose} />
       <div
         className={cn(
@@ -58,6 +61,7 @@ export function Dialog({
       </div>
     </div>
   );
+  return typeof document === "undefined" ? null : createPortal(node, document.body);
 }
 
 export function ConfirmDialog({
