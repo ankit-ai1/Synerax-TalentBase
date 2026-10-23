@@ -50,6 +50,20 @@ export const PUBLIC_PATHS = new Set([
   "/opengraph-image",
 ]);
 
+/**
+ * /jobs/<segment> pages that belong to the public website (job landing pages + job details, e.g. /jobs/bangalore,
+ * /jobs/java-developer-job-0012). The staff app keeps /jobs, /jobs/new, /jobs/review and /jobs/<uuid>.
+ */
+export function isPublicJobsSegment(seg: string) {
+  if (!seg || seg === "new" || seg === "review") return false;
+  if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(seg)) return false;
+  return /^[a-z0-9]+(-[a-z0-9]+)*$/i.test(seg);
+}
+export function isPublicJobsPath(path: string) {
+  const m = /^\/jobs\/([^/]+)$/.exec(normalizePath(path));
+  return !!m && isPublicJobsSegment(m[1]);
+}
+
 export function normalizePath(path: string) {
   return path.length > 1 && path.endsWith("/") ? path.slice(0, -1) : path;
 }
@@ -59,7 +73,7 @@ export function isPublicPath(path: string) {
   // /api/e/… = email open/click tracking (anyone who got the email, signed in or not)
   // /.well-known/… must answer for itself (a real 404 when absent), never redirect to the login page —
   // Lighthouse's agent-discovery audit treated that redirect as an invalid ai-catalog.json
-  return PUBLIC_PATHS.has(p) || p.startsWith("/.well-known/") || p.startsWith("/api/e/") || p.startsWith("/opengraph-image") || p.startsWith("/apple-icon") || p.startsWith("/icon");
+  return PUBLIC_PATHS.has(p) || p.startsWith("/.well-known/") || p.startsWith("/api/e/") || p.startsWith("/opengraph-image") || p.startsWith("/apple-icon") || p.startsWith("/icon") || p === "/blog" || p.startsWith("/blog/") || p.startsWith("/api/blog/img/") || isPublicJobsPath(p);
 }
 
 type Area = "public" | "portal" | "client" | "account" | "staff";

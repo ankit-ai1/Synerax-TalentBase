@@ -16,7 +16,7 @@ import {
   Bot,
   Tags,
   Users,
-  UsersRound, SlidersHorizontal, DatabaseBackup } from "lucide-react";
+  UsersRound, SlidersHorizontal, DatabaseBackup, Newspaper, Globe } from "lucide-react";
 
 export type NavItem = {
   href: string;
@@ -55,6 +55,7 @@ export const NAV: { label: string; admin?: boolean; items: NavItem[] }[] = [
       { href: "/import", label: "Bulk import", icon: FileUp },
       { href: "/templates", label: "Message templates", icon: MessageSquareText },
       { href: "/admin/leads", label: "Website leads", icon: Inbox },
+      { href: "/admin/blog", label: "Blog", icon: Newspaper },
     ],
   },
   {
@@ -69,6 +70,7 @@ export const NAV: { label: string; admin?: boolean; items: NavItem[] }[] = [
       { href: "/admin/chatbot", label: "Chatbot & chat", icon: Bot },
       { href: "/admin/activity", label: "Activity log", icon: History },
       { href: "/admin/backups", label: "Backups", icon: DatabaseBackup },
+      { href: "/admin/seo-pages", label: "SEO landing pages", icon: Globe },
     ],
   },
 ];

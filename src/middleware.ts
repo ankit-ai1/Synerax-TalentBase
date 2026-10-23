@@ -1,6 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { canAccess, isPublicPath, normalizePath, roleHome } from "@/lib/roles";
+import { canAccess, isPublicJobsPath, isPublicPath, normalizePath, roleHome } from "@/lib/roles";
 
 /**
  * Auth + role routing.
@@ -11,6 +11,12 @@ import { canAccess, isPublicPath, normalizePath, roleHome } from "@/lib/roles";
  *   which always check the role in the database — security never depends on this file alone.
  */
 export async function middleware(request: NextRequest) {
+  // public job landing pages + job details live at /jobs/<slug> (the staff app owns /jobs and /jobs/<uuid>)
+  if (isPublicJobsPath(request.nextUrl.pathname)) {
+    const url = request.nextUrl.clone();
+    url.pathname = `/job-board/${normalizePath(url.pathname).slice("/jobs/".length)}`;
+    return NextResponse.rewrite(url);
+  }
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {

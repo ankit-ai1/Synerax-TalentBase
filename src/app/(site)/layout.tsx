@@ -9,6 +9,7 @@ import { RouteWipe } from "@/components/site/connection/global";
 import { ChatLauncher } from "@/components/chat/launcher";
 import { SiteIntro } from "@/components/site/intro";
 import { BrandMark } from "@/components/brand-logo";
+import { ldJson, organizationLd } from "@/lib/seo/jsonld";
 
 export const metadata: Metadata = {
   title: { default: `${site.name} — ${site.tagline}`, template: `%s · ${site.name}` },
@@ -24,21 +25,8 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image" },
 };
 
-/** Organization structured data for search engines and AI agents (not visible) */
-const ORG_JSON_LD = JSON.stringify({
-  "@context": "https://schema.org",
-  "@type": "EmploymentAgency",
-  name: site.name,
-  legalName: site.legalName,
-  description: site.description,
-  url: site.url,
-  logo: `${site.url}/logo.png`,
-  email: site.contact.email,
-  telephone: site.contact.phone,
-  address: { "@type": "PostalAddress", addressLocality: "Noida", addressCountry: "IN" },
-  areaServed: "IN",
-  sameAs: Object.values(site.social).filter((u) => typeof u === "string" && u.startsWith("http")),
-});
+/** Organization + LocalBusiness structured data for search engines and AI agents (not visible) */
+const ORG_JSON_LD = ldJson(organizationLd());
 
 /** Public marketing website — no login required */
 export default function SiteLayout({ children }: { children: React.ReactNode }) {

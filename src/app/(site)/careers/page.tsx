@@ -11,6 +11,9 @@ import { createAdminClient } from "@/lib/supabase/server";
 import { MagneticButton } from "@/components/site/magnetic-button";
 import { IconTile, PageHero, Section, SectionHeading } from "@/components/site/ui";
 import { cn } from "@/lib/utils";
+import { getJobBoard } from "@/lib/seo/data";
+import { FEATURED_LANDINGS, jobPath } from "@/lib/seo/landing";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Find a job",
@@ -59,6 +62,9 @@ const exp = (a?: number | null, b?: number | null) => (a != null && b != null ? 
 /** Published, open jobs via the public RPC (public fields only — never client names, budgets or notes) */
 async function liveOpenings(): Promise<Opening[]> {
   try {
+    const board = await getJobBoard();
+    if (board.length)
+      return board.slice(0, 20).map((j) => ({ id: j.id, title: j.title, cities: j.locations ?? [], mode: j.work_mode, experience: exp(j.exp_min, j.exp_max), type: j.employment_type, href: jobPath(j) }));
     const sb = createSupabase(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, { auth: { persistSession: false } });
     const { data } = await sb.rpc("public_jobs", { f: { limit: 20 } });
     return ((data ?? []) as { id: string; title: string; locations: string[] | null; work_mode: string | null; employment_type: string | null; exp_min: number | null; exp_max: number | null }[]).map((j) => ({
@@ -140,6 +146,14 @@ export default async function CareersPage() {
         <Reveal>
           <OpeningsBoard openings={openings} />
         </Reveal>
+        <nav aria-label="Jobs by city and work mode" className="mt-10 flex flex-wrap items-center gap-2">
+          <span className="mr-1 text-[12px] font-semibold uppercase tracking-[0.12em] text-ink-400">Browse</span>
+          {FEATURED_LANDINGS.map((l) => (
+            <Link key={l.href} href={l.href} className="rounded-full border border-line px-3.5 py-1.5 text-[13px] text-ink-600 hover:border-line-strong hover:text-ink-900">
+              {l.label}
+            </Link>
+          ))}
+        </nav>
       </Section>
 
       <Section tone="light" id="submit" index="04" label="Apply" className="scroll-mt-16 !pt-0">

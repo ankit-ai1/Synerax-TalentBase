@@ -3,6 +3,7 @@ import dynamic from "next/dynamic";
 import { site } from "@/content/site";
 import { Hero } from "@/components/site/hero";
 import { Partners } from "@/components/site/home/partners";
+import { JobLinks } from "@/components/site/home/job-links";
 
 // Below-the-fold sections: still server-rendered (same HTML, same look), but each ships in its own chunk
 // so the browser hydrates them in small pieces instead of one long task.
@@ -38,6 +39,7 @@ export default function HomePage() {
       <WhyToggle />
       <TestimonialDeck />
       <FaqSearch />
+      <JobLinks />
       <CtaSplit />
     </>
   );

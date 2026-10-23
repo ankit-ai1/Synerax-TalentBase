@@ -23,6 +23,18 @@ export const SOCIAL_ICONS: Record<string, React.ReactNode> = {
 
 const COLUMNS = [
   {
+    title: "Jobs",
+    links: [
+      { href: "/jobs/bangalore", label: "Jobs in Bangalore" },
+      { href: "/jobs/pune", label: "Jobs in Pune" },
+      { href: "/jobs/hyderabad", label: "Jobs in Hyderabad" },
+      { href: "/jobs/delhi-ncr", label: "Jobs in Delhi NCR" },
+      { href: "/jobs/remote", label: "Remote jobs" },
+      { href: "/jobs/hybrid", label: "Hybrid jobs" },
+      { href: "/jobs/india", label: "Jobs in India" },
+    ],
+  },
+  {
     title: "Services",
     links: [
       { href: "/services#permanent", label: "Permanent staffing" },
@@ -39,6 +51,7 @@ const COLUMNS = [
       { href: "/industries", label: "Industries" },
       { href: "/employers", label: "For employers" },
       { href: "/careers", label: "Careers" },
+      { href: "/blog", label: "Blog" },
       { href: "/register", label: "Register as candidate" },
       { href: "/contact", label: "Contact" },
     ],
@@ -78,7 +91,7 @@ export function SiteFooter() {
           </div>
         </div>
 
-        <div className="grid gap-10 py-12 sm:grid-cols-2 lg:grid-cols-[1.4fr_repeat(3,1fr)]">
+        <div className="grid gap-10 py-12 sm:grid-cols-2 lg:grid-cols-[1.4fr_repeat(4,1fr)]">
           <div className="max-w-sm">
             <Logo />
             <p className="mt-4 text-sm leading-relaxed text-ink-500">{site.description}</p>
