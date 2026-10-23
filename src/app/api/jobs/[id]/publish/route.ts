@@ -3,6 +3,7 @@ import { z } from "zod";
 import { apiStaff } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { onJobPublished } from "@/lib/email/notify-events";
+import { revalidateCareers } from "@/lib/careers-revalidate";
 
 const schema = z.object({
   publish: z.boolean(),
@@ -28,7 +29,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   if (!job) return Response.json({ error: "Job not found" }, { status: 404 });
 
   const firstPublish = b.publish && !job.published;
-  const patch: Record<string, unknown> = { published: b.publish };
+  const patch: Record<string, unknown> = { published: b.publish, show_on_careers: b.publish };
   if (b.public_description !== undefined) patch.public_description = b.public_description || null;
   if (b.interview_process !== undefined) patch.interview_process = b.interview_process || null;
   if (b.show_client_name !== undefined) patch.show_client_name = b.show_client_name;
@@ -50,6 +51,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     }
   }
 
+  revalidateCareers();
   if (firstPublish) after(() => onJobPublished(id));
   return Response.json({ ok: true, status: patch.status ?? job.status, published: b.publish });
 }

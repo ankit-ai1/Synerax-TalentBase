@@ -19,7 +19,7 @@ import { formatDate } from "@/lib/utils";
  *  • /jobs/<title>-job-0012 → one live job, with Google for Jobs JobPosting data
  *  • /jobs/<landing>        → a landing page (city / work mode / country / combo / skill / role)
  */
-export const revalidate = 300;
+export const revalidate = 60;
 export const dynamicParams = true;
 export function generateStaticParams() {
   return [];

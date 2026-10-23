@@ -45,6 +45,7 @@ export function JobStatusControl({ id, status }: { id: string; status: string })
                 return toast.error(friendlyError(error.message));
               }
               toast.success(`Job status: ${s}`);
+              refreshCareers();
               router.refresh();
             }}
           >
@@ -136,10 +137,16 @@ export function JobActions({ job, isAdmin }: { job: any; isAdmin: boolean }) {
           setBusy(false);
           if (error) return toast.error(friendlyError(error.message));
           toast.success("Job deleted");
+          refreshCareers();
           router.push("/jobs");
           router.refresh();
         }}
       />
     </>
   );
+}
+
+/** a job changed → refresh the public careers page / job pages now (fire and forget) */
+function refreshCareers() {
+  fetch("/api/jobs/revalidate", { method: "POST" }).catch(() => {});
 }

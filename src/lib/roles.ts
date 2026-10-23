@@ -40,6 +40,7 @@ export const PUBLIC_PATHS = new Set([
   "/api/portal/register/precheck",
   "/api/resume/parse",
   "/api/cron/daily",
+  "/api/jobs/revalidate",
   "/api/cron/chat-emails",
   "/api/cron/email",
   "/api/backups/log",

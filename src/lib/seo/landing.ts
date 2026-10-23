@@ -19,6 +19,7 @@ export type PublicJob = {
   published_at: string | null;
   updated_at: string | null;
   target_date: string | null;
+  featured?: boolean | null;
   company: string | null;
   salary_min: number | null;
   salary_max: number | null;

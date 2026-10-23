@@ -4,7 +4,7 @@ import { countBy, getJobBoard, getSeoOverrides, getTerms, livePosts } from "@/li
 import { FIXED_LANDINGS, jobPath, jobsFor, resolveLanding } from "@/lib/seo/landing";
 import { slugify } from "@/lib/blog/markdown";
 
-export const revalidate = 3600;
+export const revalidate = 600;
 
 const PAGES: { path: string; priority: number; changeFrequency: "weekly" | "monthly" | "yearly" }[] = [
   { path: "/", priority: 1, changeFrequency: "weekly" },
