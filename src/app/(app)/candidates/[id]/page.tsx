@@ -30,6 +30,7 @@ import { INTERVIEW_SELECT } from "@/lib/selects";
 import { CandidateInterviews, CandidateJobs, CandidateQuickActions, CandidateTasks, ShortlistChips } from "@/components/candidate/candidate-actions";
 import { displayPhone, telHref, waNumber as toWa } from "@/lib/phone";
 import { PortalAccessCard, type PortalStatus } from "@/components/candidate/portal-access";
+import { ctcLabel } from "@/lib/money";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -115,10 +116,10 @@ export default async function CandidatePage({ params }: { params: Promise<{ id: 
 
   const facts = [
     { label: "Experience", value: years(c.total_experience), sub: c.relevant_experience ? `${years(c.relevant_experience)} relevant` : undefined },
-    { label: "Current CTC", value: lpa(c.current_ctc), sub: c.current_fixed_ctc ? `Fixed ${lpa(c.current_fixed_ctc)}` : undefined },
+    { label: "Current CTC", value: ctcLabel(c, "current_ctc"), sub: c.current_fixed_ctc ? `Fixed ${lpa(c.current_fixed_ctc)}` : undefined },
     {
       label: "Expected CTC",
-      value: lpa(c.expected_ctc),
+      value: ctcLabel(c, "expected_ctc"),
       sub: hike !== null ? `${hike > 0 ? "+" : ""}${hike}% hike${c.ctc_negotiable ? ", negotiable" : ""}` : c.ctc_negotiable ? "Negotiable" : undefined,
     },
     { label: "Location", value: c.current_city || "—", sub: c.willing_to_relocate ? "Open to relocation" : undefined },

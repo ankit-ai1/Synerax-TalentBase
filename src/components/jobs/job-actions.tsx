@@ -11,6 +11,7 @@ import { Menu, MenuDivider, MenuItem } from "@/components/ui/interactive";
 import { JOB_STATUSES } from "@/lib/constants";
 import { friendlyError } from "@/lib/utils";
 import { range } from "./job-row";
+import { budgetLabel } from "@/lib/money";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export function JobStatusControl({ id, status }: { id: string; status: string }) {
@@ -61,7 +62,7 @@ export function jdText(j: any) {
     `*${j.title}*${j.client?.name ? ` — ${j.client.name}` : ""}`,
     [(j.locations ?? []).join(", "), j.work_mode].filter(Boolean).join(" · "),
     range(j.exp_min, j.exp_max, "yrs exp"),
-    range(j.ctc_min, j.ctc_max, "LPA") ? `Budget: ₹${range(j.ctc_min, j.ctc_max, "LPA")}` : null,
+    budgetLabel(j) ? `Budget: ${budgetLabel(j)}` : null,
     j.notice_max != null ? `Notice: max ${j.notice_max} days` : null,
     skills.length ? `Skills: ${skills.join(", ")}` : null,
     j.description ? `\n${j.description}` : null,

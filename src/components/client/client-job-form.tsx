@@ -12,6 +12,8 @@ import type { ClientJobDetail } from "@/lib/client-types";
 import { ChipInput, SelectField, TextArea, TextField } from "@/components/ui/fields";
 import { SkillChip } from "@/components/portal-ui/kit";
 import { cn, friendlyError } from "@/lib/utils";
+import { MoneyRangeField, rangeInputFrom, rangePayload } from "@/components/ui/money-field";
+import { rangeLabel, type Period } from "@/lib/money";
 
 const s = (v: unknown) => (v === null || v === undefined ? "" : String(v));
 const STEPS = [
@@ -33,6 +35,8 @@ type Form = {
   exp_max: string;
   ctc_min: string;
   ctc_max: string;
+  ctc_currency: string;
+  ctc_period: Period;
   notice_max: string;
   qualification: string;
   must: string[];
@@ -67,8 +71,10 @@ export function ClientJobForm({ initial }: { initial?: ClientJobDetail }) {
     employment_type: s(initial?.employment_type) || "Full-time",
     exp_min: s(initial?.exp_min),
     exp_max: s(initial?.exp_max),
-    ctc_min: s(initial?.ctc_min),
-    ctc_max: s(initial?.ctc_max),
+    ...(() => {
+      const r = rangeInputFrom(initial as Record<string, unknown> | undefined);
+      return { ctc_min: r.min, ctc_max: r.max, ctc_currency: r.currency, ctc_period: r.period };
+    })(),
     notice_max: s(initial?.notice_max),
     qualification: s(initial?.qualification),
     must: (initial?.skills ?? []).filter((x) => x.mandatory).map((x) => x.name),
@@ -161,8 +167,7 @@ export function ClientJobForm({ initial }: { initial?: ClientJobDetail }) {
           employment_type: f.employment_type,
           exp_min: f.exp_min,
           exp_max: f.exp_max,
-          ctc_min: f.ctc_min,
-          ctc_max: f.ctc_max,
+          ...rangePayload({ min: f.ctc_min, max: f.ctc_max, currency: f.ctc_currency, period: f.ctc_period }),
           notice_max: f.notice_max,
           qualification: f.qualification,
           description: f.description,
@@ -342,9 +347,12 @@ export function ClientJobForm({ initial }: { initial?: ClientJobDetail }) {
 
           {step === 3 && (
             <div className="grid gap-4 sm:grid-cols-2">
-              <TextField label="CTC budget from" value={f.ctc_min} onChange={(v) => set("ctc_min", num(v))} suffix="LPA" inputMode="decimal" />
-              <div>
-                <TextField label="to" value={f.ctc_max} onChange={(v) => set("ctc_max", num(v))} suffix="LPA" inputMode="decimal" />
+              <div className="sm:col-span-2">
+                <MoneyRangeField
+                  label="CTC budget"
+                  value={{ min: f.ctc_min, max: f.ctc_max, currency: f.ctc_currency, period: f.ctc_period }}
+                  onChange={(r) => setF((x) => ({ ...x, ctc_min: r.min, ctc_max: r.max, ctc_currency: r.currency, ctc_period: r.period }))}
+                />
                 <Err msg={errors.ctc_max} />
               </div>
               <p className="rounded-xl bg-surface-2 px-4 py-3 text-[13px] text-ink-600 sm:col-span-2">
@@ -359,7 +367,7 @@ export function ClientJobForm({ initial }: { initial?: ClientJobDetail }) {
                 { label: "Basics", go: 0, rows: [["Title", f.title], ["Department", f.department], ["Openings", f.openings], ["Location", [f.locations.join(", "), f.work_mode].filter(Boolean).join(" · ")], ["Type", f.employment_type], ["Target date", f.target_date]] },
                 { label: "Requirements", go: 1, rows: [["Experience", f.exp_min || f.exp_max ? `${f.exp_min || 0}–${f.exp_max || "any"} yrs` : ""], ["Notice", f.notice_max ? `${f.notice_max} days max` : "Flexible"], ["Qualification", f.qualification], ["JD file", f.jd_file_name], ["Interview process", f.interview_process]] },
                 { label: "Skills", go: 2, rows: [["Must-have", f.must.join(", ")], ["Nice-to-have", f.nice.join(", ")]] },
-                { label: "Compensation", go: 3, rows: [["Budget", f.ctc_min || f.ctc_max ? `₹${f.ctc_min || "?"}–${f.ctc_max || "?"} LPA` : ""]] },
+                { label: "Compensation", go: 3, rows: [["Budget", rangeLabel({ min: f.ctc_min, max: f.ctc_max, currency: f.ctc_currency, period: f.ctc_period }, { hint: false }) ?? ""]] },
               ].map((g) => (
                 <div key={g.label} className="rounded-2xl border border-line p-4">
                   <div className="mb-2 flex items-center justify-between">
@@ -423,7 +431,7 @@ export function ClientJobForm({ initial }: { initial?: ClientJobDetail }) {
                   <Clock className="h-4 w-4 text-ink-400" aria-hidden /> {f.exp_min || f.exp_max ? `${f.exp_min || 0}–${f.exp_max || "any"} yrs experience` : "Experience"}
                 </li>
                 <li className="flex items-center gap-2">
-                  <IndianRupee className="h-4 w-4 text-ink-400" aria-hidden /> {f.ctc_min || f.ctc_max ? `₹${f.ctc_min || "?"}–${f.ctc_max || "?"} LPA` : "Budget"}
+                  <IndianRupee className="h-4 w-4 text-ink-400" aria-hidden /> {rangeLabel({ min: f.ctc_min, max: f.ctc_max, currency: f.ctc_currency, period: f.ctc_period }, { hint: false }) ?? "Budget"}
                 </li>
                 <li className="flex items-center gap-2">
                   <Users className="h-4 w-4 text-ink-400" aria-hidden /> {f.openings || 1} opening{f.openings === "1" ? "" : "s"} · {f.employment_type}

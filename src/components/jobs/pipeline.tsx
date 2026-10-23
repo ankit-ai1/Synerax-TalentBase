@@ -35,6 +35,7 @@ import { ACTIVE_STAGES, STAGES, STAGE_STYLE } from "@/lib/constants";
 import { MessageButton } from "@/components/chat/message-button";
 import { cn, dayLabel, formatTime, friendlyError, lpa, noticeLabel, timeAgo, years } from "@/lib/utils";
 import { warnBelowThreshold } from "@/lib/override-warning";
+import { ctcLabel } from "@/lib/money";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 type App = any;
@@ -427,7 +428,7 @@ export function Pipeline({
                   </td>
                   <td className="px-3 py-2.5">{a.match_score != null ? <ScoreRing value={a.match_score} size={32} /> : "—"}</td>
                   <td className="px-3 py-2.5 tabular text-ink-700">{years(a.candidate.total_experience)}</td>
-                  <td className="px-3 py-2.5 tabular text-ink-700">{lpa(a.candidate.expected_ctc)}</td>
+                  <td className="px-3 py-2.5 tabular text-ink-700">{ctcLabel(a.candidate, "expected_ctc", { hint: false })}</td>
                   <td className="px-3 py-2.5 text-ink-700">{noticeLabel(a.candidate.notice_period_days)}</td>
                   <td className="px-3 py-2.5">
                     <select
@@ -543,7 +544,7 @@ function AppCard({
       </div>
       <div className="mt-2.5 flex flex-wrap gap-x-3 gap-y-0.5 pl-[42px] text-[11.5px] text-ink-500">
         <span className="tabular">{years(c.total_experience)}</span>
-        <span className="tabular">{lpa(c.expected_ctc)}</span>
+        <span className="tabular">{ctcLabel(c, "expected_ctc", { hint: false })}</span>
         <span className={cn(c.notice_period_days != null && c.notice_period_days <= 15 && "font-medium text-jade-700")}>{noticeLabel(c.notice_period_days)}</span>
       </div>
       {(next || a.offered_ctc || lastResult || a.rejection_reason) && (
@@ -559,7 +560,7 @@ function AppCard({
               {lastResult.round_name}: <StageResult r={lastResult.result} />
             </p>
           )}
-          {a.offered_ctc && <p className="text-[11px] font-medium text-saffron-800">Offer {lpa(a.offered_ctc)}</p>}
+          {a.offered_ctc && <p className="text-[11px] font-medium text-saffron-800">Offer {ctcLabel(a, "offered_ctc", { hint: false })}</p>}
           {a.rejection_reason && <p className="truncate text-[11px] text-red-600 dark:text-red-400">{a.rejection_reason}</p>}
         </div>
       )}

@@ -49,6 +49,7 @@ import { DecisionActions } from "@/components/client/decision-actions";
 import { HiringFunnel, Insights } from "@/components/client/dashboard-widgets";
 import { cn, lpa, noticeLabel, years } from "@/lib/utils";
 import { RoleOverview, type RoleExtras } from "@/components/client/role-overview";
+import { ctcLabel } from "@/lib/money";
 
 export const metadata = { title: "Dashboard" };
 
@@ -255,7 +256,7 @@ export default async function ClientDashboardPage() {
                       </div>
                       <div className="min-w-0">
                         <dt className="text-ink-400">Expected</dt>
-                        <dd className="truncate font-semibold text-ink-800">{lpa(p.expected_ctc)}</dd>
+                        <dd className="truncate font-semibold text-ink-800">{ctcLabel(p as unknown as Record<string, unknown>, "expected_ctc")}</dd>
                       </div>
                       <div className="min-w-0">
                         <dt className="text-ink-400">Location</dt>

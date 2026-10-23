@@ -4,10 +4,11 @@ import { AvatarStack, JobStatusBadge, Priority } from "@/components/ui/misc";
 import { ACTIVE_STAGES, STAGE_STYLE } from "@/lib/constants";
 import { cn, daysUntil, formatDate } from "@/lib/utils";
 import { roleLabel } from "@/lib/client-labels";
+import { budgetLabel } from "@/lib/money";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export const JOB_LIST_SELECT =
-  "id, job_code, title, status, priority, openings, locations, work_mode, exp_min, exp_max, ctc_min, ctc_max, target_date, opened_at, created_at, client:clients(id, name), owner:client_users!jobs_posted_by_client_user_fkey(name, role), applications(stage), job_assignees(user:profiles(full_name))";
+  "id, job_code, title, status, priority, openings, locations, work_mode, exp_min, exp_max, ctc_min, ctc_max, ctc_min_amount, ctc_max_amount, ctc_currency, ctc_period, target_date, opened_at, created_at, client:clients(id, name), owner:client_users!jobs_posted_by_client_user_fkey(name, role), applications(stage), job_assignees(user:profiles(full_name))";
 
 export function stageCounts(apps: { stage: string }[]) {
   const c: Record<string, number> = {};
@@ -73,7 +74,7 @@ export function JobRow({ job }: { job: any }) {
         </p>
         <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-ink-500">
           {range(job.exp_min, job.exp_max, "yrs") && <span>{range(job.exp_min, job.exp_max, "yrs")}</span>}
-          {range(job.ctc_min, job.ctc_max, "LPA") && <span>₹{range(job.ctc_min, job.ctc_max, "LPA")}</span>}
+          {budgetLabel(job, { hint: false }) && <span>{budgetLabel(job, { hint: false })}</span>}
         </p>
       </div>
 

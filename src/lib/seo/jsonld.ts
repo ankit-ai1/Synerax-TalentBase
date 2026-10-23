@@ -76,15 +76,29 @@ export function jobPostingLd(j: PublicJob, now = Date.now()) {
       : {
           jobLocation: (locs.length ? locs : ["India"]).map((l) => ({ "@type": "Place", address: { "@type": "PostalAddress", addressLocality: l, addressCountry: "IN" } })),
         }),
-    ...(j.salary_min != null || j.salary_max != null
-      ? {
-          baseSalary: {
-            "@type": "MonetaryAmount",
-            currency: "INR",
-            value: { "@type": "QuantitativeValue", unitText: "YEAR", ...(j.salary_min != null ? { minValue: lpaToInr(Number(j.salary_min)) } : {}), ...(j.salary_max != null ? { maxValue: lpaToInr(Number(j.salary_max)) } : {}) },
-          },
-        }
-      : {}),
+    ...(j.salary_min_amount != null || j.salary_max_amount != null
+      ? (() => {
+          // the job's own currency and period (INR annual amounts are stored in lakhs)
+          const cur = (j.salary_currency || "INR").toUpperCase();
+          const monthly = j.salary_period === "monthly";
+          const val = (v: number) => (cur === "INR" && !monthly ? lpaToInr(v) : Math.round(v));
+          return {
+            baseSalary: {
+              "@type": "MonetaryAmount",
+              currency: cur,
+              value: { "@type": "QuantitativeValue", unitText: monthly ? "MONTH" : "YEAR", ...(j.salary_min_amount != null ? { minValue: val(Number(j.salary_min_amount)) } : {}), ...(j.salary_max_amount != null ? { maxValue: val(Number(j.salary_max_amount)) } : {}) },
+            },
+          };
+        })()
+      : j.salary_min != null || j.salary_max != null
+        ? {
+            baseSalary: {
+              "@type": "MonetaryAmount",
+              currency: "INR",
+              value: { "@type": "QuantitativeValue", unitText: "YEAR", ...(j.salary_min != null ? { minValue: lpaToInr(Number(j.salary_min)) } : {}), ...(j.salary_max != null ? { maxValue: lpaToInr(Number(j.salary_max)) } : {}) },
+            },
+          }
+        : {}),
   };
 }
 

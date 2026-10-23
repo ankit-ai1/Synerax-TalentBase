@@ -8,6 +8,8 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ChipInput, SelectField, Switch, TextArea, TextField } from "@/components/ui/fields";
 import { StarInput } from "@/components/ui/interactive";
+import { MoneyField, useRates, type MoneyInput } from "@/components/ui/money-field";
+import { defaultCurrency, defaultPeriod, parseMoney, toLpa, type Period } from "@/lib/money";
 import { RolePicker, SkillPicker } from "./skill-picker";
 import {
   emptyCertification,
@@ -89,6 +91,20 @@ export function CandidateForm({
   const [invite, setInvite] = useInvitePref("add");
 
   const c = data.candidate;
+  const rates = useRates();
+  /** salary as amount + currency + period (rows saved before multi-currency fall back to INR / annual LPA) */
+  const money = (p: "current_ctc" | "expected_ctc"): MoneyInput => {
+    const amount = c[`${p}_amount`] || c[p] || "";
+    const untouched = !amount && (c[`${p}_currency`] || "INR") === "INR";
+    const currency = untouched ? defaultCurrency({ country: c.country, phone: c.phone }) : c[`${p}_currency`] || "INR";
+    return { amount, currency, period: untouched ? defaultPeriod(currency) : ((c[`${p}_period`] as Period) || "annual") };
+  };
+  const setMoney = (p: "current_ctc" | "expected_ctc", m: MoneyInput) => {
+    dirty.current = true;
+    setData((d) => ({ ...d, candidate: { ...d.candidate, [`${p}_amount`]: m.amount, [`${p}_currency`]: m.currency, [`${p}_period`]: m.period, [p]: m.currency === "INR" && m.period === "annual" ? m.amount : d.candidate[p] } }));
+    setCvMeta((x) => (x[p as CvKey] ? { ...x, [p]: undefined } : x));
+  };
+  const lpaOf = (m: MoneyInput) => (m.amount === "" ? null : toLpa({ amount: Number(m.amount), currency: m.currency, period: m.period }, rates));
   const set = <K extends keyof CandidateFields>(k: K, v: CandidateFields[K]) => {
     dirty.current = true;
     setData((d) => ({ ...d, candidate: { ...d.candidate, [k]: v } }));
@@ -104,7 +120,11 @@ export function CandidateForm({
     setData((d) => {
       const cand = { ...d.candidate } as Record<string, unknown>;
       for (const v of values) {
-        cand[v.key] = v.key === "current_city" ? matchCity(String(v.value), CITIES) : v.value;
+        if (v.key === "current_ctc" || v.key === "expected_ctc") {
+          // "12.5" (LPA) or "AED 30550 / month" → amount + currency + period
+          const m = parseMoney(String(v.value));
+          if (m) Object.assign(cand, { [`${v.key}_amount`]: String(m.amount), [`${v.key}_currency`]: m.currency, [`${v.key}_period`]: m.period, [v.key]: m.currency === "INR" && m.period === "annual" ? String(m.amount) : cand[v.key] });
+        } else cand[v.key] = v.key === "current_city" ? matchCity(String(v.value), CITIES) : v.value;
         meta[v.key] = v.confidence;
       }
       // skills → master skills (by name or alias); unknown names are skipped
@@ -235,7 +255,14 @@ export function CandidateForm({
     setSaving(true);
     const payload = {
       id: data.id ?? null,
-      candidate: { ...c, phone: normalizePhone(c.phone), alt_phone: normalizePhone(c.alt_phone), whatsapp: normalizePhone(c.whatsapp) },
+      candidate: {
+        ...c,
+        phone: normalizePhone(c.phone),
+        alt_phone: normalizePhone(c.alt_phone),
+        whatsapp: normalizePhone(c.whatsapp),
+        // salary: amount + currency + period (the database keeps the INR LPA equivalent)
+        ...Object.fromEntries((["current_ctc", "expected_ctc"] as const).flatMap((p) => { const m = money(p); return [[`${p}_amount`, m.amount], [`${p}_currency`, m.currency], [`${p}_period`, m.period]]; })),
+      },
       skills: data.skills.map(({ skill_id, years, level, is_primary }) => ({ skill_id, years, level, is_primary })),
       job_roles: data.job_roles.map(({ job_role_id, is_primary }) => ({ job_role_id, is_primary })),
       experiences: data.experiences,
@@ -494,18 +521,21 @@ export function CandidateForm({
         </Section>
 
         {/* COMPENSATION */}
-        <Section id="compensation" title="Salary & notice" description="All amounts in Lakhs per annum (LPA).">
+        <Section id="compensation" title="Salary & notice" description="Pick the currency and Annual / Monthly. INR annual is in lakhs (LPA); fixed / variable components are in LPA.">
           <Grid>
-            <CvField confidence={cvMeta.current_ctc}><TextField label="Current CTC" type="number" min={0} step={0.01} prefix="₹" suffix="LPA" value={c.current_ctc} onChange={(v) => set("current_ctc", v)} /></CvField>
+            <CvField confidence={cvMeta.current_ctc}><MoneyField label="Current CTC" value={money("current_ctc")} onChange={(m) => setMoney("current_ctc", m)} /></CvField>
             <TextField label="Fixed component" type="number" min={0} step={0.01} prefix="₹" suffix="LPA" value={c.current_fixed_ctc} onChange={(v) => set("current_fixed_ctc", v)} />
             <TextField label="Variable component" type="number" min={0} step={0.01} prefix="₹" suffix="LPA" value={c.current_variable_ctc} onChange={(v) => set("current_variable_ctc", v)} />
             <div>
-              <CvField confidence={cvMeta.expected_ctc}><TextField label="Expected CTC" type="number" min={0} step={0.01} prefix="₹" suffix="LPA" value={c.expected_ctc} onChange={(v) => set("expected_ctc", v)} /></CvField>
-              {c.current_ctc && c.expected_ctc && Number(c.current_ctc) > 0 && (
-                <p className="mt-1 text-xs text-ink-400">
-                  Hike: <span className="font-medium text-ink-700">{Math.round(((Number(c.expected_ctc) - Number(c.current_ctc)) / Number(c.current_ctc)) * 100)}%</span>
-                </p>
-              )}
+              <CvField confidence={cvMeta.expected_ctc}><MoneyField label="Expected CTC" value={money("expected_ctc")} onChange={(m) => setMoney("expected_ctc", m)} /></CvField>
+              {(() => {
+                const cur = lpaOf(money("current_ctc")), exp = lpaOf(money("expected_ctc"));
+                return cur && exp && cur > 0 ? (
+                  <p className="mt-1 text-xs text-ink-400">
+                    Hike: <span className="font-medium text-ink-700">{Math.round(((exp - cur) / cur) * 100)}%</span>
+                  </p>
+                ) : null;
+              })()}
             </div>
             <TextField label="Last hike date" type="date" value={c.last_hike_date} onChange={(v) => set("last_hike_date", v)} />
             <TextField label="Last hike" type="number" min={0} suffix="%" value={c.last_hike_percent} onChange={(v) => set("last_hike_percent", v)} />

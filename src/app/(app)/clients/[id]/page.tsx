@@ -12,6 +12,7 @@ import { DeleteClientButton } from "@/components/clients/delete-client";
 import { MessageButton } from "@/components/chat/message-button";
 import { formatDate, inr, lpa, waLink } from "@/lib/utils";
 import { displayPhone, telHref } from "@/lib/phone";
+import { ctcLabel } from "@/lib/money";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
@@ -206,7 +207,7 @@ export default async function ClientPage({ params }: { params: Promise<{ id: str
                                 {p.job.title}
                               </Link>
                             </td>
-                            <td className="px-3 py-3 tabular text-ink-700">{lpa(p.offered_ctc ?? p.candidate.expected_ctc)}</td>
+                            <td className="px-3 py-3 tabular text-ink-700">{p.offered_ctc != null ? ctcLabel(p, "offered_ctc") : ctcLabel(p.candidate, "expected_ctc")}</td>
                             <td className="px-5 py-3 text-right text-ink-500">{formatDate(p.joined_at)}</td>
                           </tr>
                         ))}

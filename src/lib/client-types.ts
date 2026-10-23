@@ -15,6 +15,10 @@ export type ClientJob = {
   exp_max: number | null;
   ctc_min: number | null;
   ctc_max: number | null;
+  ctc_min_amount?: number | null;
+  ctc_max_amount?: number | null;
+  ctc_currency?: string | null;
+  ctc_period?: string | null;
   target_date: string | null;
   created_at: string;
   published_at: string | null;

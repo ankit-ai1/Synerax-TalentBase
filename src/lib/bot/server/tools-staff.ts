@@ -1,3 +1,4 @@
+import { ctcLabel } from "@/lib/money";
 import { z } from "zod";
 import { istDayRange } from "@/lib/utils";
 import type { BotCard } from "../types";
@@ -64,7 +65,7 @@ export const candidateSummary = defineTool({
   async run(p, ctx) {
     const term = String(p.candidate).trim();
     const code = term.match(/cand-?\d+/i)?.[0];
-    let query = ctx.sb.from("candidates").select("id, first_name, last_name, headline, current_designation, current_company, current_city, total_experience, notice_period_days, expected_ctc, status, candidate_code").eq("is_archived", false).limit(5);
+    let query = ctx.sb.from("candidates").select("id, first_name, last_name, headline, current_designation, current_company, current_city, total_experience, notice_period_days, expected_ctc, expected_ctc_amount, expected_ctc_currency, expected_ctc_period, status, candidate_code").eq("is_archived", false).limit(5);
     if (code) query = query.ilike("candidate_code", code.toUpperCase().replace(/^CAND-?/, "CAND-"));
     else {
       const parts = term.split(/\s+/).filter((w) => w.length > 1).slice(0, 2);
@@ -77,7 +78,7 @@ export const candidateSummary = defineTool({
     if (rows.length > 1) return [{ text: `I found ${rows.length} matches — which one?`, cards: rows.map(candCard) }];
     const c = rows[0];
     const apps = await q<any[]>(ctx.sb.from("applications").select("stage, job:jobs(id, title)").eq("candidate_id", c.id).not("stage", "in", "(Rejected,Dropped,Joined)").limit(5));
-    return [{ text: `${name(c)} — ${c.current_designation ?? "no current role"}${c.current_company ? ` at ${c.current_company}` : ""}.`, cards: [{ ...candCard(c), lines: [`Code ${c.candidate_code} · Expected ${c.expected_ctc != null ? `₹${c.expected_ctc} LPA` : "—"}`, apps.length ? `Active: ${apps.map((a) => `${a.job?.title} (${a.stage})`).join(", ")}` : "Not in any active pipeline"] }] }];
+    return [{ text: `${name(c)} — ${c.current_designation ?? "no current role"}${c.current_company ? ` at ${c.current_company}` : ""}.`, cards: [{ ...candCard(c), lines: [`Code ${c.candidate_code} · Expected ${ctcLabel(c, "expected_ctc")}`, apps.length ? `Active: ${apps.map((a) => `${a.job?.title} (${a.stage})`).join(", ")}` : "Not in any active pipeline"] }] }];
   },
 });
 

@@ -15,6 +15,7 @@ import type { JobFormData } from "./job-defaults";
 import { Section } from "@/components/clients/client-form";
 import { CITIES, EMPLOYMENT_TYPES, JOB_STATUSES, NOTICE_OPTIONS, PRIORITIES, QUALIFICATIONS, WORK_MODES } from "@/lib/constants";
 import { cn, friendlyError } from "@/lib/utils";
+import { MoneyRangeField, rangePayload } from "@/components/ui/money-field";
 import type { JobRole, Skill } from "@/lib/types";
 
 export function JobForm({ initial, skills: initialSkills, roles }: { initial: JobFormData; skills: Skill[]; roles: JobRole[] }) {
@@ -34,7 +35,7 @@ export function JobForm({ initial, skills: initialSkills, roles }: { initial: Jo
     const { data, error } = await createClient().rpc("save_job", {
       p: {
         id: id ?? null,
-        job: { ...rest, client_id: client?.id ?? "" },
+        job: { ...rest, ...rangePayload({ min: f.ctc_min, max: f.ctc_max, currency: f.ctc_currency, period: f.ctc_period }), client_id: client?.id ?? "" },
         skills: sk.map(({ skill_id, is_mandatory, min_years }) => ({ skill_id, is_mandatory, min_years })),
         assignees,
       },
@@ -95,8 +96,12 @@ export function JobForm({ initial, skills: initialSkills, roles }: { initial: Jo
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <TextField label="Min experience" type="number" min={0} step={0.5} suffix="yrs" value={f.exp_min} onChange={(v) => set("exp_min", v)} />
           <TextField label="Max experience" type="number" min={0} step={0.5} suffix="yrs" value={f.exp_max} onChange={(v) => set("exp_max", v)} />
-          <TextField label="Budget min" type="number" min={0} step={0.5} prefix="₹" suffix="LPA" value={f.ctc_min} onChange={(v) => set("ctc_min", v)} />
-          <TextField label="Budget max" type="number" min={0} step={0.5} prefix="₹" suffix="LPA" value={f.ctc_max} onChange={(v) => set("ctc_max", v)} />
+          <MoneyRangeField
+            className="sm:col-span-2"
+            label="Budget"
+            value={{ min: f.ctc_min, max: f.ctc_max, currency: f.ctc_currency, period: f.ctc_period }}
+            onChange={(r) => setF((x) => ({ ...x, ctc_min: r.min, ctc_max: r.max, ctc_currency: r.currency, ctc_period: r.period }))}
+          />
           <SelectField
             label="Max notice"
             value={f.notice_max}

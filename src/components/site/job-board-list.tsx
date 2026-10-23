@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Briefcase, Clock, IndianRupee, MapPin, Search } from "lucide-react";
+import { ArrowRight, Banknote, Briefcase, Clock, IndianRupee, MapPin, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export type BoardJob = { href: string; title: string; company: string | null; cities: string[]; mode: string | null; type: string | null; experience: string; salary: string | null; skills: string[]; posted: string | null };
@@ -78,7 +78,7 @@ export function JobBoardList({ jobs }: { jobs: BoardJob[] }) {
                 )}
                 {j.salary && (
                   <li className="flex items-center gap-1.5">
-                    <IndianRupee className="h-4 w-4" aria-hidden /> {j.salary.replace(/^₹/, "")}
+                    {j.salary.startsWith("₹") ? <IndianRupee className="h-4 w-4" aria-hidden /> : <Banknote className="h-4 w-4" aria-hidden />} {j.salary.replace(/^₹/, "")}
                   </li>
                 )}
               </ul>

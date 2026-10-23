@@ -29,6 +29,7 @@ import { Menu, MenuDivider, MenuItem } from "@/components/ui/interactive";
 import { Avatar, StageBadge } from "@/components/ui/misc";
 import { relTime } from "@/components/portal-ui/kit";
 import { cn, friendlyError } from "@/lib/utils";
+import { ctcLabel } from "@/lib/money";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -299,7 +300,7 @@ function ContextPanel({ conversationId }: { conversationId: string }) {
           <Fact label="Experience" value={ctx.experience != null ? `${ctx.experience} yrs` : "—"} />
           <Fact label="City" value={ctx.city ?? "—"} />
           <Fact label="Notice" value={ctx.notice_days != null ? (ctx.notice_days === 0 ? "Immediate" : `${ctx.notice_days} days`) : "—"} />
-          <Fact label="Expected" value={ctx.expected_ctc != null ? `₹${ctx.expected_ctc} LPA` : "—"} />
+          <Fact label="Expected" value={ctcLabel(ctx, "expected_ctc")} />
         </dl>
         <div>
           <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-ink-400">Active jobs</p>

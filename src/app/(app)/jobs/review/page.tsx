@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Card, EmptyState, PageHeader } from "@/components/ui/misc";
 import { range } from "@/components/jobs/job-row";
 import { formatDateTime, timeAgo } from "@/lib/utils";
+import { budgetLabel } from "@/lib/money";
 
 export const metadata = { title: "Pending review" };
 
@@ -14,7 +15,7 @@ export default async function ReviewQueuePage() {
   const supabase = await createClient();
   const { data } = await supabase
     .from("jobs")
-    .select("id, job_code, title, openings, locations, work_mode, exp_min, exp_max, ctc_min, ctc_max, jd_file_name, posted_by_client, created_at, client:clients(id, name), poster:profiles!jobs_posted_by_fkey(full_name)")
+    .select("id, job_code, title, openings, locations, work_mode, exp_min, exp_max, ctc_min, ctc_max, ctc_min_amount, ctc_max_amount, ctc_currency, ctc_period, jd_file_name, posted_by_client, created_at, client:clients(id, name), poster:profiles!jobs_posted_by_fkey(full_name)")
     .eq("status", "Pending review")
     .order("created_at", { ascending: true });
   const jobs = (data ?? []) as any[];
@@ -59,7 +60,7 @@ export default async function ReviewQueuePage() {
                     </span>
                   )}
                   {range(j.exp_min, j.exp_max, "yrs") && <span>{range(j.exp_min, j.exp_max, "yrs")}</span>}
-                  {range(j.ctc_min, j.ctc_max, "LPA") && <span>₹{range(j.ctc_min, j.ctc_max, "LPA")}</span>}
+                  {budgetLabel(j, { hint: false }) && <span>{budgetLabel(j, { hint: false })}</span>}
                   <span>
                     {j.openings} opening{j.openings === 1 ? "" : "s"}
                   </span>

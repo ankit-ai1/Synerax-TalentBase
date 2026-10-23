@@ -34,6 +34,13 @@ const core = {
   current_designation: z.string().trim().min(2, "Please enter your current designation").max(120),
   current_ctc: z.coerce.number().min(0, "Enter your current CTC").max(500),
   expected_ctc: z.coerce.number().min(0, "Enter your expected CTC").max(500),
+  // the salary as entered (amount + currency + period); current_ctc / expected_ctc above are its INR LPA equivalent
+  current_ctc_amount: z.coerce.number().min(0).max(1e9).optional(),
+  current_ctc_currency: z.string().regex(/^[A-Z]{3}$/).optional(),
+  current_ctc_period: z.enum(["annual", "monthly"]).optional(),
+  expected_ctc_amount: z.coerce.number().min(0).max(1e9).optional(),
+  expected_ctc_currency: z.string().regex(/^[A-Z]{3}$/).optional(),
+  expected_ctc_period: z.enum(["annual", "monthly"]).optional(),
   notice_period_days: z.coerce.number().int().min(0).max(180),
   serving_notice: z.boolean(),
   last_working_day: z.string().trim().optional().default(""),

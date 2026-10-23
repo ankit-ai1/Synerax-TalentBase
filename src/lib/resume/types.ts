@@ -26,6 +26,9 @@ export interface ResumeFields {
   last_working_day?: Field<string>; // YYYY-MM-DD
   current_ctc?: Field<number>; // lakhs per annum
   expected_ctc?: Field<number>; // lakhs per annum
+  /** salary in another currency, e.g. "AED 30550 / month" (then the *_ctc lakhs field is not set) */
+  current_ctc_text?: Field<string>;
+  expected_ctc_text?: Field<string>;
   dob?: Field<string>; // YYYY-MM-DD
 }
 

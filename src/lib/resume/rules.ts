@@ -2,6 +2,7 @@
  * Rule-based resume field extraction (no AI, no network). Pure functions over plain text, so they can be
  * unit-tested without a database. Every field carries a confidence: high / medium / low.
  */
+import { parseMoney } from "../money";
 import { BUILTIN_SKILLS, INDIAN_CITIES } from "./data";
 import type { Confidence, EduItem, Field, ParseOptions, ResumeFields, SkillDef, WorkItem } from "./types";
 import { cvPhone } from "@/lib/phone";
@@ -456,16 +457,30 @@ function toLakhs(num: string, unit: string): number | null {
   return null;
 }
 
-export function extractCtc(text: string): Pick<ResumeFields, "current_ctc" | "expected_ctc"> {
-  const out: Pick<ResumeFields, "current_ctc" | "expected_ctc"> = {};
+const FOREIGN = /(\$|£|€|\b(?:usd|aed|dhs?|sar|qar|omr|kwd|bhd|sgd|gbp|eur|cad|aud|dirhams?|riyals?|rials?|dinars?|dollars?|pounds?|euros?)\b)/i;
+/** "AED 30,550 per month" → "AED 30550 / month" (null when the text isn't in a foreign currency) */
+function foreignCtc(snippet: string): string | null {
+  if (!FOREIGN.test(snippet)) return null;
+  const m = parseMoney(snippet);
+  if (!m || m.amount == null || m.currency === "INR") return null;
+  return `${m.currency} ${m.amount} / ${m.period === "monthly" ? "month" : "year"}`;
+}
+
+export function extractCtc(text: string): Pick<ResumeFields, "current_ctc" | "expected_ctc" | "current_ctc_text" | "expected_ctc_text"> {
+  const out: Pick<ResumeFields, "current_ctc" | "expected_ctc" | "current_ctc_text" | "expected_ctc_text"> = {};
+  for (const [key, label] of [["current", String.raw`(?:current|present|existing)`], ["expected", "expected"]] as const) {
+    const snip = text.match(new RegExp(label + String.raw`\s*(?:ctc|salary|package|compensation)\s*[:\-–]?\s*([^\n]{0,60})`, "i"));
+    const foreign = snip ? foreignCtc(snip[1]) : null;
+    if (foreign) out[`${key}_ctc_text`] = f(foreign, "high");
+  }
   const amount = String.raw`(?:₹|rs\.?|inr)?\s*([\d,]+(?:\.\d+)?)\s*(lpa|lakhs?|lacs?|l\b|cr|crores?|k\b)?`;
   const cur = text.match(new RegExp(String.raw`(?:current|present|existing)\s*(?:ctc|salary|package|compensation)\s*[:\-–]?\s*` + amount, "i"));
-  if (cur) {
+  if (cur && !out.current_ctc_text) {
     const v = toLakhs(cur[1], cur[2] ?? "");
     if (v !== null) out.current_ctc = f(v, cur[2] ? "high" : "medium");
   }
   const exp = text.match(new RegExp(String.raw`expected\s*(?:ctc|salary|package|compensation)\s*[:\-–]?\s*` + amount, "i"));
-  if (exp) {
+  if (exp && !out.expected_ctc_text) {
     const v = toLakhs(exp[1], exp[2] ?? "");
     if (v !== null) out.expected_ctc = f(v, exp[2] ? "high" : "medium");
   }

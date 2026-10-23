@@ -70,9 +70,15 @@ export interface CandidateFields {
   reason_for_change: string;
 
   current_ctc: string;
+  current_ctc_amount: string;
+  current_ctc_currency: string;
+  current_ctc_period: string;
   current_fixed_ctc: string;
   current_variable_ctc: string;
   expected_ctc: string;
+  expected_ctc_amount: string;
+  expected_ctc_currency: string;
+  expected_ctc_period: string;
   ctc_negotiable: boolean;
   last_hike_date: string;
   last_hike_percent: string;
@@ -214,6 +220,12 @@ export interface SearchItem {
   total_experience: number | null;
   current_ctc: number | null;
   expected_ctc: number | null;
+  current_ctc_amount?: number | null;
+  current_ctc_currency?: string | null;
+  current_ctc_period?: string | null;
+  expected_ctc_amount?: number | null;
+  expected_ctc_currency?: string | null;
+  expected_ctc_period?: string | null;
   notice_period_days: number | null;
   serving_notice: boolean;
   last_working_day: string | null;

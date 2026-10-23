@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Avatar } from "@/components/ui/misc";
 import { cn, lpa, years } from "@/lib/utils";
 import { phoneSearchDigits } from "@/lib/phone";
+import { ctcLabel } from "@/lib/money";
 
 export type Option = { id: string; label: string; sub?: string; avatar?: boolean };
 
@@ -171,7 +172,7 @@ export const searchCandidates = async (term: string): Promise<Option[]> => {
   return ((data as any)?.items ?? []).map((c: any) => ({
     id: c.id,
     label: [c.first_name, c.last_name].filter(Boolean).join(" "),
-    sub: [c.current_designation || c.headline, years(c.total_experience), c.expected_ctc ? lpa(c.expected_ctc) : null].filter(Boolean).join(" · "),
+    sub: [c.current_designation || c.headline, years(c.total_experience), c.expected_ctc ? ctcLabel(c, "expected_ctc", { hint: false }) : null].filter(Boolean).join(" · "),
     avatar: true,
   }));
 };

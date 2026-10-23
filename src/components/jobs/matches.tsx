@@ -11,6 +11,7 @@ import { Avatar, Card, EmptyState, ScoreRing, Skeleton, StatusBadge } from "@/co
 import { Checkbox } from "@/components/ui/interactive";
 import { cn, friendlyError, lpa, noticeLabel, years } from "@/lib/utils";
 import { warnBelowThreshold } from "@/lib/override-warning";
+import { ctcLabel } from "@/lib/money";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const PARTS: { key: string; label: string; weight: string }[] = [
@@ -134,7 +135,7 @@ export function Matches({ jobId }: { jobId: string }) {
                   <p className="mt-1.5 flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-ink-500">
                     <span>{years(c.total_experience)}</span>
                     <span>
-                      {lpa(c.current_ctc)} → {lpa(c.expected_ctc)}
+                      {ctcLabel(c, "current_ctc", { hint: false })} → {ctcLabel(c, "expected_ctc", { hint: false })}
                     </span>
                     <span>{noticeLabel(c.notice_period_days)}</span>
                     {c.current_city && <span>{c.current_city}</span>}

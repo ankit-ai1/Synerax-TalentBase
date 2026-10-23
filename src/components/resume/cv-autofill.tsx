@@ -80,8 +80,10 @@ export function suggestionsFrom(f: ResumeFields, opts: { noticeAsOption?: boolea
   }
   if (f.serving_notice?.value) add("serving_notice", true, f.serving_notice.confidence, "Yes");
   add("last_working_day", f.last_working_day?.value, f.last_working_day?.confidence);
-  if (f.current_ctc) add("current_ctc", String(f.current_ctc.value), f.current_ctc.confidence, `${f.current_ctc.value} LPA`);
-  if (f.expected_ctc) add("expected_ctc", String(f.expected_ctc.value), f.expected_ctc.confidence, `${f.expected_ctc.value} LPA`);
+  if (f.current_ctc_text) add("current_ctc", f.current_ctc_text.value, f.current_ctc_text.confidence, f.current_ctc_text.value);
+  else if (f.current_ctc) add("current_ctc", String(f.current_ctc.value), f.current_ctc.confidence, `${f.current_ctc.value} LPA`);
+  if (f.expected_ctc_text) add("expected_ctc", f.expected_ctc_text.value, f.expected_ctc_text.confidence, f.expected_ctc_text.value);
+  else if (f.expected_ctc) add("expected_ctc", String(f.expected_ctc.value), f.expected_ctc.confidence, `${f.expected_ctc.value} LPA`);
   add("dob", f.dob?.value, f.dob?.confidence);
   return out;
 }

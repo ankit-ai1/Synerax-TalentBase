@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { SelectField, TextArea, TextField } from "@/components/ui/fields";
 import { REJECTION_REASONS } from "@/lib/constants";
 import { StageBadge } from "@/components/ui/misc";
+import { MoneyField, moneyPayload, type MoneyInput } from "@/components/ui/money-field";
 import { friendlyError, todayIST } from "@/lib/utils";
 
 export type StagePrefill = {
@@ -25,7 +26,7 @@ export function StageDialog({ prefill, onClose }: { prefill: StagePrefill; onClo
   const router = useRouter();
   const [reason, setReason] = useState("");
   const [other, setOther] = useState("");
-  const [ctc, setCtc] = useState("");
+  const [ctc, setCtc] = useState<MoneyInput>({ amount: "", currency: "INR", period: "annual" });
   const [joining, setJoining] = useState(prefill.to === "Joined" ? todayIST() : "");
   const [saving, setSaving] = useState(false);
   const isReject = prefill.to === "Rejected" || prefill.to === "Dropped";
@@ -36,7 +37,7 @@ export function StageDialog({ prefill, onClose }: { prefill: StagePrefill; onClo
     const patch: Record<string, any> = { stage: prefill.to };
     if (isReject) patch.rejection_reason = reason === "Other" ? other.trim() || "Other" : reason || null;
     if (prefill.to === "Offered") {
-      patch.offered_ctc = ctc ? Number(ctc) : null;
+      Object.assign(patch, moneyPayload("offered_ctc", ctc));
       patch.expected_joining = joining || null;
     }
     if (prefill.to === "Joined") patch.joined_at = joining || todayIST();
@@ -79,7 +80,7 @@ export function StageDialog({ prefill, onClose }: { prefill: StagePrefill; onClo
         )}
         {prefill.to === "Offered" && (
           <>
-            <TextField label="Offered CTC" type="number" min={0} step={0.01} prefix="₹" suffix="LPA" value={ctc} onChange={setCtc} />
+            <MoneyField label="Offered CTC" value={ctc} onChange={setCtc} />
             <TextField label="Expected joining date" type="date" value={joining} onChange={setJoining} />
           </>
         )}

@@ -1,11 +1,14 @@
 import { BUILTIN_SKILLS, INDIAN_CITIES } from "@/lib/resume/data";
 import { norm } from "./text";
+import { parseMoney, type Money } from "@/lib/money";
 
 /** Things we can pull out of a typed message without any AI */
 export type Entities = {
   skills: string[];
   cities: string[];
   lpa?: number;
+  /** salary in a currency other than INR, e.g. 30000 AED / month */
+  money?: Money;
   noticeDays?: number;
   years?: number;
   workMode?: "Remote" | "Hybrid" | "Onsite";
@@ -35,6 +38,13 @@ export function extractEntities(raw: string): Entities {
 
   const lpa = text.match(/(\d+(?:\.\d+)?)\s*(?:lpa|l\b|lacs?|lakhs?|lakh per annum)/) ?? text.match(/(?:ctc|salary|package)\D{0,12}(\d+(?:\.\d+)?)/);
   if (lpa) e.lpa = Number(lpa[1]);
+  if (/(\$|£|€|\b(usd|aed|dhs?|sar|qar|omr|kwd|bhd|sgd|gbp|eur|cad|aud|dirhams?|riyals?|dinars?|dollars?|pounds?|euros?)\b)/i.test(raw)) {
+    const m = parseMoney(raw.replace(/\b\d{1,3}\s*(days?|din|months? notice)\b/gi, ""));
+    if (m && m.currency !== "INR") {
+      e.money = m;
+      e.lpa = undefined;
+    }
+  }
 
   if (/\b(immediate(ly)?|right away|asap|no notice|serving.*over)\b/.test(text)) e.noticeDays = 0;
   const nd = text.match(/(\d{1,3})\s*(?:days?|din)\b/);

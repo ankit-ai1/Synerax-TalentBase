@@ -50,6 +50,8 @@ import { JobAlertsToggle, OpenToWorkToggle } from "@/components/portal/profile-t
 import { cn, fileSize, formatDate, friendlyError } from "@/lib/utils";
 import { normalizePhone, phoneError } from "@/lib/phone";
 import { PhoneField } from "@/components/ui/phone-field";
+import { MoneyField, moneyInputFrom, type MoneyInput } from "@/components/ui/money-field";
+import { defaultCurrency, moneyLabel, parseMoney } from "@/lib/money";
 import { CvAutofill, type CvKey, type CvSuggestion } from "@/components/resume/cv-autofill";
 
 type Row = Record<string, string | boolean>;
@@ -196,6 +198,8 @@ export function ProfileEditor({ me, skillsMaster }: { me: MyProfile; skillsMaste
     current_fixed_ctc: s(c0.current_fixed_ctc),
     current_variable_ctc: s(c0.current_variable_ctc),
     expected_ctc: s(c0.expected_ctc),
+    ...moneyState("current_ctc", c0),
+    ...moneyState("expected_ctc", c0),
     ctc_negotiable: b(c0.ctc_negotiable),
     notice_period_days: s(c0.notice_period_days),
     serving_notice: b(c0.serving_notice),
@@ -212,6 +216,9 @@ export function ProfileEditor({ me, skillsMaster }: { me: MyProfile; skillsMaste
     preferred_locations: arr(c0.preferred_locations),
   });
   const set = (k: string, v: string | boolean | string[]) => setC((p) => ({ ...p, [k]: v }));
+  const money = (p: "current_ctc" | "expected_ctc"): MoneyInput => ({ amount: s(c[`${p}_amount`]), currency: s(c[`${p}_currency`]) || "INR", period: c[`${p}_period`] === "monthly" ? "monthly" : "annual" });
+  const setMoney = (p: "current_ctc" | "expected_ctc", m: MoneyInput) => setC((x) => ({ ...x, [`${p}_amount`]: m.amount, [`${p}_currency`]: m.currency, [`${p}_period`]: m.period }));
+  const moneyView = (p: "current_ctc" | "expected_ctc") => (s(c[`${p}_amount`]) ? moneyLabel({ ...money(p), amount: Number(s(c[`${p}_amount`])), lpa: s(c[p]) || null }) : "");
   const [phoneErrs, setPhoneErrs] = useState<Record<string, string>>({});
 
   const [skills, setSkills] = useState(me.skills.map((x) => ({ name: x.name, years: s(x.years), level: x.level ?? "Intermediate", is_primary: x.is_primary })));
@@ -299,10 +306,14 @@ export function ProfileEditor({ me, skillsMaster }: { me: MyProfile; skillsMaste
         "career_gap",
         "career_gap_details",
         "reason_for_change",
-        "current_ctc",
+        "current_ctc_amount",
+        "current_ctc_currency",
+        "current_ctc_period",
         "current_fixed_ctc",
         "current_variable_ctc",
-        "expected_ctc",
+        "expected_ctc_amount",
+        "expected_ctc_currency",
+        "expected_ctc_period",
         "ctc_negotiable",
         "notice_period_days",
         "serving_notice",
@@ -331,7 +342,14 @@ export function ProfileEditor({ me, skillsMaster }: { me: MyProfile; skillsMaste
   // "Fill from CV": empty fields only (after the candidate confirms), or one accepted "CV says" value
   const CV_KEYS: CvKey[] = ["first_name", "last_name", "dob", "phone", "linkedin_url", "github_url", "portfolio_url", "current_city", "total_experience", "current_designation", "current_company", "highest_qualification", "notice_period_days", "serving_notice", "last_working_day", "current_ctc", "expected_ctc"];
   const applyCv = async (values: CvSuggestion[], newSkills: string[] = []) => {
-    const candidate = Object.fromEntries(values.map((v) => [v.key, v.value]));
+    // salaries from the CV ("12.5" LPA or "AED 30550 / month") → amount + currency + period
+    const candidate = Object.fromEntries(
+      values.flatMap((v): [string, string | boolean][] => {
+        if (v.key !== "current_ctc" && v.key !== "expected_ctc") return [[v.key, v.value]];
+        const m = parseMoney(String(v.value));
+        return m ? [[`${v.key}_amount`, String(m.amount)], [`${v.key}_currency`, m.currency], [`${v.key}_period`, m.period]] : [];
+      })
+    );
     const merged = [...skills, ...newSkills.map((name, i) => ({ name, years: "", level: "Intermediate", is_primary: skills.filter((x) => x.is_primary).length + i < 3 }))];
     const p: Record<string, unknown> = {};
     if (values.length) p.candidate = candidate;
@@ -470,8 +488,8 @@ export function ProfileEditor({ me, skillsMaster }: { me: MyProfile; skillsMaste
                 ["Total experience", c.total_experience ? `${s(c.total_experience)} years` : ""],
                 ["Industry", s(c.industry)],
                 ["Highest qualification", s(c.highest_qualification)],
-                ["Current CTC", c.current_ctc ? `₹${s(c.current_ctc)} LPA` : ""],
-                ["Expected CTC", c.expected_ctc ? `₹${s(c.expected_ctc)} LPA${c.ctc_negotiable ? " (negotiable)" : ""}` : ""],
+                ["Current CTC", moneyView("current_ctc")],
+                ["Expected CTC", moneyView("expected_ctc") ? `${moneyView("expected_ctc")}${c.ctc_negotiable ? " (negotiable)" : ""}` : ""],
                 ["Notice period", c.serving_notice ? `Serving notice${c.last_working_day ? ` · LWD ${formatDate(s(c.last_working_day))}` : ""}` : c.notice_period_days !== "" ? `${s(c.notice_period_days)} days` : ""],
                 ["Available from", c.available_from ? formatDate(s(c.available_from)) : ""],
               ]}
@@ -499,13 +517,15 @@ export function ProfileEditor({ me, skillsMaster }: { me: MyProfile; skillsMaste
               {c.career_gap && <TextArea className="mt-3" rows={2} value={s(c.career_gap_details)} onChange={(v) => set("career_gap_details", v)} placeholder="Gap period and reason" />}
             </div>
           </div>
-          <h3 className="mb-3 mt-7 text-[13px] font-semibold uppercase tracking-[0.12em] text-ink-400">Salary (Lakhs per annum)</h3>
-          <div className="grid gap-4 sm:grid-cols-3">
-            <TextField label="Current CTC" value={s(c.current_ctc)} onChange={(v) => set("current_ctc", v.replace(/[^\d.]/g, ""))} suffix="LPA" inputMode="decimal" />
-            <TextField label="Fixed" value={s(c.current_fixed_ctc)} onChange={(v) => set("current_fixed_ctc", v.replace(/[^\d.]/g, ""))} suffix="LPA" inputMode="decimal" />
-            <TextField label="Variable" value={s(c.current_variable_ctc)} onChange={(v) => set("current_variable_ctc", v.replace(/[^\d.]/g, ""))} suffix="LPA" inputMode="decimal" />
-            <TextField label="Expected CTC" value={s(c.expected_ctc)} onChange={(v) => set("expected_ctc", v.replace(/[^\d.]/g, ""))} suffix="LPA" inputMode="decimal" />
-            <div className="flex items-end pb-2 sm:col-span-2">
+          <h3 className="mb-3 mt-7 text-[13px] font-semibold uppercase tracking-[0.12em] text-ink-400">Salary</h3>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <MoneyField label="Current CTC" value={money("current_ctc")} onChange={(m) => setMoney("current_ctc", m)} />
+            <MoneyField label="Expected CTC" value={money("expected_ctc")} onChange={(m) => setMoney("expected_ctc", m)} />
+          </div>
+          <div className="mt-4 grid gap-4 sm:grid-cols-3">
+            <TextField label="Fixed (LPA)" value={s(c.current_fixed_ctc)} onChange={(v) => set("current_fixed_ctc", v.replace(/[^\d.]/g, ""))} suffix="LPA" inputMode="decimal" />
+            <TextField label="Variable (LPA)" value={s(c.current_variable_ctc)} onChange={(v) => set("current_variable_ctc", v.replace(/[^\d.]/g, ""))} suffix="LPA" inputMode="decimal" />
+            <div className="flex items-end pb-2">
               <Switch checked={!!c.ctc_negotiable} onChange={(v) => set("ctc_negotiable", v)} label="Expected CTC is negotiable" />
             </div>
           </div>
@@ -938,4 +958,10 @@ function DocumentsSection({ docs, missingCv }: { docs: MyProfile["documents"]; m
       </div>
     </Section>
   );
+}
+
+/** salary state from the profile (rows from before multi-currency → INR / annual; empty → currency from country / phone) */
+function moneyState(prefix: "current_ctc" | "expected_ctc", c0: Record<string, unknown>) {
+  const m = moneyInputFrom(c0, prefix, defaultCurrency({ country: c0.country as string, phone: c0.phone as string }));
+  return { [`${prefix}_amount`]: m.amount, [`${prefix}_currency`]: m.currency, [`${prefix}_period`]: m.period };
 }

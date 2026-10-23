@@ -13,8 +13,11 @@ export type JobFormData = {
   locations: string[];
   exp_min: string;
   exp_max: string;
+  /** budget in the job's currency + period (INR annual = lakhs) */
   ctc_min: string;
   ctc_max: string;
+  ctc_currency: string;
+  ctc_period: "annual" | "monthly";
   notice_max: string;
   qualification: string;
   priority: string;
@@ -40,6 +43,8 @@ export const emptyJob = (): JobFormData => ({
   exp_max: "",
   ctc_min: "",
   ctc_max: "",
+  ctc_currency: "INR",
+  ctc_period: "annual",
   notice_max: "",
   qualification: "",
   priority: "Medium",

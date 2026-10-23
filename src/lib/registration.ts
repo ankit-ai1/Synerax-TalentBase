@@ -104,6 +104,10 @@ export async function finalizeRegistration(userId: string): Promise<FinalizeResu
 
   const email = (user.email ?? "").toLowerCase();
   const { first_name, last_name } = splitName(p.full_name);
+  const salary = (prefix: "current_ctc" | "expected_ctc") =>
+    p[`${prefix}_amount`] != null
+      ? { [`${prefix}_amount`]: p[`${prefix}_amount`], [`${prefix}_currency`]: p[`${prefix}_currency`] ?? "INR", [`${prefix}_period`]: p[`${prefix}_period`] ?? "annual" }
+      : {};
   const fields = {
     current_city: p.current_city,
     current_designation: p.current_designation,
@@ -129,6 +133,9 @@ export async function finalizeRegistration(userId: string): Promise<FinalizeResu
       const cur = existing[k as keyof typeof existing];
       if (cur === null || cur === "" || (k === "total_experience" && Number(cur) === 0)) fill[k] = v;
     }
+    // salary as entered, only where staff hadn't recorded one
+    if (existing.current_ctc == null) Object.assign(fill, salary("current_ctc"));
+    if (existing.expected_ctc == null) Object.assign(fill, salary("expected_ctc"));
     const { error } = await admin.from("candidates").update(fill).eq("id", existing.id);
     if (error) throw new Error(error.message);
     candidateId = existing.id;
@@ -140,6 +147,8 @@ export async function finalizeRegistration(userId: string): Promise<FinalizeResu
       email,
       phone: p.phone,
       ...fields,
+      ...salary("current_ctc"),
+      ...salary("expected_ctc"),
       currently_employed: true,
       source: "Portal",
       status: "New",

@@ -3,6 +3,7 @@ import "server-only";
 import { createAdminClient } from "@/lib/supabase/server";
 import { alreadySent, getEmailSettings, notify, sendEmail, type EmailSettings } from "./send";
 import { interviewIcs } from "./ics";
+import { budgetLabel } from "@/lib/money";
 
 /**
  * Event handlers: each one sends the email(s) AND creates the matching in-app notification.
@@ -127,7 +128,7 @@ export function onClientJobSaved(jobId: string, isNew: boolean) {
     const admin = createAdminClient();
     const { data: j } = await admin
       .from("jobs")
-      .select("id, title, job_code, client_id, openings, locations, exp_min, exp_max, ctc_min, ctc_max, status, client:clients(name), poster:profiles!jobs_posted_by_fkey(full_name)")
+      .select("id, title, job_code, client_id, openings, locations, exp_min, exp_max, ctc_min, ctc_max, ctc_min_amount, ctc_max_amount, ctc_currency, ctc_period, status, client:clients(name), poster:profiles!jobs_posted_by_fkey(full_name)")
       .eq("id", jobId)
       .maybeSingle();
     if (!j) return;
@@ -139,7 +140,7 @@ export function onClientJobSaved(jobId: string, isNew: boolean) {
       { label: "Openings", value: String(job.openings ?? 1) },
       ...(job.locations?.length ? [{ label: "Location", value: job.locations.join(", ") }] : []),
       ...(job.exp_min != null || job.exp_max != null ? [{ label: "Experience", value: `${job.exp_min ?? 0}–${job.exp_max ?? "any"} yrs` }] : []),
-      ...(job.ctc_min != null || job.ctc_max != null ? [{ label: "Budget", value: `₹${job.ctc_min ?? "?"}–${job.ctc_max ?? "?"} LPA` }] : []),
+      ...(budgetLabel(job) ? [{ label: "Budget", value: budgetLabel(job)! }] : []),
     ];
     await toSynerax({
       event: isNew ? "staff_client_job_posted" : "staff_client_job_changed",

@@ -9,11 +9,12 @@ import { Button } from "@/components/ui/button";
 import { Card, Progress } from "@/components/ui/misc";
 import { cn } from "@/lib/utils";
 import { normalizeLoosePhone } from "@/lib/phone";
+import { importSalary, moneyLabel } from "@/lib/money";
 import { checkImportRow } from "@/lib/candidate-schema";
 import { InviteCheckbox, inviteSummary, sendPortalInvites, useInvitePref } from "@/components/candidate/portal-access";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-type Field = { key: string; label: string; synonyms: string[]; required?: boolean; kind?: "number" | "date" | "text" };
+type Field = { key: string; label: string; synonyms: string[]; required?: boolean; kind?: "number" | "date" | "text" | "money" };
 
 const FIELDS: Field[] = [
   { key: "full_name", label: "Full name (will be split)", synonyms: ["name", "full name", "candidate name", "candidate"] },
@@ -32,8 +33,10 @@ const FIELDS: Field[] = [
   { key: "current_designation", label: "Designation", synonyms: ["designation", "current designation", "role", "position", "job title"] },
   { key: "total_experience", label: "Total experience (yrs)", synonyms: ["experience", "total experience", "exp", "total exp", "years of experience", "yoe"], kind: "number" },
   { key: "relevant_experience", label: "Relevant experience (yrs)", synonyms: ["relevant experience", "relevant exp"], kind: "number" },
-  { key: "current_ctc", label: "Current CTC (LPA)", synonyms: ["ctc", "current ctc", "cctc", "current salary", "current package"], kind: "number" },
-  { key: "expected_ctc", label: "Expected CTC (LPA)", synonyms: ["expected ctc", "ectc", "expected salary", "expected package"], kind: "number" },
+  { key: "current_ctc", label: "Current CTC (12 LPA, 30 AED, $90k)", synonyms: ["ctc", "current ctc", "cctc", "current salary", "current package", "current ctc lpa"], kind: "money" },
+  { key: "expected_ctc", label: "Expected CTC (12 LPA, 30 AED, $90k)", synonyms: ["expected ctc", "ectc", "expected salary", "expected package", "expected ctc lpa"], kind: "money" },
+  { key: "ctc_currency", label: "Currency (INR, AED, USD…)", synonyms: ["currency", "ctc currency", "salary currency"] },
+  { key: "ctc_period", label: "Period (Annual / Monthly)", synonyms: ["period", "pay period", "salary period", "ctc period", "frequency"] },
   { key: "notice_period_days", label: "Notice period (days)", synonyms: ["notice", "notice period", "np", "notice period days"], kind: "number" },
   { key: "serving_notice", label: "Serving notice (Yes/No)", synonyms: ["serving notice", "serving"] },
   { key: "last_working_day", label: "Last working day", synonyms: ["lwd", "last working day", "last working date"], kind: "date" },
@@ -115,6 +118,14 @@ function buildRow(raw: string[], map: Record<number, string>) {
     r.last_name = parts.length > 1 ? parts.slice(1).join(" ") : r.last_name ?? "";
   }
   delete r.full_name;
+  // salaries: "12 LPA" / "30 AED" / "$90k" + optional Currency / Period columns → amount + currency + period
+  for (const k of ["current_ctc", "expected_ctc"] as const) {
+    const m = importSalary(r[k], r.ctc_currency, r.ctc_period);
+    if (m) Object.assign(r, { [k]: String(m.amount), [`${k}_amount`]: String(m.amount), [`${k}_currency`]: m.currency, [`${k}_period`]: m.period });
+    else if (r[k] !== undefined) r[k] = "";
+  }
+  delete r.ctc_currency;
+  delete r.ctc_period;
   // any country; numbers without a code are read as Indian
   for (const k of ["phone", "alt_phone", "whatsapp"]) if (r[k]) r[k] = normalizeLoosePhone(r[k]);
   if (r.email) r.email = r.email.toLowerCase();
@@ -211,9 +222,10 @@ export function Importer() {
   }
 
   function downloadTemplate() {
-    const head = ["Full name", "Email", "Phone", "Gender", "DOB", "City", "Preferred locations", "Current company", "Designation", "Total experience", "Current CTC", "Expected CTC", "Notice period", "Serving notice", "LWD", "Skills", "Job role", "Qualification", "Source", "Remarks"];
-    const ex = ["Rohan Gupta", "rohan@gmail.com", "9876543210", "Male", "15/08/1994", "Pune", "Pune, Bangalore", "Infosys", "Senior Developer", "6", "14", "20", "60", "No", "", "Java:6, Spring Boot:4, AWS:2", "Backend Developer", "Graduation", "Naukri", "Strong communication"];
-    const csv = "﻿" + [head, ex].map((r) => r.map((c) => (/[",]/.test(c) ? `"${c.replace(/"/g, '""')}"` : c)).join(",")).join("\r\n");
+    const head = ["Full name", "Email", "Phone", "Gender", "DOB", "City", "Preferred locations", "Current company", "Designation", "Total experience", "Current CTC", "Expected CTC", "Currency", "Period", "Notice period", "Serving notice", "LWD", "Skills", "Job role", "Qualification", "Source", "Remarks"];
+    const ex = ["Rohan Gupta", "rohan@gmail.com", "9876543210", "Male", "15/08/1994", "Pune", "Pune, Bangalore", "Infosys", "Senior Developer", "6", "14", "20", "INR", "Annual", "60", "No", "", "Java:6, Spring Boot:4, AWS:2", "Backend Developer", "Graduation", "Naukri", "Strong communication"];
+    const gulf = ["Sara Khan", "sara@gmail.com", "+971501234567", "Female", "02/03/1992", "Dubai", "Dubai", "Emaar", "Accountant", "8", "12000", "15000", "AED", "Monthly", "30", "No", "", "SAP FICO:5, Excel:8", "Accountant", "Post Graduation", "LinkedIn", "Salary in AED per month"];
+    const csv = "﻿" + [head, ex, gulf].map((r) => r.map((c) => (/[",]/.test(c) ? `"${c.replace(/"/g, '""')}"` : c)).join(",")).join("\r\n");
     const a = document.createElement("a");
     a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
     a.download = "candidates-import-template.csv";
@@ -443,7 +455,7 @@ export function Importer() {
                 <tr key={i} className={cn(!(r.first_name && (r.email || r.phone)) && "bg-red-50/60 dark:bg-red-500/5")}>
                   {["first_name", "last_name", "email", "phone", "current_city", "total_experience", "current_ctc", "expected_ctc", "notice_period_days", "skills"].map((k) => (
                     <td key={k} className="max-w-[180px] truncate px-3 py-2 text-ink-700">
-                      {r[k] || <span className="text-ink-300">—</span>}
+                      {(k === "current_ctc" || k === "expected_ctc") && r[`${k}_amount`] ? moneyLabel({ amount: Number(r[`${k}_amount`]), currency: r[`${k}_currency`], period: r[`${k}_period`] as "annual" | "monthly" }) : r[k] || <span className="text-ink-300">—</span>}
                     </td>
                   ))}
                 </tr>

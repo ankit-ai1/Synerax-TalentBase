@@ -19,6 +19,7 @@ import { cn, friendlyError, lpa, noticeLabel, years } from "@/lib/utils";
 import { AddRoundButton, FeedbackPanel } from "./interview-panel";
 import { AssignTaskButton } from "./assign-task";
 import type { ClientMember } from "@/lib/client-labels";
+import { ctcLabel } from "@/lib/money";
 
 type Filter = "all" | "pending" | "approved" | "closed";
 
@@ -135,7 +136,7 @@ function ProfileCard({ p, jobId, selected, onSelect }: { p: SharedProfile; jobId
               </span>
             )}
             <span>{p.serving_notice ? "Serving notice" : `Notice ${noticeLabel(p.notice_period_days)}`}</span>
-            <span>Expects {lpa(p.expected_ctc)}</span>
+            <span>Expects {ctcLabel(p as unknown as Record<string, unknown>, "expected_ctc")}</span>
           </p>
         </div>
         <MatchRing value={p.match} size={56} />
@@ -194,7 +195,7 @@ function CompareTable({ profiles, jobId }: { profiles: SharedProfile[]; jobId: s
     { label: "Current role", render: (p) => p.current_designation ?? "—" },
     { label: "Experience", render: (p) => years(p.total_experience) },
     { label: "Notice", render: (p) => (p.serving_notice ? "Serving notice" : noticeLabel(p.notice_period_days)) },
-    { label: "Expected CTC", render: (p) => lpa(p.expected_ctc) },
+    { label: "Expected CTC", render: (p) => ctcLabel(p as unknown as Record<string, unknown>, "expected_ctc") },
     { label: "Location", render: (p) => p.current_city ?? "—" },
     { label: "Education", render: (p) => (p.education[0] ? [p.education[0].degree, p.education[0].institute].filter(Boolean).join(", ") : (p.highest_qualification ?? "—")) },
     {

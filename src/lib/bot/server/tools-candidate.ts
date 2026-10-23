@@ -1,3 +1,4 @@
+import { ctcLabel, moneyLabel } from "@/lib/money";
 import { z } from "zod";
 import type { BotCard, BotTurn } from "../types";
 import { defineTool, P, type BotCtx } from "./registry";
@@ -77,7 +78,7 @@ export const myProfileSummary = defineTool({
             subtitle: c.headline || c.current_designation || "Add a headline",
             lines: [
               `Experience: ${c.total_experience ?? "—"} yrs · City: ${c.current_city ?? "—"}`,
-              `Notice: ${c.notice_period_days == null ? "—" : c.notice_period_days === 0 ? "Immediate" : `${c.notice_period_days} days`} · Expected CTC: ${c.expected_ctc != null ? `₹${c.expected_ctc} LPA` : "—"}`,
+              `Notice: ${c.notice_period_days == null ? "—" : c.notice_period_days === 0 ? "Immediate" : `${c.notice_period_days} days`} · Expected CTC: ${ctcLabel(c, "expected_ctc")}`,
               `Skills: ${(d.skills ?? []).slice(0, 6).map((s: any) => s.name).join(", ") || "—"}`,
             ],
             href: "/portal/profile",
@@ -283,7 +284,15 @@ export const withdrawApplication = defineTool({
   },
 });
 
-const prefs = z.object({ notice_days: z.coerce.number().int().min(0).max(180).optional(), expected_ctc: z.coerce.number().min(0.5).max(500).optional(), city: z.string().trim().min(2).max(60).optional() });
+const prefs = z.object({
+  notice_days: z.coerce.number().int().min(0).max(180).optional(),
+  expected_ctc: z.coerce.number().min(0.5).max(500).optional(),
+  // expected salary in another currency (amount + currency + period)
+  expected_ctc_amount: z.coerce.number().min(1).max(1e9).optional(),
+  expected_ctc_currency: z.string().regex(/^[A-Z]{3}$/).optional(),
+  expected_ctc_period: z.enum(["annual", "monthly"]).optional(),
+  city: z.string().trim().min(2).max(60).optional(),
+});
 export const updatePreferences = defineTool({
   name: "update_my_preferences",
   modes: ["candidate"],
@@ -294,11 +303,17 @@ export const updatePreferences = defineTool({
   keywords: /\b(update|change|set|edit|moved|shifted|relocated|kar do|now)\b.*\b(notice|ctc|salary|package|city|location|join)|\b(notice|expected ctc|expected salary)\b.*\b(update|change|now|is)\b|\bjoin immediately\b/,
   extract: (t, e) => {
     const city = /\b(moved|shifted|relocated|living|city|location)\b/i.test(t) ? e.cities[0] : undefined;
-    return { notice_days: /\b(notice|join|immediate)/i.test(t) ? e.noticeDays : undefined, expected_ctc: /\b(ctc|salary|package|lpa|lakh)/i.test(t) ? e.lpa : undefined, city };
+    const salary = /\b(ctc|salary|package|lpa|lakh)/i.test(t);
+    return {
+      notice_days: /\b(notice|join|immediate)/i.test(t) ? e.noticeDays : undefined,
+      expected_ctc: salary && !e.money ? e.lpa : undefined,
+      ...(salary && e.money ? { expected_ctc_amount: e.money.amount ?? undefined, expected_ctc_currency: e.money.currency, expected_ctc_period: e.money.period } : {}),
+      city,
+    };
   },
   async prepare(p) {
     const v = prefs.parse(p);
-    if (v.notice_days === undefined && v.expected_ctc === undefined && !v.city)
+    if (v.notice_days === undefined && v.expected_ctc === undefined && v.expected_ctc_amount === undefined && !v.city)
       return {
         turns: [
           {
@@ -310,6 +325,7 @@ export const updatePreferences = defineTool({
     const details = [
       v.notice_days !== undefined && `Notice period → ${v.notice_days === 0 ? "Immediate" : `${v.notice_days} days`}`,
       v.expected_ctc !== undefined && `Expected CTC → ₹${v.expected_ctc} LPA`,
+      v.expected_ctc_amount !== undefined && `Expected CTC → ${moneyLabel({ amount: v.expected_ctc_amount, currency: v.expected_ctc_currency ?? "INR", period: v.expected_ctc_period ?? "annual" })}`,
       v.city && `Current city → ${v.city}`,
     ].filter(Boolean) as string[];
     return { params: v, confirm: { title: "Update your profile?", details, confirmLabel: "Update" } };
@@ -319,6 +335,7 @@ export const updatePreferences = defineTool({
     const candidate: Record<string, unknown> = {};
     if (v.notice_days !== undefined) candidate.notice_period_days = String(v.notice_days);
     if (v.expected_ctc !== undefined) candidate.expected_ctc = String(v.expected_ctc);
+    if (v.expected_ctc_amount !== undefined) Object.assign(candidate, { expected_ctc_amount: String(v.expected_ctc_amount), expected_ctc_currency: v.expected_ctc_currency ?? "INR", expected_ctc_period: v.expected_ctc_period ?? "annual" });
     if (v.city) candidate.current_city = v.city;
     const d = await rpc<{ percent?: number }>(ctx, "candidate_update_profile", { p: { candidate } });
     return [{ text: `Updated.${d?.percent != null ? ` Your profile is ${d.percent}% complete.` : ""}`, tone: "success", chips: [{ label: "Jobs for me", tool: "recommended_jobs" }] }];

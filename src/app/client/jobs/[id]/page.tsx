@@ -31,6 +31,7 @@ import { cn, noticeLabel } from "@/lib/utils";
 import { AssignTaskButton } from "@/components/client/assign-task";
 import { JobTeamPanel } from "@/components/client/job-team-panel";
 import type { ClientMember } from "@/lib/client-labels";
+import { budgetLabel } from "@/lib/money";
 
 export const metadata = { title: "Job" };
 
@@ -88,7 +89,7 @@ export default async function ClientJobPage({ params, searchParams }: { params: 
     { icon: MapPin, label: "Location", value: [job.locations.join(", "), job.work_mode].filter(Boolean).join(" · ") || "—" },
     { icon: Briefcase, label: "Work mode", value: job.work_mode ?? "—" },
     { icon: Clock, label: "Experience", value: range(job.exp_min, job.exp_max, "yrs") ?? "Any" },
-    { icon: IndianRupee, label: "Budget", value: range(job.ctc_min, job.ctc_max, "LPA") ?? "—" },
+    { icon: IndianRupee, label: "Budget", value: budgetLabel(job as unknown as Record<string, unknown>) ?? "—" },
     { icon: Users, label: "Openings", value: `${joined} of ${job.openings} filled` },
     { icon: Target, label: "Target date", value: job.target_date ? istDate(job.target_date) : "—" },
     { icon: CalendarDays, label: "Notice (max)", value: job.notice_max != null ? noticeLabel(job.notice_max) : "Flexible" },

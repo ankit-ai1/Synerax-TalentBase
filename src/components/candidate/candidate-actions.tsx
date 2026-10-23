@@ -25,6 +25,7 @@ import { MessageButton } from "@/components/chat/message-button";
 import { ACTIVE_STAGES, STAGES, STAGE_STYLE } from "@/lib/constants";
 import { cn, dayLabel, formatDate, formatTime, friendlyError, lpa, timeAgo } from "@/lib/utils";
 import { telHref } from "@/lib/phone";
+import { ctcLabel } from "@/lib/money";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 type Cand = { id: string; first_name: string; last_name: string | null; phone: string | null; email: string | null };
@@ -157,7 +158,7 @@ export function CandidateJobs({ cand, apps }: { cand: Cand; apps: any[] }) {
                   Next: {next.round_name}, {dayLabel(next.scheduled_at)} {formatTime(next.scheduled_at)}
                 </span>
               )}
-              {a.offered_ctc && <span className="font-medium text-saffron-800">Offered {lpa(a.offered_ctc)}</span>}
+              {a.offered_ctc && <span className="font-medium text-saffron-800">Offered {ctcLabel(a, "offered_ctc")}</span>}
               {a.expected_joining && <span>Expected joining {formatDate(a.expected_joining)}</span>}
               {a.joined_at && <span className="font-medium text-emerald-700 dark:text-emerald-300">Joined {formatDate(a.joined_at)}</span>}
               {a.rejection_reason && <span className="text-red-600 dark:text-red-400">Reason: {a.rejection_reason}</span>}

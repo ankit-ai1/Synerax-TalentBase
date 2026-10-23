@@ -22,6 +22,11 @@ export type PublicJob = {
   company: string | null;
   salary_min: number | null;
   salary_max: number | null;
+  /** salary in the job's own currency (present after migration 017, only when the job shows salary) */
+  salary_min_amount?: number | null;
+  salary_max_amount?: number | null;
+  salary_currency?: string | null;
+  salary_period?: string | null;
   role: string | null;
   description: string | null;
   skills: string[] | null;

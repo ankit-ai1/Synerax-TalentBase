@@ -14,6 +14,7 @@ import { Checkbox } from "@/components/ui/interactive";
 import { useDialogs } from "@/components/dialogs/provider";
 import { AsyncPicker, searchCandidates } from "@/components/pickers";
 import { cn, friendlyError, lpa, noticeLabel, timeAgo, years } from "@/lib/utils";
+import { ctcLabel } from "@/lib/money";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export function NewShortlistButton() {
@@ -147,7 +148,7 @@ export function ShortlistDetail({ list, members, isAdmin }: { list: any; members
                       <StatusBadge status={c.status} />
                     </p>
                     <p className="truncate text-xs text-ink-500">
-                      {[c.current_designation, years(c.total_experience), `${lpa(c.current_ctc)} → ${lpa(c.expected_ctc)}`, noticeLabel(c.notice_period_days), c.current_city].filter(Boolean).join(" · ")}
+                      {[c.current_designation, years(c.total_experience), `${ctcLabel(c, "current_ctc", { hint: false })} → ${ctcLabel(c, "expected_ctc", { hint: false })}`, noticeLabel(c.notice_period_days), c.current_city].filter(Boolean).join(" · ")}
                     </p>
                   </div>
                 </div>

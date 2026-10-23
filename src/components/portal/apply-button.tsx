@@ -11,6 +11,7 @@ import { CITIES, NOTICE_OPTIONS, QUALIFICATIONS, WORK_MODES } from "@/lib/consta
 import { SECTION_ANCHOR, type Completion } from "@/lib/portal-types";
 import { Dialog } from "@/components/ui/dialog";
 import { ChipInput, SelectField, Switch, TextField } from "@/components/ui/fields";
+import { MoneyField, moneyPayload, type MoneyInput } from "@/components/ui/money-field";
 import { cn, friendlyError, parseProfileIncomplete } from "@/lib/utils";
 
 const KEY_FIELDS = new Set(["basic", "current_job", "notice", "skills", "education", "preferences", "cv"]);
@@ -149,6 +150,8 @@ function QuickComplete({ missing, percent, onClose, onDone }: { missing: string[
     work_mode_preference: "",
   });
   const [cv, setCv] = useState<File | null>(null);
+  const [curMoney, setCurMoney] = useState<MoneyInput>({ amount: "", currency: "INR", period: "annual" });
+  const [expMoney, setExpMoney] = useState<MoneyInput>({ amount: "", currency: "INR", period: "annual" });
   const set = <K extends keyof typeof f>(k: K, v: (typeof f)[K]) => setF((p) => ({ ...p, [k]: v }));
 
   useEffect(() => {
@@ -179,8 +182,8 @@ function QuickComplete({ missing, percent, onClose, onDone }: { missing: string[
       if (has("current_job")) {
         put("current_designation", f.current_designation.trim());
         put("total_experience", f.total_experience);
-        put("current_ctc", f.current_ctc);
-        put("expected_ctc", f.expected_ctc);
+        if (curMoney.amount !== "") Object.assign(c, moneyPayload("current_ctc", curMoney));
+        if (expMoney.amount !== "") Object.assign(c, moneyPayload("expected_ctc", expMoney));
       }
       if (has("notice")) {
         put("notice_period_days", f.notice_period_days);
@@ -256,8 +259,8 @@ function QuickComplete({ missing, percent, onClose, onDone }: { missing: string[
           <>
             <TextField className="sm:col-span-2" label="Current designation" value={f.current_designation} onChange={(v) => set("current_designation", v)} />
             <TextField label="Total experience" value={f.total_experience} onChange={(v) => set("total_experience", v.replace(/[^\d.]/g, ""))} suffix="years" inputMode="decimal" />
-            <TextField label="Current CTC" value={f.current_ctc} onChange={(v) => set("current_ctc", v.replace(/[^\d.]/g, ""))} suffix="LPA" inputMode="decimal" />
-            <TextField label="Expected CTC" value={f.expected_ctc} onChange={(v) => set("expected_ctc", v.replace(/[^\d.]/g, ""))} suffix="LPA" inputMode="decimal" />
+            <MoneyField className="sm:col-span-2" label="Current CTC" value={curMoney} onChange={setCurMoney} />
+            <MoneyField className="sm:col-span-2" label="Expected CTC" value={expMoney} onChange={setExpMoney} />
           </>
         )}
         {has("notice") && (

@@ -3,6 +3,7 @@ import { alreadySent, getEmailSettings, notify, sendEmail } from "@/lib/email/se
 import { clientRecipients } from "@/lib/email/notify-events";
 import { notifyClientUsers } from "@/lib/client-team";
 import { weeklySummary } from "@/lib/email/insights";
+import { refreshRates } from "@/lib/fx";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -39,6 +40,7 @@ export async function GET(req: Request) {
   await run("jobAlerts", () => jobAlerts(settings));
   await run("clientTaskReminders", () => clientTaskReminders());
   await run("weeklyEmailSummary", async () => ((await weeklySummary()).sent ? 1 : 0)); // Mondays (the daily cron runs at 09:00 IST)
+  await run("exchangeRates", async () => (await refreshRates()).updated); // + recompute INR equivalents of non-INR salaries
   return Response.json({ ok: true, ...result });
 }
 

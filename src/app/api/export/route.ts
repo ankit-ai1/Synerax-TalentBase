@@ -1,3 +1,4 @@
+import { ctcLabel } from "@/lib/money";
 import { apiAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { parseFilters, toRpc } from "@/components/search/filters";
@@ -41,7 +42,7 @@ export async function GET(req: Request) {
 
   const header = [
     "Code", "Name", "Email", "Phone", "Gender", "DOB", "Status", "Headline", "Designation", "Company",
-    "Total Exp (yrs)", "Current CTC (LPA)", "Expected CTC (LPA)", "Notice (days)", "Serving notice",
+    "Total Exp (yrs)", "Current CTC (₹ LPA equivalent)", "Expected CTC (₹ LPA equivalent)", "Current CTC (as entered)", "Expected CTC (as entered)", "Notice (days)", "Serving notice",
     "Last working day", "Available from", "City", "State", "Preferred locations", "Work mode",
     "Qualification", "Skills", "Roles", "Source", "Tags", "Rating", "Updated",
   ];
@@ -50,7 +51,7 @@ export async function GET(req: Request) {
     return [
       c.candidate_code, [c.first_name, c.last_name].filter(Boolean).join(" "), e.email, e.phone, e.gender, e.dob,
       c.status, c.headline, c.current_designation, c.current_company, c.total_experience, c.current_ctc,
-      c.expected_ctc, c.notice_period_days, c.serving_notice ? "Yes" : "No", c.last_working_day, e.available_from,
+      c.expected_ctc, ctcLabel(c, "current_ctc", { hint: false }), ctcLabel(c, "expected_ctc", { hint: false }), c.notice_period_days, c.serving_notice ? "Yes" : "No", c.last_working_day, e.available_from,
       c.current_city, e.current_state, c.preferred_locations, e.work_mode_preference, e.highest_qualification,
       c.skills.map((s) => (s.years ? `${s.name} (${Number(s.years)}y)` : s.name)), c.roles, e.source, e.tags,
       c.rating, c.updated_at?.slice(0, 10),

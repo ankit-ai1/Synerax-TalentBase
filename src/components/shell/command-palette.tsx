@@ -22,6 +22,7 @@ import { Avatar, Kbd } from "@/components/ui/misc";
 import { cn, lpa, years } from "@/lib/utils";
 import { displayPhone, phoneSearchDigits } from "@/lib/phone";
 import { NAV } from "./nav";
+import { ctcLabel } from "@/lib/money";
 
 type Item = {
   id: string;
@@ -162,7 +163,7 @@ export function CommandPalette({ open, onClose, isAdmin }: { open: boolean; onCl
           id: "c-" + c.id,
           group: "Candidates",
           label: name,
-          sub: [c.current_designation || c.headline, years(c.total_experience), c.expected_ctc ? lpa(c.expected_ctc) : null, c.current_city].filter(Boolean).join(" · "),
+          sub: [c.current_designation || c.headline, years(c.total_experience), c.expected_ctc ? ctcLabel(c, "expected_ctc", { hint: false }) : null, c.current_city].filter(Boolean).join(" · "),
           icon: <Avatar name={name} size="xs" />,
           run: () => go(`/candidates/${c.id}`),
         });

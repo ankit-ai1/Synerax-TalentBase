@@ -1,3 +1,4 @@
+import { rangeInputFrom } from "@/components/ui/money-field";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getMasters } from "@/lib/data";
@@ -31,8 +32,10 @@ export default async function EditJobPage({ params }: { params: Promise<{ id: st
     locations: j.locations ?? [],
     exp_min: s(j.exp_min),
     exp_max: s(j.exp_max),
-    ctc_min: s(j.ctc_min),
-    ctc_max: s(j.ctc_max),
+    ...(() => {
+      const r = rangeInputFrom(j);
+      return { ctc_min: r.min, ctc_max: r.max, ctc_currency: r.currency, ctc_period: r.period };
+    })(),
     notice_max: s(j.notice_max),
     qualification: s(j.qualification),
     priority: j.priority,

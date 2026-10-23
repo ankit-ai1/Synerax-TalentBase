@@ -9,6 +9,8 @@ import { createClient } from "@/lib/supabase/client";
 import { registrationSchema, CV_ALLOWED, CV_MAX_BYTES } from "@/lib/candidate-schema";
 import { normalizePhone } from "@/lib/phone";
 import { PhoneField } from "@/components/ui/phone-field";
+import { MoneyField, useRates, type MoneyInput } from "@/components/ui/money-field";
+import { defaultCurrency, defaultPeriod, parseMoney, toLpa, type Period } from "@/lib/money";
 import { CITIES, NOTICE_OPTIONS } from "@/lib/constants";
 import { ChipInput, SelectField, Switch, TextField } from "@/components/ui/fields";
 import { PasswordInput } from "@/components/auth/auth-shell";
@@ -28,6 +30,11 @@ type Form = {
   skills: string[];
   current_ctc: string;
   expected_ctc: string;
+  /** "" = automatic (from the phone number's country) */
+  current_ctc_currency: string;
+  current_ctc_period: string;
+  expected_ctc_currency: string;
+  expected_ctc_period: string;
   notice_period_days: string;
   serving_notice: boolean;
   last_working_day: string;
@@ -46,6 +53,10 @@ const EMPTY: Form = {
   skills: [],
   current_ctc: "",
   expected_ctc: "",
+  current_ctc_currency: "",
+  current_ctc_period: "",
+  expected_ctc_currency: "",
+  expected_ctc_period: "",
   notice_period_days: "",
   serving_notice: false,
   last_working_day: "",
@@ -84,6 +95,14 @@ export function CandidateRegistrationForm({
   const [meta, setMeta] = useState<Partial<Record<keyof Form, Confidence>>>({});
   const [cvNote, setCvNote] = useState<{ kind: "ok" | "warn"; text: string } | null>(null);
 
+  const rates = useRates();
+  /** salary input: currency defaults from the phone number until the candidate picks one */
+  const money = (key: "current_ctc" | "expected_ctc"): MoneyInput => {
+    const currency = f[`${key}_currency`] || defaultCurrency({ phone: f.phone });
+    return { amount: f[key], currency, period: (f[`${key}_period`] as Period) || defaultPeriod(currency) };
+  };
+  const setMoney = (key: "current_ctc" | "expected_ctc", m: MoneyInput) => setF((x) => ({ ...x, [key]: m.amount, [`${key}_currency`]: m.currency, [`${key}_period`]: m.period }));
+  const lpaOf = (m: MoneyInput) => (m.amount === "" ? null : toLpa({ amount: Number(m.amount), currency: m.currency, period: m.period }, rates));
   const set = <K extends keyof Form>(k: K, v: Form[K]) => {
     setF((p) => ({ ...p, [k]: v }));
     setErrors((e) => ({ ...e, [k]: "" }));
@@ -123,8 +142,16 @@ export function CandidateRegistrationForm({
     }
     fill("current_designation", p.current_designation?.value, p.current_designation?.confidence);
     fill("skills", p.skills?.value.slice(0, 25), p.skills?.confidence);
-    fill("current_ctc", p.current_ctc ? String(p.current_ctc.value) : undefined, p.current_ctc?.confidence);
-    fill("expected_ctc", p.expected_ctc ? String(p.expected_ctc.value) : undefined, p.expected_ctc?.confidence);
+    for (const key of ["current_ctc", "expected_ctc"] as const) {
+      const text = p[`${key}_text`];
+      const mo = text ? parseMoney(text.value) : null;
+      if (mo && next[key] === "") {
+        next[key] = String(mo.amount);
+        next[`${key}_currency`] = mo.currency;
+        next[`${key}_period`] = mo.period;
+        m[key] = text!.confidence;
+      } else fill(key, p[key] ? String(p[key]!.value) : undefined, p[key]?.confidence);
+    }
     fill("notice_period_days", p.notice_period_days ? noticeOption(p.notice_period_days.value) : undefined, p.notice_period_days?.confidence);
     if (p.serving_notice?.value && !next.serving_notice) {
       next.serving_notice = true;
@@ -152,14 +179,17 @@ export function CandidateRegistrationForm({
       exp_months: f.exp_months,
       current_designation: f.current_designation,
       skills: f.skills,
-      current_ctc: f.current_ctc === "" ? undefined : f.current_ctc,
-      expected_ctc: f.expected_ctc === "" ? undefined : f.expected_ctc,
+      // INR LPA equivalent (validated) + the salary as entered
+      current_ctc: f.current_ctc === "" ? undefined : String(lpaOf(money("current_ctc")) ?? 0),
+      expected_ctc: f.expected_ctc === "" ? undefined : String(lpaOf(money("expected_ctc")) ?? 0),
+      ...(f.current_ctc === "" ? {} : { current_ctc_amount: f.current_ctc, current_ctc_currency: money("current_ctc").currency, current_ctc_period: money("current_ctc").period }),
+      ...(f.expected_ctc === "" ? {} : { expected_ctc_amount: f.expected_ctc, expected_ctc_currency: money("expected_ctc").currency, expected_ctc_period: money("expected_ctc").period }),
       notice_period_days: f.notice_period_days === "" ? undefined : f.notice_period_days,
       serving_notice: f.serving_notice,
       last_working_day: f.last_working_day,
       consent: f.consent,
     }),
-    [f]
+    [f, rates] // eslint-disable-line react-hooks/exhaustive-deps
   );
 
   const validate = (fields: readonly string[]) => {
@@ -452,13 +482,13 @@ export function CandidateRegistrationForm({
           </div>
           <div id={`${uid}-current_ctc`}>
             <CvField confidence={meta.current_ctc}>
-              <TextField label="Current CTC" required value={f.current_ctc} onChange={(v) => set("current_ctc", v.replace(/[^\d.]/g, ""))} inputMode="decimal" suffix="LPA" />
+              <MoneyField label="Current CTC" required value={money("current_ctc")} onChange={(m) => (setMoney("current_ctc", m), set("current_ctc", m.amount))} />
             </CvField>
             {err("current_ctc")}
           </div>
           <div id={`${uid}-expected_ctc`}>
             <CvField confidence={meta.expected_ctc}>
-              <TextField label="Expected CTC" required value={f.expected_ctc} onChange={(v) => set("expected_ctc", v.replace(/[^\d.]/g, ""))} inputMode="decimal" suffix="LPA" />
+              <MoneyField label="Expected CTC" required value={money("expected_ctc")} onChange={(m) => (setMoney("expected_ctc", m), set("expected_ctc", m.amount))} />
             </CvField>
             {err("expected_ctc")}
           </div>

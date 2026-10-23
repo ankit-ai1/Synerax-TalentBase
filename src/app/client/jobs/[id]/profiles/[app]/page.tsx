@@ -9,6 +9,7 @@ import { ProfileFeedback, ProfileWorkflow, Thread } from "@/components/client/sh
 import { decisionChip } from "@/lib/client-format";
 import { lpa, noticeLabel, years } from "@/lib/utils";
 import type { ClientMember } from "@/lib/client-labels";
+import { ctcLabel } from "@/lib/money";
 
 export const metadata = { title: "Candidate brief" };
 
@@ -77,7 +78,7 @@ export default async function CandidateBriefPage({ params }: { params: Promise<{
         <dl className="mt-6 grid grid-cols-2 gap-4 border-t border-line pt-5 sm:grid-cols-3 lg:grid-cols-5">
           <Fact icon={Briefcase} label="Experience" value={years(p.total_experience)} />
           <Fact icon={Timer} label="Notice" value={p.serving_notice ? "Serving notice" : noticeLabel(p.notice_period_days)} />
-          <Fact icon={IndianRupee} label="Expected CTC" value={lpa(p.expected_ctc)} />
+          <Fact icon={IndianRupee} label="Expected CTC" value={ctcLabel(p as unknown as Record<string, unknown>, "expected_ctc")} />
           <Fact icon={MapPin} label="Location" value={p.current_city ?? "—"} />
           <Fact icon={Plane} label="Relocation" value={p.willing_to_relocate ? "Open to relocate" : p.preferred_locations?.length ? p.preferred_locations.slice(0, 2).join(", ") : "—"} />
         </dl>

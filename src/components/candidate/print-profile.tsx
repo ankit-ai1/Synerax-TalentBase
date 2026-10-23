@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { LogoMark } from "@/components/shell/sidebar";
 import { APP_NAME } from "@/lib/constants";
 import { formatDate, lpa, noticeLabel, todayIST, years } from "@/lib/utils";
+import { ctcLabel } from "@/lib/money";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export function PrintProfile({ c, preparedBy }: { c: any; preparedBy: string }) {
@@ -59,7 +60,7 @@ export function PrintProfile({ c, preparedBy }: { c: any; preparedBy: string }) 
             ["Experience", years(c.total_experience)],
             ["Notice period", c.serving_notice && c.last_working_day ? `LWD ${formatDate(c.last_working_day)}` : noticeLabel(c.notice_period_days)],
             ["Location", [c.current_city, c.willing_to_relocate ? "(open to relocate)" : null].filter(Boolean).join(" ") || "—"],
-            showCtc ? ["Current / Expected", `${lpa(c.current_ctc)} / ${lpa(c.expected_ctc)}`] : ["Qualification", c.highest_qualification ?? "—"],
+            showCtc ? ["Current / Expected", `${ctcLabel(c, "current_ctc")} / ${ctcLabel(c, "expected_ctc")}`] : ["Qualification", c.highest_qualification ?? "—"],
           ].map(([k, v]) => (
             <div key={k} className="bg-white px-4 py-3">
               <p className="text-[11px] text-[#7A6650]">{k}</p>

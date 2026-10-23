@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
-import { BellRing, Briefcase, Clock, GraduationCap, IndianRupee, MapPin, Users } from "lucide-react";
+import { Banknote, BellRing, Briefcase, Clock, GraduationCap, IndianRupee, MapPin, Users } from "lucide-react";
 import { site } from "@/content/site";
 import { Container } from "@/components/site/ui";
 import { CompactHero, CtaBlocks } from "@/components/site/blog";
@@ -11,7 +11,7 @@ import { JobBoardList, type BoardJob } from "@/components/site/job-board-list";
 import { getJobBoard, getJobByCode, getSeoOverrides, getTerms } from "@/lib/seo/data";
 import { codeFromSlug, jobPath, jobsFor, landingLabel, resolveLanding, type Faq, type Landing, type PublicJob } from "@/lib/seo/landing";
 import { breadcrumbLd, faqLd, jobPostingLd, ldJson } from "@/lib/seo/jsonld";
-import { salaryLabel } from "@/lib/portal-types";
+import { publicSalaryLabel } from "@/lib/money";
 import { formatDate } from "@/lib/utils";
 
 /**
@@ -84,7 +84,7 @@ const toBoard = (j: PublicJob): BoardJob => ({
   mode: j.work_mode,
   type: j.employment_type,
   experience: exp(j.exp_min, j.exp_max),
-  salary: salaryLabel(j.salary_min, j.salary_max),
+  salary: publicSalaryLabel(j, { hint: false }),
   skills: j.skills ?? [],
   posted: j.published_at,
 });
@@ -158,12 +158,12 @@ function JobDetail({ job: j }: { job: PublicJob }) {
     { href: "/careers", label: "Careers" },
     { href: jobPath(j), label: j.title },
   ];
-  const salary = salaryLabel(j.salary_min, j.salary_max);
+  const salary = publicSalaryLabel(j);
   const facts = [
     { icon: MapPin, label: "Location", value: [(j.locations ?? []).join(" / "), j.work_mode].filter(Boolean).join(" · ") || "India" },
     { icon: Clock, label: "Experience", value: exp(j.exp_min, j.exp_max) },
     { icon: Briefcase, label: "Employment", value: j.employment_type },
-    { icon: IndianRupee, label: "Salary", value: salary },
+    { icon: salary && !salary.startsWith("₹") ? Banknote : IndianRupee, label: "Salary", value: salary },
     { icon: Users, label: "Openings", value: j.openings && j.openings > 1 ? String(j.openings) : null },
     { icon: GraduationCap, label: "Qualification", value: j.qualification },
   ].filter((f) => f.value);

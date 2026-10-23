@@ -51,6 +51,7 @@ import { cn, daysUntil, formatDate, friendlyError, lpa, noticeLabel, timeAgo, ye
 import type { JobRole, SearchItem, SearchResult, Skill } from "@/lib/types";
 import { sendPortalInvites } from "@/components/candidate/portal-access";
 import { FilterChip } from "@/components/ui/filter-chip";
+import { ctcLabel } from "@/lib/money";
 
 const SORTS = [
   { value: "relevance", label: "Best match" },
@@ -245,7 +246,7 @@ export function SearchView({
       <MultiSelect label="Job roles" options={roleOpts} value={f.job_roles} onChange={(v) => update({ job_roles: v })} placeholder="Backend Developer…" />
       <Range label="Total experience" unit="yrs" min={f.exp_min} max={f.exp_max} onChange={(a, b) => update({ exp_min: a, exp_max: b })} />
       <ChipInput label="Location" value={f.locations} onChange={(v) => update({ locations: v })} suggestions={CITIES} placeholder="Type a city" hint="Current or preferred location" />
-      <Range label="Expected CTC" unit="LPA" min={f.exp_ctc_min} max={f.exp_ctc_max} onChange={(a, b) => update({ exp_ctc_min: a, exp_ctc_max: b })} />
+      <Range label="Expected CTC (₹ LPA, any currency converted)" unit="LPA" min={f.exp_ctc_min} max={f.exp_ctc_max} onChange={(a, b) => update({ exp_ctc_min: a, exp_ctc_max: b })} />
       <Range label="Current CTC" unit="LPA" min={f.cur_ctc_min} max={f.cur_ctc_max} onChange={(a, b) => update({ cur_ctc_min: a, cur_ctc_max: b })} />
       <SelectField
         label="Notice period (max)"
@@ -533,7 +534,7 @@ export function SearchView({
                         </td>
                         <td className="px-2 py-2 tabular text-ink-700">{years(c.total_experience)}</td>
                         <td className="px-2 py-2 tabular text-ink-700">
-                          {lpa(c.current_ctc)} <span className="text-ink-300">→</span> {lpa(c.expected_ctc)}
+                          {ctcLabel(c, "current_ctc", { hint: false })} <span className="text-ink-300">→</span> {ctcLabel(c, "expected_ctc", { hint: false })}
                         </td>
                         <td className={cn("px-2 py-2", c.notice_period_days != null && c.notice_period_days <= 15 ? "font-medium text-jade-700" : "text-ink-700")}>
                           {c.serving_notice && c.last_working_day ? `LWD ${formatDate(c.last_working_day, { day: "numeric", month: "short" })}` : noticeLabel(c.notice_period_days)}
@@ -831,7 +832,7 @@ function ResultCard({ c, selected, onSelect }: { c: SearchItem; selected: boolea
 
             <dl className="mt-3 flex flex-wrap gap-x-5 gap-y-1.5 text-[13px]">
               <Fact label="Exp" value={years(c.total_experience)} />
-              {(c.current_ctc != null || c.expected_ctc != null) && <Fact label="CTC" value={`${lpa(c.current_ctc)} → ${lpa(c.expected_ctc)}`} />}
+              {(c.current_ctc != null || c.expected_ctc != null) && <Fact label="CTC" value={`${ctcLabel(c, "current_ctc")} → ${ctcLabel(c, "expected_ctc")}`} />}
               <Fact
                 label="Notice"
                 value={

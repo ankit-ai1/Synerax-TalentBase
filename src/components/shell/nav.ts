@@ -16,7 +16,7 @@ import {
   Bot,
   Tags,
   Users,
-  UsersRound, SlidersHorizontal, DatabaseBackup, Newspaper, Globe } from "lucide-react";
+  UsersRound, SlidersHorizontal, DatabaseBackup, Newspaper, Globe, Coins } from "lucide-react";
 
 export type NavItem = {
   href: string;
@@ -71,6 +71,7 @@ export const NAV: { label: string; admin?: boolean; items: NavItem[] }[] = [
       { href: "/admin/activity", label: "Activity log", icon: History },
       { href: "/admin/backups", label: "Backups", icon: DatabaseBackup },
       { href: "/admin/seo-pages", label: "SEO landing pages", icon: Globe },
+      { href: "/admin/exchange-rates", label: "Exchange rates", icon: Coins },
     ],
   },
 ];

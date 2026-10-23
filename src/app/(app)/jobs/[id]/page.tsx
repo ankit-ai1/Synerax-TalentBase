@@ -17,6 +17,7 @@ import { JobActions, JobStatusControl } from "@/components/jobs/job-actions";
 import { PublishPanel } from "@/components/jobs/publish-panel";
 import { ACTIVE_STAGES, STAGE_STYLE } from "@/lib/constants";
 import { cn, daysUntil, formatDate, formatDateTime, noticeLabel, timeAgo } from "@/lib/utils";
+import { budgetLabel } from "@/lib/money";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
@@ -58,7 +59,7 @@ export default async function JobPage({ params }: { params: Promise<{ id: string
   const facts = [
     { icon: <MapPin className="h-4 w-4" />, label: "Location", value: [(j.locations ?? []).join(", "), j.work_mode].filter(Boolean).join(" · ") || "—" },
     { icon: <Timer className="h-4 w-4" />, label: "Experience", value: range(j.exp_min, j.exp_max, "yrs") ?? "Any" },
-    { icon: <IndianRupee className="h-4 w-4" />, label: "Budget", value: range(j.ctc_min, j.ctc_max, "LPA") ?? "Open" },
+    { icon: <IndianRupee className="h-4 w-4" />, label: "Budget", value: budgetLabel(j) ?? "Open" },
     { icon: <CalendarDays className="h-4 w-4" />, label: "Notice", value: j.notice_max != null ? `Max ${noticeLabel(j.notice_max)}` : "Any" },
     { icon: <GraduationCap className="h-4 w-4" />, label: "Qualification", value: j.qualification ?? "Any" },
     { icon: <Users className="h-4 w-4" />, label: "Openings", value: `${joined} / ${j.openings} filled` },
