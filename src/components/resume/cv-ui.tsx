@@ -24,12 +24,12 @@ export function FromCvBadge({ confidence, label = "From your CV" }: { confidence
 }
 
 /** Wraps a form field: shows the badge above it and a soft amber highlight when confidence is low */
-export function CvField({ confidence, children, className }: { confidence?: Confidence; children: React.ReactNode; className?: string }) {
+export function CvField({ confidence, children, className, label }: { confidence?: Confidence; children: React.ReactNode; className?: string; label?: string }) {
   return (
     <div className={cn("relative", confidence === "low" && "[&_input]:border-amber-400 [&_input]:bg-amber-50/60 [&_input]:ring-2 [&_input]:ring-amber-300/40 dark:[&_input]:bg-amber-400/5", className)}>
       {confidence && (
         <span className="absolute right-0 top-0 z-10">
-          <FromCvBadge confidence={confidence} />
+          <FromCvBadge confidence={confidence} label={label} />
         </span>
       )}
       {children}

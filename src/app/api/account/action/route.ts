@@ -1,6 +1,7 @@
 import { after } from "next/server";
 import { getCurrentProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
+import { revalidateCareers } from "@/lib/careers-revalidate";
 import {
   onCandidateApplied,
   onCandidateWithdrew,
@@ -47,5 +48,6 @@ export async function POST(req: Request) {
   const { data, error } = await supabase.rpc(action, args);
   if (error) return Response.json({ error: error.message }, { status: 400 });
   if (def.after && data !== false && data != null) after(() => def.after!(args, data));
+  if (/^client_(save|close|delete)_job$/.test(action)) revalidateCareers();
   return Response.json({ data });
 }

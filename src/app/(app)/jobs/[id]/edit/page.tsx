@@ -1,4 +1,4 @@
-import { rangeInputFrom } from "@/components/ui/money-field";
+import { rangeInputFrom } from "@/lib/money-form";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getMasters } from "@/lib/data";
@@ -45,6 +45,11 @@ export default async function EditJobPage({ params }: { params: Promise<{ id: st
     notes: s(j.notes),
     skills: (j.job_skills ?? []).filter((x: any) => x.skill).map((x: any) => ({ skill_id: x.skill.id, name: x.skill.name, is_mandatory: x.is_mandatory, min_years: s(x.min_years) })),
     assignees: (j.job_assignees ?? []).map((a: any) => a.user_id),
+    show_on_careers: j.show_on_careers ?? true,
+    featured: !!j.featured,
+    hide_after: s(j.hide_after),
+    job_code: j.job_code,
+    jd_file_name: j.jd_file_name ?? undefined,
   };
   return (
     <>

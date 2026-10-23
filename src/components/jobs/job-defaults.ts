@@ -27,6 +27,13 @@ export type JobFormData = {
   notes: string;
   skills: { skill_id: string; name: string; is_mandatory: boolean; min_years: string }[];
   assignees: string[];
+  /** careers page */
+  show_on_careers: boolean;
+  featured: boolean;
+  hide_after: string;
+  /** read-only (edit mode): for the preview link + attached JD */
+  job_code?: string;
+  jd_file_name?: string;
 };
 
 export const emptyJob = (): JobFormData => ({
@@ -54,5 +61,8 @@ export const emptyJob = (): JobFormData => ({
   notes: "",
   skills: [],
   assignees: [],
+  show_on_careers: true,
+  featured: false,
+  hide_after: "",
 });
 

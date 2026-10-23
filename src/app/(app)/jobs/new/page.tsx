@@ -3,6 +3,7 @@ import { getMasters } from "@/lib/data";
 import { PageHeader } from "@/components/ui/misc";
 import { JobForm } from "@/components/jobs/job-form";
 import { emptyJob } from "@/components/jobs/job-defaults";
+import { JdBulk } from "@/components/jobs/jd-bulk";
 
 export const metadata = { title: "New job" };
 
@@ -20,6 +21,7 @@ export default async function NewJobPage({ searchParams }: { searchParams: Promi
       <div className="mx-auto max-w-4xl">
         <PageHeader title="New job opening" description="The more detailed the requirement, the better the matching." />
       </div>
+      <JdBulk skills={skills} />
       <JobForm initial={initial} skills={skills} roles={roles} />
     </>
   );

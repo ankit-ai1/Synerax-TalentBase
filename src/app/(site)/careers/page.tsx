@@ -55,7 +55,7 @@ function RoleChips() {
 }
 
 // live openings, refreshed every 5 minutes
-export const revalidate = 300;
+export const revalidate = 60;
 
 const exp = (a?: number | null, b?: number | null) => (a != null && b != null ? `${a}–${b} yrs` : a != null ? `${a}+ yrs` : b != null ? `up to ${b} yrs` : "");
 
@@ -64,7 +64,7 @@ async function liveOpenings(): Promise<Opening[]> {
   try {
     const board = await getJobBoard();
     if (board.length)
-      return board.slice(0, 20).map((j) => ({ id: j.id, title: j.title, cities: j.locations ?? [], mode: j.work_mode, experience: exp(j.exp_min, j.exp_max), type: j.employment_type, href: jobPath(j) }));
+      return board.map((j) => ({ id: j.id, title: j.title, cities: j.locations ?? [], mode: j.work_mode, experience: exp(j.exp_min, j.exp_max), type: j.employment_type, href: jobPath(j), featured: !!j.featured, posted: j.published_at, expMin: j.exp_min, expMax: j.exp_max }));
     const sb = createSupabase(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, { auth: { persistSession: false } });
     const { data } = await sb.rpc("public_jobs", { f: { limit: 20 } });
     return ((data ?? []) as { id: string; title: string; locations: string[] | null; work_mode: string | null; employment_type: string | null; exp_min: number | null; exp_max: number | null }[]).map((j) => ({
