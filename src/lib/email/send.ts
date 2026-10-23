@@ -3,7 +3,7 @@ import { createAdminClient } from "@/lib/supabase/server";
 import { renderEmail, type EmailContent } from "./layout";
 import type { EmailEventKey } from "./events";
 import { deliverNow, smtpConfigured, trackingBase } from "./queue";
-import { addTracking, newTrackToken } from "./tracking";
+import { addTracking, addUnsubscribe, newTrackToken, unsubscribeUrl } from "./tracking";
 
 export { smtpConfigured };
 
@@ -56,18 +56,25 @@ export async function sendEmail(opts: {
     const { html, text } = renderEmail(opts.content, settings.sender_name);
     const attachments = opts.attachments?.map((a) => ({ filename: a.filename, contentType: a.contentType, content: Buffer.isBuffer(a.content) ? a.content.toString("base64") : Buffer.from(a.content).toString("base64") }));
     const base = trackingBase();
+    // suppression list (hard bounces, repeated soft bounces, opt-outs, manual) — never emailed again
+    const { data: sup } = await admin.from("email_suppressions").select("email, reason").in("email", recipients.map((r) => r.toLowerCase()));
+    const suppressed = new Map((sup ?? []).map((s) => [s.email as string, s.reason as string]));
     const rows = recipients.map((to_email) => {
       const token = newTrackToken();
+      const blocked = suppressed.get(to_email.toLowerCase());
+      const why = skip ?? (blocked ? `Suppressed (${blocked.replace(/_/g, " ")})` : null);
+      // invites / password links / alerts (force) are transactional — no unsubscribe line
+      const body = opts.force ? html : addUnsubscribe(html, unsubscribeUrl(base, to_email));
       return {
         to_email,
         template: opts.event,
         subject: opts.subject,
-        html: skip ? null : addTracking(html, base, token),
-        text_body: skip ? null : text,
-        attachments: skip ? null : attachments ?? null,
+        html: why ? null : addTracking(body, base, token),
+        text_body: why ? null : text,
+        attachments: why ? null : attachments ?? null,
         track_token: token,
-        status: skip ? "skipped" : "queued",
-        last_error: skip,
+        status: why ? "skipped" : "queued",
+        last_error: why,
         dedupe_key: opts.dedupeKey ?? null,
         ...opts.related,
       };
@@ -75,10 +82,12 @@ export async function sendEmail(opts: {
     const { data, error } = await admin.from("emails").insert(rows).select("id");
     if (error) throw new Error(error.message);
     if (skip) return { status: "skipped", error: skip };
+    const live = (data ?? []).filter((_, i) => rows[i].status === "queued").map((x) => x.id as string);
+    if (!live.length) return { status: "skipped", error: "Suppressed" };
     if (opts.queueOnly) return { status: "queued" };
 
-    const r = await deliverNow((data ?? []).map((x) => x.id as string), settings.sender_name);
-    if (r.sent === recipients.length) return { status: "sent" };
+    const r = await deliverNow(live, settings.sender_name);
+    if (r.sent === live.length) return { status: "sent" };
     return { status: "queued", error: r.error };
   } catch (e) {
     const error = e instanceof Error ? e.message.slice(0, 500) : "Unknown error";

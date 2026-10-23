@@ -2,6 +2,7 @@ import { createAdminClient } from "@/lib/supabase/server";
 import { alreadySent, getEmailSettings, notify, sendEmail } from "@/lib/email/send";
 import { clientRecipients } from "@/lib/email/notify-events";
 import { notifyClientUsers } from "@/lib/client-team";
+import { weeklySummary } from "@/lib/email/insights";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -37,6 +38,7 @@ export async function GET(req: Request) {
   await run("clientReminders", () => clientReminders(settings));
   await run("jobAlerts", () => jobAlerts(settings));
   await run("clientTaskReminders", () => clientTaskReminders());
+  await run("weeklyEmailSummary", async () => ((await weeklySummary()).sent ? 1 : 0)); // Mondays (the daily cron runs at 09:00 IST)
   return Response.json({ ok: true, ...result });
 }
 

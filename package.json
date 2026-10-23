@@ -22,7 +22,7 @@
     "test:bot:quality": "tsx --env-file-if-exists=.env.local tests/bot-quality.test.ts",
     "test:bot:security": "tsx --env-file-if-exists=.env.local scripts/test-bot-security.ts",
     "test:e2e:bot": "node --env-file-if-exists=.env.local tests/e2e-bot.mjs",
-    "test:unit": "tsx --test tests/phone.test.ts tests/apply-rules.test.ts tests/backup-email.test.ts",
+    "test:unit": "tsx --test tests/phone.test.ts tests/apply-rules.test.ts tests/backup-email.test.ts tests/email-analytics.test.ts",
     "test:apply-rules": "node scripts/test-apply-rules.mjs",
     "test:e2e:invite": "tsx --conditions=react-server tests/e2e-portal-invite.mts",
     "test:e2e:import-invite": "tsx tests/e2e-import-invite.mts",

@@ -12,6 +12,9 @@ export async function GET(req: Request, { params }: { params: Promise<{ token: s
   const url = sp.get("u") ?? "";
   const sig = sp.get("s") ?? "";
   if (!/^[a-f0-9]{32}$/.test(token) || !verifyLink(token, url, sig)) return Response.redirect(siteUrl(), 302);
-  await createAdminClient().rpc("email_track", { p_token: token, p_kind: "click" });
+  const db = createAdminClient();
+  const { error } = await db.rpc("email_track", { p_token: token, p_kind: "click", p_url: url });
+  if (error) await db.rpc("email_track", { p_token: token, p_kind: "click" }); // before migration 015
+
   return Response.redirect(url, 302);
 }

@@ -3,6 +3,7 @@ export type EmailAudience = "synerax" | "client" | "candidate" | "system";
 
 export const EMAIL_EVENTS = [
   // to Synerax
+  { key: "admin_weekly_summary", audience: "synerax", label: "Weekly email summary to admins (Mondays 09:00 IST)" },
   { key: "staff_client_job_posted", audience: "synerax", label: "Client posted a new job" },
   { key: "staff_client_job_changed", audience: "synerax", label: "Client edited, closed or deleted a job" },
   { key: "staff_client_decision", audience: "synerax", label: "Client approved or rejected a profile" },

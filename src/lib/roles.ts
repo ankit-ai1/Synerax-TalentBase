@@ -33,6 +33,7 @@ export const PUBLIC_PATHS = new Set([
   "/auth/callback",
   "/auth/set-password",
   "/invite/opt-out",
+  "/e/unsubscribe",
   "/api/invite/opt-out",
   "/api/contact",
   "/api/portal/register",

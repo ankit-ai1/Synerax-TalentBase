@@ -29,7 +29,10 @@ export async function applyBounce(b: Bounce) {
     id = data?.id ?? null;
   }
   if (!id) return null;
-  await admin.from("emails").update({ status: "bounced", bounced_at: new Date().toISOString(), bounce_reason: b.reason }).eq("id", id).in("status", ["sent", "bounced"]);
+  if (b.permanent) {
+    await admin.from("emails").update({ status: "bounced", bounced_at: new Date().toISOString(), bounce_reason: b.reason }).eq("id", id).in("status", ["sent", "bounced"]);
+  }
+  await admin.rpc("email_record_bounce", { p_email: id, p_permanent: b.permanent, p_reason: b.reason });
   return id;
 }
 
@@ -70,7 +73,7 @@ export async function checkBounces(max = 50) {
         read++;
         lastUid = Math.max(lastUid, uid);
         const b = msg && msg.source ? parseBounce(msg.source.toString("utf8")) : null;
-        if (b && b.permanent && (await applyBounce(b))) matched++;
+        if (b && (await applyBounce(b))) matched++;
       }
     } finally {
       lock.release();

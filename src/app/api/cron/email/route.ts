@@ -2,6 +2,7 @@ import { cronAuthorized } from "@/lib/alerts";
 import { getEmailSettings } from "@/lib/email/send";
 import { processQueue } from "@/lib/email/queue";
 import { checkBounces } from "@/lib/email/bounces";
+import { checkAnomalies } from "@/lib/email/insights";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -17,6 +18,7 @@ export async function GET(req: Request) {
   const settings = await getEmailSettings();
   const queue = await processQueue(50, settings.sender_name).catch((e) => ({ error: e instanceof Error ? e.message : String(e) }));
   const bounces = await checkBounces().catch((e) => ({ error: e instanceof Error ? e.message : String(e) }));
-  return Response.json({ ok: true, queue, bounces });
+  const anomalies = await checkAnomalies().catch((e) => ({ error: e instanceof Error ? e.message : String(e) }));
+  return Response.json({ ok: true, queue, bounces, anomalies });
 }
 export const POST = GET;

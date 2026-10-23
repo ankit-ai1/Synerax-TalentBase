@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { BarChart3, Download } from "lucide-react";
 import { requireAdmin } from "@/lib/auth";
@@ -7,6 +8,7 @@ import { QUOTA_DEFAULTS, quotaStatus, summarize, type EmailRow, type QuotaSettin
 import { Card, CardHeader, EmptyState, PageHeader } from "@/components/ui/misc";
 import { cn, formatDateTime } from "@/lib/utils";
 import { QuotaSettingsForm } from "./quota-settings-form";
+import { DeepAnalytics } from "./deep";
 
 export const metadata = { title: "Email analytics" };
 
@@ -217,6 +219,10 @@ export default async function EmailAnalyticsPage({ searchParams }: { searchParam
           </div>
         )}
       </Card>
+
+      <Suspense fallback={<Card className="p-6 text-[13px] text-ink-500">Loading funnel, best send times, templates, links, providers and recipient health…</Card>}>
+        <DeepAnalytics from={from} to={to} fromIso={fromIso} toIso={toIso} />
+      </Suspense>
     </div>
   );
 }
