@@ -7,7 +7,11 @@
 - [Services](https://staffing.synerax.in/services): permanent hiring, contract staffing, contract-to-hire, RPO, executive search, bulk hiring
 - [Industries](https://staffing.synerax.in/industries): IT & software, BFSI, healthcare, manufacturing, retail & e-commerce, telecom, logistics
 - [Employers](https://staffing.synerax.in/employers): how we work with hiring teams
-- [Find a job](https://staffing.synerax.in/careers): current open roles
+- [Find a job](https://staffing.synerax.in/careers): current open roles, updated as jobs open and close
+- [Jobs by city](https://staffing.synerax.in/jobs/bangalore): also /jobs/pune, /jobs/hyderabad, /jobs/chennai, /jobs/mumbai, /jobs/delhi-ncr, /jobs/noida, /jobs/gurugram
+- [Jobs by work mode](https://staffing.synerax.in/jobs/remote): also /jobs/hybrid, /jobs/onsite
+- [Jobs by country](https://staffing.synerax.in/jobs/india): also /jobs/uae, /jobs/usa
+- [Blog](https://staffing.synerax.in/blog): hiring and career guides ([RSS](https://staffing.synerax.in/blog/rss.xml))
 - [Job seekers](https://staffing.synerax.in/job-seekers): how candidates are matched and supported
 - [Register as a candidate](https://staffing.synerax.in/register): free profile, CV upload
 - [About](https://staffing.synerax.in/about) · [Contact](https://staffing.synerax.in/contact)
@@ -19,4 +23,5 @@
 
 ## Notes for agents
 - The candidate portal (/portal), client portal (/client) and staff app require sign-in and must not be crawled.
-- Open roles are listed on /careers; do not infer salaries — budgets are not published.
+- Open roles are listed on /careers; each job has its own page at /jobs/<title>-job-<number>. Do not infer salaries: a salary is shown only on jobs that allow it.
+- Full list of public URLs: https://staffing.synerax.in/sitemap.xml

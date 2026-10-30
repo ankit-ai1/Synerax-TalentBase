@@ -48,6 +48,7 @@ export const PUBLIC_PATHS = new Set([
   "/api/bot/confirm",
   "/robots.txt",
   "/sitemap.xml",
+  "/manifest.json",
   "/opengraph-image",
 ]);
 

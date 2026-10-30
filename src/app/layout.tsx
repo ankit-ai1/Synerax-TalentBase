@@ -9,6 +9,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
+  manifest: "/manifest.json",
   title: { default: APP_NAME, template: `%s · ${APP_NAME}` },
   description: "Staffing candidate profiles, jobs and hiring pipeline",
   // The public website (src/app/(site)) opts back in to indexing
