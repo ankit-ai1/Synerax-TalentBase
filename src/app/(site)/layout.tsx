@@ -8,7 +8,6 @@ import { PauseOffscreen, ScrollTopRing, SmoothScroll, TouchMotion } from "@/comp
 import { RouteWipe } from "@/components/site/connection/global";
 import { ChatLauncher } from "@/components/chat/launcher";
 import { SiteIntro } from "@/components/site/intro";
-import { BrandMark } from "@/components/brand-logo";
 import { ldJson, organizationLd } from "@/lib/seo/jsonld";
 
 export const metadata: Metadata = {
@@ -36,8 +35,9 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
         {/* first visit in this session: show the loader screen before any JS runs (no flash of the page) */}
         <script dangerouslySetInnerHTML={{ __html: "try{if(!sessionStorage.getItem('synerax-intro-seen')&&!navigator.webdriver)document.documentElement.setAttribute('data-intro','1')}catch(e){}" }} />
         <div className="intro-boot" aria-hidden>
-          <span data-brand-invert>
-            <BrandMark size={84} />
+          <span>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/brand/icon-dark.png" alt="" width={84} height={84} />
           </span>
         </div>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ORG_JSON_LD }} />

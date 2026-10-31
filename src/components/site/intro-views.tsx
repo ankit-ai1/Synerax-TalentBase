@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { AnimatePresence, m } from "motion/react";
 import { ArrowRight, BadgeCheck, CalendarCheck, Check, Sparkles, X } from "lucide-react";
-import { BrandMark } from "@/components/brand-logo";
 import { LOADER_MS, WORDS } from "./intro-config";
 
 /** The intro's visual layers (loader + register card), loaded in their own chunk by <SiteIntro>. */
@@ -86,14 +85,12 @@ function Loader({ reduce, onShown }: { reduce: boolean; onShown: () => void }) {
           </svg>
           <m.div
             className="absolute inset-[22px] flex items-center justify-center"
-            data-brand-invert
             initial={{ scale: 0.6, opacity: 0, rotate: -12 }}
             animate={{ scale: 1, opacity: 1, rotate: 0 }}
             transition={{ type: "spring", stiffness: 180, damping: 16, delay: 0.15 }}
           >
-            <span className="on-dark">
-              <BrandMark size={84} />
-            </span>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/brand/icon-dark.png" alt="" width={84} height={84} className="h-[84px] w-[84px]" />
           </m.div>
           {!reduce && (
             <m.span
@@ -106,25 +103,16 @@ function Loader({ reduce, onShown }: { reduce: boolean; onShown: () => void }) {
           )}
         </div>
 
-        {/* wordmark, letter by letter */}
+        {/* the logo fades up out of a soft blur */}
         <m.h1
-          className="mt-8 flex flex-wrap justify-center text-[30px] font-semibold tracking-[-0.03em] sm:text-[40px]"
-          initial="hidden"
-          animate="show"
-          variants={{ show: { transition: { staggerChildren: reduce ? 0 : 0.035, delayChildren: 0.35 } } }}
-          aria-label="Synerax TalentBase"
+          className="mt-8"
+          initial={{ y: 14, opacity: 0, filter: "blur(8px)" }}
+          animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
+          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 0.3 }}
         >
-          {"Synerax TalentBase".split("").map((ch, i) => (
-            <m.span
-              key={i}
-              aria-hidden
-              className={i >= 14 ? "bg-gradient-to-r from-[#E8862E] to-[#C05800] bg-clip-text text-transparent" : i >= 8 ? "text-[#FDFBD4]/75" : ""}
-              variants={{ hidden: { y: "0.6em", opacity: 0, filter: "blur(6px)" }, show: { y: 0, opacity: 1, filter: "blur(0px)", transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } } }}
-            >
-              {ch === " " ? " " : ch}
-            </m.span>
-          ))}
-        </m.h1>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/brand/logo-dark.png" alt="Synerax TalentBase" width={821} height={246} className="h-auto w-[260px] sm:w-[340px]" />
+</m.h1>
 
         {/* rotating words */}
         <div className="mt-3 h-6 overflow-hidden text-[13px] font-semibold uppercase tracking-[0.28em] text-[#E8862E]">
