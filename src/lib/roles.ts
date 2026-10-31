@@ -49,6 +49,7 @@ export const PUBLIC_PATHS = new Set([
   "/robots.txt",
   "/sitemap.xml",
   "/manifest.json",
+  "/sw.js",
   "/opengraph-image",
 ]);
 

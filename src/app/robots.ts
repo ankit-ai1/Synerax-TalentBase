@@ -8,7 +8,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: "*",
-        allow: ["/", "/jobs/", "/blog/"],
+        allow: ["/", "/jobs/", "/blog/", "/api/blog/img/"],
         disallow: [
           "/login",
           "/forgot-password",
@@ -32,6 +32,8 @@ export default function robots(): MetadataRoute.Robots {
           "/print",
           "/api/",
           "/auth/",
+          "/e/",
+          "/invite/",
         ],
       },
     ],

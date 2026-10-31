@@ -19,19 +19,31 @@ export function BrandMark({ size = 34, className }: { size?: number; className?:
   );
 }
 
-/** Full wordmark: mark + "Synerax TalentBase" ("Base" in ember). `variant="mark"` renders the mark only. */
-export function BrandLogo({ variant = "full", size = 34, className, textClassName, sub }: { variant?: "full" | "mark"; size?: number; className?: string; textClassName?: string; sub?: React.ReactNode }) {
+/**
+ * The Synerax TalentBase logo, transparent so it sits directly on any surface. Two files: dark lettering for light
+ * surfaces, white lettering for dark ones; CSS shows the right one (same rules as the mark). `height` in px.
+ */
+export function BrandWordmark({ height = 40, className }: { height?: number; className?: string }) {
+  const width = Math.round((height * 821) / 246);
+  return (
+    <span className={cn("brand-word inline-flex shrink-0", className)} style={{ height, width }}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/brand/logo-light.png" alt="Synerax TalentBase" width={width} height={height} decoding="async" className="brand-word-light h-full w-full" />
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/brand/logo-dark.png" alt="Synerax TalentBase" width={width} height={height} decoding="async" className="brand-word-dark h-full w-full" />
+    </span>
+  );
+}
+
+/** Full logo. `variant="mark"` renders the square S mark only. `size` is the old mark size; the logo is a little taller. */
+export function BrandLogo({ variant = "full", size = 34, className, sub }: { variant?: "full" | "mark"; size?: number; className?: string; textClassName?: string; sub?: React.ReactNode }) {
   return (
     <span className={cn("brand inline-flex items-center gap-2.5", className)}>
-      <BrandMark size={size} />
-      {variant === "full" && (
+      {variant === "mark" ? (
+        <BrandMark size={size} />
+      ) : (
         <span className="flex flex-col justify-center leading-none">
-          <span className={cn("whitespace-nowrap text-[19px] tracking-[-0.03em]", textClassName)}>
-            <span className="font-semibold text-ink-900">Synerax</span>{" "}
-            <span className="font-medium text-ink-500">
-              Talent<span className="ember-text font-semibold">Base</span>
-            </span>
-          </span>
+          <BrandWordmark height={Math.round(size * 1.2)} />
           {sub && <span className="mt-1 text-[10.5px] font-semibold uppercase tracking-[0.14em] text-ink-400">{sub}</span>}
         </span>
       )}

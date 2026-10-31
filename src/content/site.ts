@@ -25,8 +25,6 @@ export const site = {
 
   contact: {
     email: "hr@synerax.in",
-    phone: "+91 9306917180",
-    whatsapp: "+91 9306917180",
     address: ["Noida, India"],
     hours: [
       { days: "Monday – Saturday", time: "9:00 AM – 8:00 PM IST" },

@@ -818,3 +818,37 @@ html[data-covered] :is(.gradient-border, .btn-shimmer)::before {
 .blog-prose th { background: rgb(var(--surface-2)); text-align: left; font-weight: 600; color: rgb(var(--ink-900)); }
 .blog-prose th, .blog-prose td { padding: 0.6em 0.9em; border-bottom: 1px solid rgb(var(--line)); vertical-align: top; }
 .blog-prose tr:last-child td { border-bottom: 0; }
+
+/* ---- touch screens: stand-ins for the hover effects (see <TouchMotion>) ---- */
+@media (hover: none) and (prefers-reduced-motion: no-preference) {
+  .card-premium[data-touch-on]::before { opacity: 1; }
+  .card-premium.lift[data-touch-on] { transform: translateY(-4px); box-shadow: var(--shadow-pop); }
+  .spotlight[data-touch-on]::after { opacity: 1; }
+  .tilt[data-touch-on] .edge-light { opacity: 1; }
+  .flip[data-touch-on] .flip-inner { transform: rotateY(180deg); }
+  .card-premium:active { transform: scale(0.985); }
+  a:active, button:active { opacity: 0.85; }
+}
+html[data-menu-open] .chat-launcher { display: none; }
+
+/* ---- logo: dark lettering on light surfaces, white lettering on dark ones ---- */
+.brand-word-dark { display: none; }
+.dark .brand-word-light, .band-dark .brand-word-light, .on-dark .brand-word-light, [data-brand-invert] .brand-word-light { display: none; }
+.dark .brand-word-dark, .band-dark .brand-word-dark, .on-dark .brand-word-dark, [data-brand-invert] .brand-word-dark { display: block; }
+
+/* ---- site navbar: full-width bar at the top, floating capsule while scrolled ---- */
+.nav-shell { width: 100%; max-width: 100%; margin-inline: auto; padding: 0; transition: max-width 0.5s cubic-bezier(0.22, 1, 0.36, 1), padding 0.5s cubic-bezier(0.22, 1, 0.36, 1); }
+.nav-shell[data-float] { max-width: 1400px; padding: 8px clamp(12px, 3vw, 40px) 0; }
+.nav-bar {
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem; height: 64px;
+  padding-inline: max(clamp(20px, 5vw, 80px), calc((100vw - 1600px) / 2 + 80px));
+  background: rgb(var(--surface) / 0.88); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  border: 1px solid transparent; border-bottom-color: rgb(var(--line)); border-radius: 0;
+  box-shadow: 0 8px 24px -20px rgb(20 12 4 / 0.3);
+  transition: height 0.5s cubic-bezier(0.22, 1, 0.36, 1), padding 0.5s cubic-bezier(0.22, 1, 0.36, 1), border-radius 0.5s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.3s, box-shadow 0.4s;
+}
+.nav-shell[data-float] .nav-bar {
+  height: 60px; padding-inline: clamp(16px, 2vw, 28px) 10px; border-radius: 32px; border-color: rgb(var(--line));
+  box-shadow: 0 18px 40px -20px rgb(20 12 4 / 0.35), inset 0 1px 0 rgb(255 255 255 / 0.5);
+}
+@media (prefers-reduced-motion: reduce) { .nav-shell, .nav-bar { transition: none; } }

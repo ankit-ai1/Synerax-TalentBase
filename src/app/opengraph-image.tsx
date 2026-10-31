@@ -1,9 +1,6 @@
 import { ImageResponse } from "next/og";
 import { site } from "@/content/site";
-import { BRAND_MARK_SVG } from "@/components/brand-logo";
-
-// the mark on a light tile (the OG background is graphite)
-const MARK = `data:image/svg+xml;base64,${Buffer.from(BRAND_MARK_SVG.replace(`fill="#38240D"`, `fill="#FDFBD4"`).replace(`stroke="#FDFBD4"`, `stroke="#38240D"`)).toString("base64")}`;
+import { OG_LOGO, OG_LOGO_SIZE } from "@/lib/seo/og-logo";
 
 export const alt = `${site.name} — ${site.tagline}`;
 export const size = { width: 1200, height: 630 };
@@ -21,20 +18,13 @@ export default function OpengraphImage() {
           flexDirection: "column",
           justifyContent: "space-between",
           padding: "72px 80px",
-          background: "linear-gradient(135deg, #38240D 0%, #46301A 55%, #5A4128 100%)",
+          background: "linear-gradient(135deg, #1F150A 0%, #2A1C0E 55%, #38240D 100%)",
           color: "white",
           fontFamily: "sans-serif",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={MARK} width={60} height={60} alt="" />
-          <div style={{ display: "flex", fontSize: 36, letterSpacing: -1 }}>
-            <span style={{ fontWeight: 700 }}>Synerax</span>
-            <span style={{ marginLeft: 10, fontWeight: 500, color: "rgba(255,255,255,0.6)" }}>Talent</span>
-            <span style={{ fontWeight: 700, color: "#C05800" }}>Base</span>
-          </div>
-        </div>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={OG_LOGO} width={OG_LOGO_SIZE.width} height={OG_LOGO_SIZE.height} alt="" />
         <div style={{ display: "flex", flexDirection: "column" }}>
           <div style={{ fontSize: 76, fontWeight: 700, lineHeight: 1.05, letterSpacing: -3, maxWidth: 900 }}>{site.hero.title}</div>
           <div style={{ marginTop: 24, fontSize: 30, color: "rgba(255,255,255,0.7)", maxWidth: 900 }}>

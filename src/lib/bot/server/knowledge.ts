@@ -31,7 +31,7 @@ export function publicKnowledge(mode: BotMode, faqs: BotFaq[]) {
   const c = site.contact;
   const lines: string[] = [
     `Company: ${site.name} (${site.legalName}) — ${site.tagline}. ${site.description}`,
-    `Contact: email ${c.email}, phone ${c.phone}, ${c.address.join(", ")}. Hours: ${c.hours.map((h) => `${h.days} ${h.time}`).join("; ")}. ${c.responseTime}.`,
+    `Contact: email ${c.email}, ${c.address.join(", ")}. Hours: ${c.hours.map((h) => `${h.days} ${h.time}`).join("; ")}. ${c.responseTime}.`,
     `Services: ${site.services.map((s) => `${s.title} — ${s.summary}`).join(" | ")}`,
     `How hiring works: ${site.process.map((p, i) => `${i + 1}. ${p.title}: ${p.text}`).join(" ")}`,
     `Industries: ${site.industries.map((i) => `${i.title} (${i.roles.slice(0, 4).join(", ")})`).join("; ")}`,

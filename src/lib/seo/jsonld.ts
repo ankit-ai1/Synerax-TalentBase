@@ -109,7 +109,7 @@ export function organizationLd() {
   return {
     "@context": "https://schema.org",
     "@graph": [
-      { "@type": "Organization", "@id": `${base}/#org`, name: site.name, legalName: site.legalName, url: base, logo: `${base}/logo.png`, email: site.contact.email, telephone: site.contact.phone, sameAs, description: site.description },
+      { "@type": "Organization", "@id": `${base}/#org`, name: site.name, legalName: site.legalName, url: base, logo: `${base}/logo.png`, email: site.contact.email, sameAs, description: site.description },
       {
         "@type": ["LocalBusiness", "EmploymentAgency"],
         "@id": `${base}/#business`,
@@ -119,7 +119,6 @@ export function organizationLd() {
         image: `${base}/logo.png`,
         logo: `${base}/logo.png`,
         email: site.contact.email,
-        telephone: site.contact.phone,
         address: { "@type": "PostalAddress", addressLocality: "Noida", addressRegion: "Uttar Pradesh", addressCountry: "IN" },
         areaServed: "IN",
         openingHoursSpecification: [{ "@type": "OpeningHoursSpecification", dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], opens: "09:00", closes: "20:00" }],

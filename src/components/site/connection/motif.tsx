@@ -1,6 +1,7 @@
 /**
  * The Synerax Connection motif — shared, server-safe pieces.
  */
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Reveal } from "../reveal";
 
@@ -114,6 +115,18 @@ export function MaskTitle({ title, highlight }: { title: string; highlight?: str
 }
 
 /** Section heading with label, big title (highlight = ember gradient words) and optional right-side text / action */
+/** Section header button: glowing ember pill, used as the `action` of a SectionHead */
+export function SectionCta({ href, children }: { href: string; children: React.ReactNode }) {
+  return (
+    <Link
+      href={href}
+      className="btn-shimmer inline-flex h-14 items-center justify-center rounded-full bg-gradient-to-r from-[rgb(var(--ember-b))] to-[rgb(var(--ember-a))] px-8 text-[15px] font-semibold tracking-[-0.01em] text-white shadow-[0_16px_36px_-12px_rgb(var(--ember-a)/0.75),inset_0_1px_0_rgb(255_255_255/0.22)] transition-[transform,box-shadow] duration-300 hover:-translate-y-0.5 hover:shadow-[0_22px_44px_-12px_rgb(var(--ember-a)/0.9),inset_0_1px_0_rgb(255_255_255/0.22)]"
+    >
+      {children}
+    </Link>
+  );
+}
+
 export function SectionHead({
   index,
   label,
@@ -167,9 +180,9 @@ export function SectionHead({
         {h}
       </div>
       {(description || action) && (
-        <div className="lg:col-span-5 lg:pb-2">
+        <div className="lg:col-span-5 lg:pb-2 lg:text-right">
           {description && <p className="text-pretty text-[17px] leading-relaxed text-ink-500">{description}</p>}
-          {action && <div className="mt-6 flex flex-wrap gap-3">{action}</div>}
+          {action && <div className="mt-6 flex flex-wrap gap-3 lg:justify-end">{action}</div>}
         </div>
       )}
     </Reveal>

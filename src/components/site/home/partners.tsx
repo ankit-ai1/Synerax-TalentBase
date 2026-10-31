@@ -33,6 +33,27 @@ function initials(name: string) {
   return (words.length > 1 ? words.slice(0, 2).map((w) => w[0]).join("") : name.slice(0, 2)).toUpperCase();
 }
 
+/** A "K" in motion: stem and arms on an ember tile, with a lane line running out of it */
+function DesignedMark({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 64 64" className={className} aria-hidden>
+      <defs>
+        <linearGradient id="kobo-tile" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="rgb(var(--ember-a))" />
+          <stop offset="1" stopColor="#38240D" />
+        </linearGradient>
+      </defs>
+      <rect x="2" y="2" width="60" height="60" rx="17" fill="url(#kobo-tile)" />
+      <rect x="2.75" y="2.75" width="58.5" height="58.5" rx="16.25" fill="none" stroke="#fff" strokeOpacity="0.18" strokeWidth="1.5" />
+      <g fill="none" stroke="#FDFBD4" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M23 16V48" strokeWidth="6.5" />
+        <path d="M45 16L29 32L45 48" strokeWidth="6.5" />
+        <path d="M9 24H15M7 32H15M9 40H15" strokeWidth="2.6" strokeOpacity="0.7" />
+      </g>
+    </svg>
+  );
+}
+
 function PartnerLogo({ p, i, logo }: { p: Partner; i: number; logo?: string }) {
   const Tag = p.url ? "a" : "div";
   const detail = [p.industry, p.since ? `since ${p.since}` : ""].filter(Boolean).join(" · ");
@@ -43,9 +64,35 @@ function PartnerLogo({ p, i, logo }: { p: Partner; i: number; logo?: string }) {
       aria-label={detail ? `${p.name} — ${detail}` : p.name}
       role={p.url ? undefined : "img"}
     >
-      {logo ? (
+      {p.designed ? (
+        <>
+          <DesignedMark className="h-11 w-11 shadow-[0_10px_22px_-12px_rgb(var(--ember-a)/0.8)] transition-transform duration-300 group-hover/logo:scale-105 rounded-[12px] sm:h-14 sm:w-14 sm:rounded-[15px]" />
+          <span className="text-[14px] font-bold leading-tight tracking-[-0.02em] text-ink-900 sm:text-[18px]">
+            {p.name.split(" ")[0]} <span className="font-semibold text-jade-700">{p.name.split(" ").slice(1).join(" ")}</span>
+          </span>
+        </>
+      ) : logo && p.logoWithName ? (
+        <>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={logo} alt="" width={512} height={512} className="h-11 w-auto max-w-full object-contain transition-transform duration-300 group-hover/logo:scale-105 dark:rounded-xl dark:bg-white dark:p-1 sm:h-14" loading="lazy" decoding="async" />
+          <span className="text-balance text-[14px] font-bold leading-tight tracking-[-0.02em] text-ink-900 sm:text-[18px]">{p.name}</span>
+        </>
+      ) : logo ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={logo} alt="" className="h-8 w-auto max-w-[140px] object-contain opacity-70 grayscale transition duration-300 group-hover/logo:opacity-100 group-hover/logo:grayscale-0 dark:invert-[.85] dark:group-hover/logo:invert-0" loading="lazy" />
+        <img
+          src={logo}
+          alt=""
+          width={p.logoTile ? 640 : 888}
+          height={p.logoTile ? 640 : 440}
+          className={cn(
+            "w-auto max-w-full object-contain transition-transform duration-300 group-hover/logo:scale-105",
+            p.logoTile
+              ? "h-16 rounded-2xl shadow-[0_10px_24px_-12px_rgb(20_12_4/0.45)] ring-1 ring-black/5 sm:h-[76px]"
+              : "h-12 dark:rounded-xl dark:bg-white dark:px-2 dark:py-1 sm:h-[60px]"
+          )}
+          loading="lazy"
+          decoding="async"
+        />
       ) : (
         <>
           <span className="partner-ink partner-mono flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-[11.5px] font-bold tracking-tight transition-colors duration-300" aria-hidden>

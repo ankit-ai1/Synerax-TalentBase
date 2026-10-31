@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Mail, MapPin, Phone } from "lucide-react";
+import { Mail, MapPin } from "lucide-react";
 import { site } from "@/content/site";
 import { Container } from "./ui";
 import { MagneticButton } from "./magnetic-button";
@@ -100,12 +100,6 @@ export function SiteFooter() {
                 <Mail className="mt-0.5 h-4 w-4 shrink-0 text-jade-700" aria-hidden />
                 <a href={`mailto:${site.contact.email}`} className="hover:text-ink-900">
                   {site.contact.email}
-                </a>
-              </li>
-              <li className="flex items-start gap-2.5">
-                <Phone className="mt-0.5 h-4 w-4 shrink-0 text-jade-700" aria-hidden />
-                <a href={`tel:${site.contact.phone.replace(/\s/g, "")}`} className="hover:text-ink-900">
-                  {site.contact.phone}
                 </a>
               </li>
               <li className="flex items-start gap-2.5">

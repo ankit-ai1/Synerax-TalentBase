@@ -5,11 +5,20 @@ import { LazyToaster } from "@/components/lazy-toaster";
 import { APP_NAME } from "@/lib/constants";
 import { site } from "@/content/site";
 import { ThemeProvider, themeScript } from "@/components/theme";
+import { InstallApp } from "@/components/install-app";
+import { installScript } from "@/lib/install";
 import "./globals.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
   manifest: "/manifest.json",
+  appleWebApp: { capable: true, title: "Synerax", statusBarStyle: "default" },
+  icons: {
+    icon: [
+      { url: "/icons/favicon-light.png", type: "image/png", sizes: "96x96", media: "(prefers-color-scheme: light)" },
+      { url: "/icons/favicon-dark.png", type: "image/png", sizes: "96x96", media: "(prefers-color-scheme: dark)" },
+    ],
+  },
   title: { default: APP_NAME, template: `%s · ${APP_NAME}` },
   description: "Staffing candidate profiles, jobs and hiring pipeline",
   // The public website (src/app/(site)) opts back in to indexing
@@ -28,11 +37,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <script dangerouslySetInnerHTML={{ __html: installScript }} />
       </head>
       <body>
         <ThemeProvider>
           {children}
           <LazyToaster />
+          <InstallApp />
         </ThemeProvider>
       </body>
     </html>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Check, Clock, Copy, Mail, MapPin, Phone } from "lucide-react";
+import { Check, Clock, Copy, Mail, MapPin } from "lucide-react";
 import { toast } from "sonner";
 import { site } from "@/content/site";
 import { SpotlightCard } from "./cards";
@@ -50,11 +50,6 @@ export function ContactCards() {
       <InfoCard icon={<Mail className="h-5 w-5" aria-hidden />} title="Email" copy={{ value: c.email, label: "Email" }}>
         <a href={`mailto:${c.email}`} className="break-all hover:text-jade-700">
           {c.email}
-        </a>
-      </InfoCard>
-      <InfoCard icon={<Phone className="h-5 w-5" aria-hidden />} title="Phone" copy={{ value: c.phone, label: "Phone number" }}>
-        <a href={`tel:${c.phone.replace(/\s/g, "")}`} className="hover:text-jade-700">
-          {c.phone}
         </a>
       </InfoCard>
       <InfoCard icon={<MapPin className="h-5 w-5" aria-hidden />} title="Office" copy={{ value: c.address.join(", "), label: "Address" }}>

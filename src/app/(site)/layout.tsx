@@ -4,7 +4,7 @@ import { MotionProvider } from "@/components/site/motion";
 import { SiteNavbar } from "@/components/site/navbar";
 import { SiteFooter } from "@/components/site/footer";
 import { RevealObserver } from "@/components/site/reveal";
-import { PauseOffscreen, ScrollTopRing, SmoothScroll } from "@/components/site/effects";
+import { PauseOffscreen, ScrollTopRing, SmoothScroll, TouchMotion } from "@/components/site/effects";
 import { RouteWipe } from "@/components/site/connection/global";
 import { ChatLauncher } from "@/components/chat/launcher";
 import { SiteIntro } from "@/components/site/intro";
@@ -49,6 +49,7 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
         <RevealObserver />
         <SmoothScroll />
         <PauseOffscreen />
+        <TouchMotion />
         <RouteWipe />
         <div className="grain" aria-hidden />
         <ScrollTopRing />

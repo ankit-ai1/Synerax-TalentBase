@@ -2,11 +2,12 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Clock, Layers, MapPin, Users } from "lucide-react";
+import { m } from "motion/react";
+import { Clock, Layers, MapPin, Users } from "lucide-react";
 import { site } from "@/content/site";
 import { cn } from "@/lib/utils";
-import { Band, SectionHead, Wrap } from "../connection/motif";
-import { IconTile, SampleBadge } from "../ui";
+import { Band, SectionCta, SectionHead, Wrap } from "../connection/motif";
+import { IconTile, SampleBadge, SiteIcon } from "../ui";
 import { Marquee } from "../marquee";
 import { Reveal } from "../reveal";
 import { TiltCard } from "../tilt-card";
@@ -82,7 +83,7 @@ export function IndiaMap() {
   return (
     <Band tone="light" index="05" label="Industries" className="py-24 sm:py-32">
       <Wrap>
-        <SectionHead index="05" label="Industries" title="Hiring across India, sector by sector" highlight="sector by sector" description="Pick a sector to see where we hire for it most — the lines reroute from our axis to that sector's hotspots." />
+        <SectionHead action={<SectionCta href="/industries">All industries</SectionCta>} index="05" label="Industries" title="Hiring across India, sector by sector" highlight="sector by sector" description="Pick a sector to see where we hire for it most — the lines reroute from our axis to that sector's hotspots." />
         <div className="grid items-center gap-10 lg:grid-cols-12">
           <Reveal className="relative [perspective:1400px] lg:col-span-7">
             <TiltCard max={7} edge={false}>
@@ -91,21 +92,35 @@ export function IndiaMap() {
           </Reveal>
 
           <div className="lg:col-span-5">
-            <div className="flex flex-wrap gap-2" role="tablist" aria-label="Sectors">
-              {site.industries.map((s, i) => (
-                <button
-                  key={s.title}
-                  role="tab"
-                  aria-selected={i === sel}
-                  onClick={() => setSel(i)}
-                  className={cn(
-                    "rounded-full border px-3.5 py-2 text-[13.5px] font-semibold transition-all",
-                    i === sel ? "border-transparent bg-jade text-white shadow-glow" : "border-line bg-surface text-ink-700 hover:border-jade/50"
-                  )}
-                >
-                  {s.title}
-                </button>
-              ))}
+            {/* seven equal sector tiles + "View all" make an even 4 × 2 grid; the selection slides between them */}
+            <div className="grid grid-cols-4 gap-2">
+              <div className="contents" role="tablist" aria-label="Sectors">
+                {site.industries.map((s, i) => {
+                  const on = i === sel;
+                  return (
+                    <button
+                      key={s.title}
+                      role="tab"
+                      aria-selected={on}
+                      onClick={() => setSel(i)}
+                      className={cn(
+                        "group relative isolate flex min-h-[96px] min-w-0 flex-col items-center justify-center gap-2 rounded-2xl border px-1 py-3 sm:px-1.5 text-center transition-[border-color,transform] duration-300",
+                        on ? "border-transparent" : "border-line bg-surface hover:-translate-y-0.5 hover:border-jade/40"
+                      )}
+                    >
+                      {on && <m.span layoutId="sector-active" transition={{ type: "spring", stiffness: 380, damping: 32 }} className="absolute inset-0 -z-10 rounded-2xl bg-gradient-to-br from-[rgb(var(--ember-a))] to-[rgb(var(--ember-b))] shadow-[0_14px_30px_-12px_rgb(var(--ember-a)/0.75)]" />}
+                      <span className={cn("flex h-9 w-9 items-center justify-center rounded-xl transition-colors duration-300", on ? "bg-white/20 text-white" : "bg-jade-50 text-jade-700 ring-1 ring-inset ring-jade/15")}>
+                        <SiteIcon name={s.icon} className="h-[18px] w-[18px]" />
+                      </span>
+                      <span className={cn("w-full text-[11px] font-semibold leading-tight tracking-[-0.01em] transition-colors duration-300 [overflow-wrap:anywhere] max-[359px]:text-[10px] sm:text-[12.5px] sm:tracking-normal", on ? "text-white" : "text-ink-700")}>{s.title}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              <Link href="/industries" className="section-dark flex min-h-[96px] flex-col items-center justify-center rounded-2xl px-1.5 py-3 text-center transition-transform duration-300 hover:-translate-y-0.5">
+                <span className="text-[20px] font-semibold leading-none tabular text-jade-700">{site.industries.length}</span>
+                <span className="mt-1.5 text-[12px] font-semibold leading-tight text-ink-900 sm:text-[12.5px]">View all</span>
+              </Link>
             </div>
             <div className="card-premium mt-6 p-6">
               <div className="flex items-start gap-4">
@@ -136,9 +151,6 @@ export function IndiaMap() {
               </p>
               <div className="mt-5 flex items-center justify-between gap-3">
                 <SampleBadge />
-                <Link href="/industries" className="inline-flex items-center gap-1 text-[14px] font-semibold text-jade-700 hover:underline">
-                  All industries <ArrowRight className="h-4 w-4" aria-hidden />
-                </Link>
               </div>
             </div>
           </div>

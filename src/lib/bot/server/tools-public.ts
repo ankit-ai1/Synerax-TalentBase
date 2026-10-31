@@ -55,7 +55,7 @@ export const companyInfo = defineTool({
       case "about":
         return [{ text: `${site.legalName} is a ${site.tagline.toLowerCase()}. ${site.about.mission}`, link: { label: "About us", href: "/about" } }];
       default:
-        return [{ text: `Email ${c.email} or call ${c.phone} (${c.hours[0].days}, ${c.hours[0].time}). ${c.responseTime}.`, link: { label: "Contact page", href: "/contact" } }];
+        return [{ text: `Email ${c.email} (${c.hours[0].days}, ${c.hours[0].time}). ${c.responseTime}.`, link: { label: "Contact page", href: "/contact" } }];
     }
   },
 });

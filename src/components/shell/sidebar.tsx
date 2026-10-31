@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { BrandMark } from "@/components/brand-logo";
+import { BrandMark, BrandWordmark } from "@/components/brand-logo";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ChevronsLeft, ChevronsRight, KeyRound, LogOut, Search, X } from "lucide-react";
@@ -53,11 +53,11 @@ export function Sidebar({
 
       <div className={cn("relative flex h-16 shrink-0 items-center", mini ? "justify-center px-0" : "justify-between px-4")}>
         <Link href="/dashboard" className="flex items-center gap-2.5">
-          <LogoMark invert />
-          {!mini && (
-            <span className="whitespace-nowrap text-[16px] tracking-[-0.03em]">
-              <span className="font-semibold text-sidebar-text">Synerax</span> <span className="font-medium text-sidebar-muted">Talent</span>
-              <span className="ember-text font-semibold">Base</span>
+          {mini ? (
+            <LogoMark invert />
+          ) : (
+            <span data-brand-invert="" className="inline-flex">
+              <BrandWordmark height={40} />
             </span>
           )}
         </Link>

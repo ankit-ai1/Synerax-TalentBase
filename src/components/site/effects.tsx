@@ -101,6 +101,43 @@ export function PauseOffscreen() {
 }
 
 /** Soft glow that follows the cursor on desktop (transform only — no layout work) */
+/**
+ * Phones have no hover, so the hover effects get a touch version: the card nearest the middle of the screen
+ * lights up (glow + lift) and industry cards flip as you scroll. Off for reduced motion.
+ */
+export function TouchMotion() {
+  const path = usePathname();
+  useEffect(() => {
+    if (!window.matchMedia("(hover: none)").matches || window.matchMedia("(prefers-reduced-motion: reduce)").matches || !("IntersectionObserver" in window)) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) e.target.toggleAttribute("data-touch-on", e.isIntersecting);
+      },
+      { rootMargin: "-42% 0px -42% 0px" }
+    );
+    const seen = new WeakSet<Element>();
+    const scan = () =>
+      document.querySelectorAll("#main :is(.card-premium, .spotlight, .flip, .tilt)").forEach((el) => {
+        if (seen.has(el) || el.closest(".flip-inner")) return;
+        seen.add(el);
+        io.observe(el);
+      });
+    scan();
+    let frame = 0;
+    const mo = new MutationObserver(() => {
+      if (!frame) frame = requestAnimationFrame(() => ((frame = 0), scan()));
+    });
+    const main = document.getElementById("main");
+    if (main) mo.observe(main, { childList: true, subtree: true });
+    return () => {
+      cancelAnimationFrame(frame);
+      mo.disconnect();
+      io.disconnect();
+    };
+  }, [path]);
+  return null;
+}
+
 export function CursorGlow() {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {

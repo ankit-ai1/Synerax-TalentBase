@@ -34,7 +34,7 @@ export const BOT_FAQ: BotFaq[] = [
   {
     id: "contact",
     q: "How can I contact Synerax?",
-    a: "Email hr@synerax.in or call +91 9306917180 (Mon–Sat, 9 AM – 8 PM IST). We reply within 24 hours.",
+    a: "Email hr@synerax.in (Mon–Sat, 9 AM – 8 PM IST). We reply within 24 hours.",
     audience: ["visitor", "candidate", "client"],
     keywords: ["phone", "email", "number", "call", "office", "address", "timing", "hours"],
     link: { label: "Contact page", href: "/contact" },

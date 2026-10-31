@@ -153,9 +153,9 @@ export function SectionHeading({
       <Reveal className={cn("mb-12 grid gap-6 sm:mb-16 lg:grid-cols-12 lg:items-end lg:gap-10", className)}>
         <div className="lg:col-span-7">{head}</div>
         {(description || action) && (
-          <div className="lg:col-span-5 lg:pb-2">
+          <div className="lg:col-span-5 lg:pb-2 lg:text-right">
             {description && <p className="text-pretty text-[17px] leading-relaxed text-ink-500">{description}</p>}
-            {action && <div className="mt-6 flex flex-wrap gap-3">{action}</div>}
+            {action && <div className="mt-6 flex flex-wrap gap-3 lg:justify-end">{action}</div>}
           </div>
         )}
       </Reveal>

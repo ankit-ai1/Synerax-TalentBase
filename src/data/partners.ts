@@ -13,6 +13,12 @@ export type Partner = {
   name: string;
   /** path under /public, e.g. "/partners/absyz.svg" (optional — auto-detected from the slug) */
   logo?: string;
+  /** the logo has its own coloured background: show it as a rounded tile instead of on the card */
+  logoTile?: boolean;
+  /** the logo is only an icon: show the company name under it */
+  logoWithName?: boolean;
+  /** no logo file yet: a designed mark + two-tone name, drawn in partners.tsx (not the company's official logo) */
+  designed?: boolean;
   industry?: string;
   /** year the partnership started */
   since?: number;
@@ -21,10 +27,10 @@ export type Partner = {
 
 export const partners: Partner[] = [
   { name: "Tek Star Global" },
-  { name: "Lumina Workforce" },
-  { name: "Kobo Cabs" },
-  { name: "Yantracabs" },
-  { name: "IncentIQ" },
+  { name: "Lumina Workforce", logoWithName: true },
+  { name: "Kobo Cabs", designed: true },
+  { name: "Yantracabs", logoTile: true },
+  { name: "IncentIQ", logoWithName: true },
   { name: "ABSYZ" },
 ];
 

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Mail, MessageCircle, Phone } from "lucide-react";
+import { ArrowRight, Mail } from "lucide-react";
 import { site } from "@/content/site";
 import { Reveal } from "./reveal";
 import { Faq, FaqTabs } from "./faq";
@@ -23,7 +23,6 @@ export function FaqSection({
   candidates?: readonly Item[];
   tone?: "pattern" | "mint" | "canvas";
 }) {
-  const wa = site.contact.whatsapp.replace(/\D/g, "");
   return (
     <Section tone={tone}>
       <div className="grid gap-10 lg:grid-cols-12 lg:gap-16">
@@ -44,24 +43,6 @@ export function FaqSection({
                   {site.contact.email}
                 </a>
               </li>
-              <li>
-                <a href={`tel:${site.contact.phone.replace(/\s/g, "")}`} className="flex items-center gap-3 text-ink-700 hover:text-ink-900">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-fg/[0.06] text-jade-700">
-                    <Phone className="h-4 w-4" aria-hidden />
-                  </span>
-                  {site.contact.phone}
-                </a>
-              </li>
-              {wa && (
-                <li>
-                  <a href={`https://wa.me/${wa}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-ink-700 hover:text-ink-900">
-                    <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-fg/[0.06] text-emerald-400">
-                      <MessageCircle className="h-4 w-4" aria-hidden />
-                    </span>
-                    WhatsApp us
-                  </a>
-                </li>
-              )}
             </ul>
             <Link href="/contact" className="relative mt-6 inline-flex items-center gap-1.5 text-[14px] font-semibold text-jade-700 hover:underline">
               Contact page <ArrowRight className="h-4 w-4" aria-hidden />

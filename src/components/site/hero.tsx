@@ -54,6 +54,20 @@ export function Hero() {
   const sx = useSpring(mx, { stiffness: 50, damping: 18 });
   const sy = useSpring(my, { stiffness: 50, damping: 18 });
 
+  // touch screens have no cursor: the depth layers drift gently on their own while the hero is on screen
+  useEffect(() => {
+    if (reduce || navigator.webdriver || !window.matchMedia("(hover: none)").matches) return;
+    let n = 0;
+    const t = setInterval(() => {
+      const r = ref.current?.getBoundingClientRect();
+      if (document.hidden || !r || r.bottom < 0) return;
+      n += 1;
+      mx.set(Math.sin(n * 1.1) * 0.5);
+      my.set(Math.cos(n * 0.7) * 0.5);
+    }, 1800);
+    return () => clearInterval(t);
+  }, [reduce, mx, my]);
+
   const onMove = (e: React.PointerEvent) => {
     if (reduce || e.pointerType !== "mouse") return;
     const r = ref.current?.getBoundingClientRect();
