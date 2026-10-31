@@ -26,12 +26,12 @@ export type Partner = {
 };
 
 export const partners: Partner[] = [
+  { name: "ABSYZ" },
   { name: "Tek Star Global" },
   { name: "Lumina Workforce", logoWithName: true },
   { name: "Kobo Cabs", designed: true },
   { name: "Yantracabs", logoTile: true },
   { name: "IncentIQ", logoWithName: true },
-  { name: "ABSYZ" },
 ];
 
 export const partnerSlug = (name: string) =>

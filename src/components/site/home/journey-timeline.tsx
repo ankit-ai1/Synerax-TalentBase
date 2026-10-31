@@ -86,7 +86,7 @@ function StepArt({ i, on }: { i: number; on: boolean }) {
               key={k}
               aria-hidden
               className={cn("confetti absolute left-1/2 top-1/2 rounded-full", k % 4 === 0 ? "h-1 w-2.5" : "h-1.5 w-1.5")}
-              style={{ background: k % 2 ? "rgb(var(--ember-a))" : "rgb(var(--ember-b))", ["--cx" as string]: `${Math.cos(a) * d}px`, ["--cy" as string]: `${Math.sin(a) * d * 0.6}px`, ["--d" as string]: `${0.35 + (k % 5) * 0.02}s` }}
+              style={{ background: k % 2 ? "rgb(var(--ember-a))" : "rgb(var(--ember-b))", ["--cx" as string]: `${(Math.cos(a) * d).toFixed(2)}px`, ["--cy" as string]: `${(Math.sin(a) * d * 0.6).toFixed(2)}px`, ["--d" as string]: `${0.35 + (k % 5) * 0.02}s` }}
             />
           );
         })}
