@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import { FaqSearch } from "@/components/site/home/faq-search";
 import { Check } from "lucide-react";
 import { site } from "@/content/site";
+import { ogMeta } from "@/lib/seo/og";
 import { Reveal } from "@/components/site/reveal";
 import { NumberTicker } from "@/components/site/number-ticker";
 import { BentoGrid, BentoTile } from "@/components/site/bento";
@@ -15,7 +17,7 @@ export const metadata: Metadata = {
   title: "Hire talent",
   description: "Partner with Synerax to hire pre-screened talent fast — permanent, contract, contract-to-hire, RPO and bulk hiring with clear SLAs.",
   alternates: { canonical: "/employers" },
-  openGraph: { title: `Hire talent with ${site.name}`, url: "/employers" },
+  ...ogMeta(`Hire talent with ${site.name}`, "/employers", "Partner with Synerax to hire pre-screened talent fast — permanent, contract, contract-to-hire, RPO and bulk hiring with clear SLAs."),
 };
 
 const BENTO_SIZE = ["big", "normal", "normal", "normal", "normal"] as const;
@@ -115,6 +117,8 @@ export default function EmployersPage() {
           </Reveal>
         </div>
       </Section>
+
+      <FaqSearch items={site.faq.employers} index="06" title="Hiring questions, answered" tone="alt" />
     </>
   );
 }

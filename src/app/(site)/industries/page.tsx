@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import { FaqSearch } from "@/components/site/home/faq-search";
 import { site } from "@/content/site";
+import { ogMeta } from "@/lib/seo/og";
 import { Reveal } from "@/components/site/reveal";
 import { IndustryExplorer } from "@/components/site/industry-cards";
 import { IndustryOrbit } from "@/components/site/orbit";
@@ -12,7 +14,7 @@ export const metadata: Metadata = {
   title: "Industries we hire for",
   description: "Specialist recruiters for IT & software, BFSI, healthcare, manufacturing, retail & e-commerce, telecom and logistics.",
   alternates: { canonical: "/industries" },
-  openGraph: { title: `Industries · ${site.name}`, url: "/industries" },
+  ...ogMeta(`Industries · ${site.name}`, "/industries", "Specialist recruiters for IT & software, BFSI, healthcare, manufacturing, retail & e-commerce, telecom and logistics."),
 };
 
 export default function IndustriesPage() {
@@ -63,6 +65,7 @@ export default function IndustriesPage() {
 
       <IndiaMap />
       <StatsStrip stats={site.metrics} sample title="In numbers" index="06" />
+      <FaqSearch items={site.industriesFaq} index="07" title="Industry questions, answered" />
       <CtaBand />
     </>
   );

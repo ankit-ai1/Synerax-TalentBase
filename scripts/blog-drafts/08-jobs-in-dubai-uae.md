@@ -18,7 +18,7 @@ The UAE — and Dubai in particular — has long been a popular destination for 
 In the UAE, a work visa for a private-sector job is generally sponsored by the employer. The typical sequence is:
 
 1. **Interview and offer.** Many first rounds happen online; some employers interview in India or fly candidates in.
-2. **Offer letter and contract.** For private-sector jobs, employment contracts are governed by the UAE's labour framework, overseen by the Ministry of Human Resources and Emiratisation ([MOHRE](https://www.mohre.gov.ae)).
+2. **Offer letter and contract.** For private-sector jobs, employment contracts are governed by the UAE's labour framework, overseen by the Ministry of Human Resources and Emiratisation (MOHRE).
 3. **Entry permit and visa processing,** handled by the employer.
 4. **Arrival, medical fitness test and Emirates ID.**
 5. **Residence visa** stamping or issuance, after which you can open a bank account, rent a home in your name and so on.
@@ -34,9 +34,9 @@ Read the offer carefully and ask questions before you resign from your current j
 - **Contract type and duration,** probation period and notice period.
 - **Working hours and weekly off days.**
 - **Housing** — provided, or an allowance?
-- **Health insurance** — ask what's covered. Employers in Dubai and Abu Dhabi are required to provide health insurance for employees; see the official overview of [health insurance in the UAE](https://u.ae/en/information-and-services/health-and-fitness/health-insurance).
+- **Health insurance** — ask what's covered. Employers in Dubai and Abu Dhabi are required to provide health insurance for employees; see the official overview of [health insurance in the UAE](https://u.ae/en/information-and-services/health-and-fitness).
 - **Annual leave and air tickets** home.
-- **End-of-service benefits** — UAE labour law provides for end-of-service gratuity; check how it applies to your contract on the [UAE government portal](https://u.ae/en/information-and-services/jobs/employment-in-the-private-sector).
+- **End-of-service benefits** — UAE labour law provides for end-of-service gratuity; check how it applies to your contract on the [UAE government portal](https://u.ae/en/information-and-services/jobs).
 
 Get everything important in writing. If something you were promised isn't in the contract, ask for it to be added.
 

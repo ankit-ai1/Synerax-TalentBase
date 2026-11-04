@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 import { site } from "@/content/site";
-import { countBy, getJobBoard, getSeoOverrides, getTerms, livePosts } from "@/lib/seo/data";
+import { MIN_TAG_POSTS, countBy, getJobBoard, getSeoOverrides, getTerms, livePosts } from "@/lib/seo/data";
 import { FIXED_LANDINGS, jobPath, jobsFor, resolveLanding } from "@/lib/seo/landing";
 import { slugify } from "@/lib/blog/markdown";
 
@@ -30,7 +30,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   for (const p of posts) out.push({ url: `${base}/blog/${p.slug}`, lastModified: new Date(p.updated_at), changeFrequency: "monthly", priority: 0.7 });
   for (const c of countBy(posts, "categories")) out.push({ url: `${base}/blog/category/${c.slug}`, changeFrequency: "weekly", priority: 0.4 });
-  for (const t of countBy(posts, "tags")) out.push({ url: `${base}/blog/tag/${t.slug}`, changeFrequency: "weekly", priority: 0.3 });
+  for (const t of countBy(posts, "tags").filter((t) => t.count >= MIN_TAG_POSTS)) out.push({ url: `${base}/blog/tag/${t.slug}`, changeFrequency: "weekly", priority: 0.3 });
 
   // landing pages: only the ones that are switched on AND have live jobs (empty pages are noindex)
   const termSlugs = [...new Set([...terms.roles, ...terms.skills].map(slugify))];

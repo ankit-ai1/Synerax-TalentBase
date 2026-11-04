@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { site } from "@/content/site";
+import { ogMeta } from "@/lib/seo/og";
 import { Reveal } from "@/components/site/reveal";
 import { ServiceTabs } from "@/components/site/service-tabs";
 import { ModelsTable } from "@/components/site/tables";
@@ -13,7 +14,7 @@ export const metadata: Metadata = {
   description:
     "Permanent staffing, contract staffing, contract-to-hire, RPO, executive search and bulk hiring — flexible staffing services from Synerax.",
   alternates: { canonical: "/services" },
-  openGraph: { title: `Staffing services · ${site.name}`, url: "/services" },
+  ...ogMeta(`Staffing services · ${site.name}`, "/services", "Permanent staffing, contract staffing, contract-to-hire, RPO, executive search and bulk hiring — flexible staffing services from Synerax."),
 };
 
 export default function ServicesPage() {

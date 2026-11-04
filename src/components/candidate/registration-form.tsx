@@ -388,19 +388,34 @@ export function CandidateRegistrationForm({
       )}
 
       {stage === "cv" ? (
-        <div>
+        // a real <form> + submit button, so the page's primary action is obvious (to people and to crawlers)
+        <form
+          aria-label="Register as a candidate"
+          onSubmit={(e) => {
+            e.preventDefault();
+            e.currentTarget.querySelector<HTMLInputElement>('input[type="file"]')?.click();
+          }}
+        >
           <h2 className="text-[18px] font-semibold text-ink-900">Start with your CV</h2>
           <p className="mt-1 text-[14px] text-ink-500">We&apos;ll read it and fill in the form for you. You can review and change everything before anything is saved.</p>
           <div className="mt-5">
             <CvDropzone onFile={readCv} busy={parsing} file={cv} />
           </div>
+          <button
+            type="submit"
+            disabled={parsing}
+            className="mt-4 inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-jade px-6 text-[15px] font-semibold text-white shadow-glow hover:brightness-110 disabled:opacity-60"
+          >
+            {parsing ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <UploadCloud className="h-4 w-4" aria-hidden />}
+            Upload CV &amp; register free
+          </button>
           <div className="mt-4 flex items-center justify-between gap-3 text-[13px]">
             <span className="text-ink-400">Your CV is only used for your Synerax profile.</span>
             <button type="button" onClick={() => setStage("form")} disabled={parsing} className="font-semibold text-jade-700 hover:underline disabled:opacity-50">
               Skip — I&apos;ll fill it in myself
             </button>
           </div>
-        </div>
+        </form>
       ) : step === 0 ? (
         <div className="grid gap-4 sm:grid-cols-2">
           <div id={`${uid}-full_name`} className="sm:col-span-2">

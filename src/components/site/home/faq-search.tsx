@@ -2,7 +2,6 @@
 
 import { useId, useMemo, useState } from "react";
 import Link from "next/link";
-import { AnimatePresence, m } from "motion/react";
 import { ArrowRight, Mail, Search, X } from "lucide-react";
 import { site } from "@/content/site";
 import { team } from "@/data/team";
@@ -44,8 +43,12 @@ export function FaqSearch({
     return text.split(re).map((p, i) => (one.test(p) ? <mark key={i} className="rounded bg-[rgb(var(--success)/0.3)] px-0.5 text-inherit">{p}</mark> : p));
   };
 
+  // FAQPage structured data for the same questions (Google / AI answer engines)
+  const ld = JSON.stringify({ "@context": "https://schema.org", "@type": "FAQPage", mainEntity: all.map((x) => ({ "@type": "Question", name: x.q, acceptedAnswer: { "@type": "Answer", text: x.a } })) }).replace(/</g, "\\u003c");
+
   return (
     <Band tone={tone} index={index} label="FAQ" className="py-24 sm:py-32">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ld }} />
       <Wrap>
         <div className="grid gap-12 lg:grid-cols-12 lg:gap-16">
           <div className="lg:col-span-5">
@@ -145,29 +148,18 @@ export function FaqSearch({
                         </span>
                       </button>
                     </h3>
-                    <AnimatePresence initial={false}>
-                      {isOpen && (
-                        <m.div
-                          id={`${base}-a${i}`}
-                          role="region"
-                          aria-labelledby={`${base}-q${i}`}
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: "auto", opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          transition={{ height: { type: "spring", stiffness: 210, damping: 26 }, opacity: { duration: 0.25 } }}
-                          className="overflow-hidden"
-                        >
-                          <p className="px-5 pb-5 pl-[52px] text-[15px] leading-relaxed text-ink-600 sm:px-6 sm:pb-6 sm:pl-[60px]">
-                            {/* answer reveals line by line (sentence by sentence) */}
-                            {(it.a.match(/[^.!?]+[.!?]*s*/g) ?? [it.a]).map((line, k) => (
-                              <span key={k} className="line-in" style={{ ["--d" as string]: `${0.08 + k * 0.12}s` }}>
-                                {mark(line)}
-                              </span>
-                            ))}
-                          </p>
-                        </m.div>
-                      )}
-                    </AnimatePresence>
+                    {/* every answer stays in the HTML (search engines / answer engines read it under its question); closed ones collapse to 0 height */}
+                    <div
+                      id={`${base}-a${i}`}
+                      role="region"
+                      aria-labelledby={`${base}-q${i}`}
+                      aria-hidden={!isOpen}
+                      className={cn("grid transition-[grid-template-rows,opacity] duration-300 ease-out", isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0")}
+                    >
+                      <div className="overflow-hidden">
+                        <p className="px-5 pb-5 pl-[52px] text-[15px] leading-relaxed text-ink-600 sm:px-6 sm:pb-6 sm:pl-[60px]">{mark(it.a)}</p>
+                      </div>
+                    </div>
                   </div>
                 );
               })}

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { FaqSearch } from "@/components/site/home/faq-search";
 import { ShieldAlert } from "lucide-react";
 import { site } from "@/content/site";
 import { Reveal } from "@/components/site/reveal";
@@ -11,15 +12,16 @@ import { createAdminClient } from "@/lib/supabase/server";
 import { MagneticButton } from "@/components/site/magnetic-button";
 import { IconTile, PageHero, Section, SectionHeading } from "@/components/site/ui";
 import { cn } from "@/lib/utils";
-import { getJobBoard } from "@/lib/seo/data";
+import { getJobBoard, liveTermLandings } from "@/lib/seo/data";
 import { FEATURED_LANDINGS, jobPath } from "@/lib/seo/landing";
+import { ogMeta } from "@/lib/seo/og";
 import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Find a job",
   description: "Looking for your next role? Submit your resume to Synerax and get matched with opportunities across IT, BFSI, healthcare and more — free for candidates.",
   alternates: { canonical: "/careers" },
-  openGraph: { title: `Find a job with ${site.name}`, url: "/careers" },
+  ...ogMeta(`Find a job with ${site.name}`, "/careers"),
 };
 
 const CHIP_POS = [
@@ -92,7 +94,7 @@ async function skillNames() {
 
 export default async function CareersPage() {
   const c = site.careers;
-  const [openings, skills] = await Promise.all([liveOpenings(), skillNames()]);
+  const [openings, skills, terms] = await Promise.all([liveOpenings(), skillNames(), liveTermLandings().catch(() => [])]);
 
   return (
     <>
@@ -104,7 +106,7 @@ export default async function CareersPage() {
         aside={<RoleChips />}
       >
         <MagneticButton href="/register">Register as candidate</MagneticButton>
-        <MagneticButton href="/portal/jobs" variant="secondary">
+        <MagneticButton href="#openings" variant="secondary">
           Find jobs
         </MagneticButton>
       </PageHero>
@@ -154,6 +156,16 @@ export default async function CareersPage() {
             </Link>
           ))}
         </nav>
+        {terms.length > 0 && (
+          <nav aria-label="Jobs by role and skill" className="mt-4 flex flex-wrap items-center gap-2">
+            <span className="mr-1 text-[12px] font-semibold uppercase tracking-[0.12em] text-ink-400">By role &amp; skill</span>
+            {terms.map((l) => (
+              <Link key={l.slug} href={`/jobs/${l.slug}`} className="rounded-full border border-line px-3.5 py-1.5 text-[13px] text-ink-600 hover:border-line-strong hover:text-ink-900">
+                {l.name} jobs
+              </Link>
+            ))}
+          </nav>
+        )}
       </Section>
 
       <Section tone="light" id="submit" index="04" label="Apply" className="scroll-mt-16 !pt-0">
@@ -176,6 +188,8 @@ export default async function CareersPage() {
           </Reveal>
         </div>
       </Section>
+
+      <FaqSearch items={site.faq.candidates} index="05" title="Candidate questions, answered" tone="alt" />
     </>
   );
 }

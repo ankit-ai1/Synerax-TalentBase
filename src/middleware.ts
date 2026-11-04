@@ -1,6 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { canAccess, isPublicJobsPath, isPublicPath, normalizePath, roleHome } from "@/lib/roles";
+import { canAccess, isPublicJobsPath, isPublicPath, nextFor, normalizePath, roleHome } from "@/lib/roles";
 
 /**
  * Auth + role routing.
@@ -62,7 +62,8 @@ export async function middleware(request: NextRequest) {
       const { data: profile } = await supabase.from("profiles").select("role, is_active").eq("id", claims.sub).maybeSingle();
       role = profile?.is_active ? profile.role : "none";
     }
-    if (role && role !== "none") return redirectTo(roleHome(role));
+    // public pages link "Apply" straight to /login?next=/portal/jobs/<id> (no redirect hop), so honour next here too
+    if (role && role !== "none") return redirectTo(nextFor(role, request.nextUrl.searchParams.get("next")));
     return response;
   }
 

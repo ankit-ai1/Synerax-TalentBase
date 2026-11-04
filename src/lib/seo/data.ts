@@ -1,7 +1,8 @@
 import "server-only";
 import { cache } from "react";
 import { createClient } from "@supabase/supabase-js";
-import type { Faq, PublicJob, Terms } from "./landing";
+import { slugify } from "@/lib/blog/markdown";
+import { jobsFor, resolveLanding, type Faq, type Landing, type PublicJob, type Terms } from "./landing";
 
 /**
  * Public data for the blog + job landing pages. Uses the anon key without cookies, so pages stay
@@ -26,7 +27,24 @@ export const getTerms = cache(async (): Promise<Terms> => {
   return { skills: t.skills ?? [], roles: t.roles ?? [] };
 });
 
-export type SeoOverride = { slug: string; enabled: boolean; intro: string | null; faqs: Faq[] | null };
+/** tag pages with fewer posts than this are noindex and left out of the sitemap (thin content) */
+export const MIN_TAG_POSTS = 3;
+
+/** role / skill landing pages that are switched on and have live jobs (the ones in the sitemap) — linked from /careers */
+export const liveTermLandings = cache(async (): Promise<Landing[]> => {
+  const [terms, jobs, overrides] = await Promise.all([getTerms(), getJobBoard(), getSeoOverrides()]);
+  const seen = new Set<string>();
+  const out: Landing[] = [];
+  for (const s of [...terms.roles, ...terms.skills].map(slugify)) {
+    const r = resolveLanding(s, terms);
+    if (!r || !("landing" in r) || seen.has(r.landing.slug) || overrides.get(r.landing.slug)?.enabled === false) continue;
+    seen.add(r.landing.slug);
+    if (jobsFor(r.landing, jobs).length) out.push(r.landing);
+  }
+  return out.sort((a, b) => a.name.localeCompare(b.name));
+});
+
+export type SeoOverride ={ slug: string; enabled: boolean; intro: string | null; faqs: Faq[] | null };
 export const getSeoOverrides = cache(async (): Promise<Map<string, SeoOverride>> => {
   const { data } = await anon().from("seo_pages").select("slug, enabled, intro, faqs");
   return new Map(((data ?? []) as SeoOverride[]).map((r) => [r.slug, r]));

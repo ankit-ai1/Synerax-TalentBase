@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
-import { LOADER_KEY, LOADER_MS, PROMO_KEY, read, write } from "./intro-config";
+import { LOADER_ENABLED, LOADER_KEY, LOADER_MS, PROMO_KEY, read, write } from "./intro-config";
 
 /**
  * First-visit experience on the public website:
@@ -32,7 +32,7 @@ export function SiteIntro() {
     if (navigator.webdriver) return setPhase("done");
     reduce.current = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     promoDue.current = path !== "/register" && Date.now() - Number(read(PROMO_KEY, "local") || 0) > 24 * 3600e3;
-    if (!read(LOADER_KEY, "session")) {
+    if (LOADER_ENABLED && !read(LOADER_KEY, "session")) {
       write(LOADER_KEY, "1", "session");
       loadViews();
       setActive(true);

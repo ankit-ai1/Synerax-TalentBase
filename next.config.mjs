@@ -2,7 +2,7 @@ import bundleAnalyzer from "@next/bundle-analyzer";
 
 const withBundleAnalyzer = bundleAnalyzer({ enabled: process.env.ANALYZE === "true" });
 
-// Supabase (REST, storage, realtime websockets) is the only third-party origin the browser talks to
+// Supabase (REST, storage, realtime websockets) plus Google Tag Manager / Analytics are the only third-party origins
 const supabase = process.env.NEXT_PUBLIC_SUPABASE_URL ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).origin : "";
 const supabaseWs = supabase.replace(/^https:/, "wss:");
 const dev = process.env.NODE_ENV !== "production";
@@ -10,11 +10,12 @@ const dev = process.env.NODE_ENV !== "production";
 const csp = [
   "default-src 'self'",
   // Next.js inlines its bootstrap/hydration scripts; dev also needs eval for fast refresh
-  `script-src 'self' 'unsafe-inline'${dev ? " 'unsafe-eval'" : ""}`,
+  // Google Tag Manager / GA4 (src/components/site/analytics.tsx)
+  `script-src 'self' 'unsafe-inline'${dev ? " 'unsafe-eval'" : ""} https://www.googletagmanager.com`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https:",
   "font-src 'self' data:",
-  `connect-src 'self' ${supabase} ${supabaseWs}${dev ? " ws:" : ""}`.trim(),
+  `connect-src 'self' ${supabase} ${supabaseWs} https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com${dev ? " ws:" : ""}`.trim(),
   `media-src 'self' blob: ${supabase}`.trim(),
   // CV previews (same origin) and an optional Google Maps embed on /contact
   "frame-src 'self' blob: https://www.google.com https://maps.google.com",

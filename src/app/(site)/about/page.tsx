@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Eye, Rocket } from "lucide-react";
 import { site } from "@/content/site";
+import { ogMeta } from "@/lib/seo/og";
 import { Reveal } from "@/components/site/reveal";
 import { SpotlightCard, TiltCard } from "@/components/site/cards";
 import { Marquee } from "@/components/site/marquee";
@@ -13,7 +14,7 @@ export const metadata: Metadata = {
   title: "About us",
   description: "Learn about Synerax — our story, mission, values and the team helping companies across India hire better.",
   alternates: { canonical: "/about" },
-  openGraph: { title: `About ${site.name}`, url: "/about" },
+  ...ogMeta(`About ${site.name}`, "/about", "Learn about Synerax — our story, mission, values and the team helping companies across India hire better."),
 };
 
 const initials = (name: string) =>

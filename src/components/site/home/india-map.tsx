@@ -13,7 +13,16 @@ import { Reveal } from "../reveal";
 import { TiltCard } from "../tilt-card";
 import { CITIES, DOTS, HUB, LABELS, MAP_H, MAP_W, SECTOR_MAP, type City } from "./map-data";
 
-const ROUTE_SLOTS = Math.max(...Object.values(SECTOR_MAP).map((v) => v.cities.length));
+const r1 = (n: number) => Math.round(n * 10) / 10;
+const DOT_ROWS = Object.entries(
+  DOTS.reduce<Record<string, string>>((rows, d) => {
+    const y = r1(d.y);
+    rows[y] = `${rows[y] ?? ""}M${r1(d.x)} ${y}h0`;
+    return rows;
+  }, {})
+).map(([y, d]) => ({ y: Number(y), d }));
+
+const ROUTE_SLOTS =Math.max(...Object.values(SECTOR_MAP).map((v) => v.cities.length));
 
 /** The India dot map with routes from the hub to the selected sector cities */
 function MapSvg({ sel }: { sel: number }) {
@@ -33,9 +42,10 @@ function MapSvg({ sel }: { sel: number }) {
         </radialGradient>
       </defs>
       {/* the outline draws in top → bottom as the section is revealed */}
-      <g fill="rgb(var(--accent-a))" opacity="0.32">
-        {DOTS.map((d, i) => (
-          <circle key={i} cx={d.x} cy={d.y} r="2.1" className="map-dot" style={{ ["--d" as string]: `${((d.y / MAP_H) * 1.1 + (d.x / MAP_W) * 0.25).toFixed(2)}s` }} />
+      {/* one path per row of dots (zero-length segments + round caps = dots): ~10x less HTML than a <circle> per dot */}
+      <g stroke="rgb(var(--accent-a))" strokeWidth="4.2" strokeLinecap="round" opacity="0.32">
+        {DOT_ROWS.map((r) => (
+          <path key={r.y} d={r.d} className="map-dot" style={{ ["--d" as string]: `${((r.y / MAP_H) * 1.1 + 0.12).toFixed(2)}s` }} />
         ))}
       </g>
       {/* fixed route slots: changing sector morphs each curve to its new city (CSS d-transition) */}

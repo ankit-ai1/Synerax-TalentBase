@@ -2,15 +2,16 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
 import { Banknote, BellRing, Briefcase, Clock, GraduationCap, IndianRupee, MapPin, Users } from "lucide-react";
-import { site } from "@/content/site";
 import { Container } from "@/components/site/ui";
 import { CompactHero, CtaBlocks } from "@/components/site/blog";
 import { FaqList } from "@/components/site/seo-faq";
 import { MagneticButton } from "@/components/site/magnetic-button";
 import { JobBoardList, type BoardJob } from "@/components/site/job-board-list";
-import { getJobBoard, getJobByCode, getSeoOverrides, getTerms } from "@/lib/seo/data";
-import { codeFromSlug, jobPath, jobsFor, landingLabel, resolveLanding, type Faq, type Landing, type PublicJob } from "@/lib/seo/landing";
+import { getJobBoard, getJobByCode, getSeoOverrides, getTerms, liveTermLandings } from "@/lib/seo/data";
+import { applyHref, codeFromSlug, jobPath, jobsFor, landingLabel, resolveLanding, type Faq, type Landing, type PublicJob } from "@/lib/seo/landing";
 import { breadcrumbLd, faqLd, jobPostingLd, ldJson } from "@/lib/seo/jsonld";
+import { clampTitle, ogMeta } from "@/lib/seo/og";
+import { slugify } from "@/lib/blog/markdown";
 import { publicSalaryLabel } from "@/lib/money";
 import { formatDate } from "@/lib/utils";
 
@@ -53,19 +54,20 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   if (r.kind === "job") {
     const j = r.job;
     const where = j.work_mode === "Remote" ? "Remote" : (j.locations ?? []).join(", ") || "India";
+    const description = `${j.title} (${[exp(j.exp_min, j.exp_max), j.employment_type, j.work_mode].filter(Boolean).join(", ")}) in ${where}. Apply free through Synerax.`.slice(0, 160);
     return {
-      title: { absolute: `${j.title} — ${where} | ${site.name}`.slice(0, 70) },
-      description: `${j.title} (${[exp(j.exp_min, j.exp_max), j.employment_type, j.work_mode].filter(Boolean).join(", ")}) in ${where}. Apply free through Synerax.`.slice(0, 160),
+      title: { absolute: clampTitle(`${j.title} — ${where}`, " | Synerax") },
+      description,
       alternates: { canonical: jobPath(j) },
-      openGraph: { title: j.title, url: jobPath(j) },
+      ...ogMeta(j.title, jobPath(j), description),
     };
   }
   const l = r.landing;
   return {
-    title: { absolute: l.metaTitle },
+    title: { absolute: clampTitle(l.metaTitle) },
     description: l.metaDescription,
     alternates: { canonical: `/jobs/${l.slug}` },
-    openGraph: { title: l.h1, url: `/jobs/${l.slug}` },
+    ...ogMeta(l.h1, `/jobs/${l.slug}`, l.metaDescription),
     // no live jobs → keep it out of the index until it has some (avoids thin / doorway pages)
     robots: r.jobs.length ? { index: true, follow: true } : { index: false, follow: true },
   };
@@ -73,7 +75,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function JobBoardPage({ params }: { params: Promise<{ slug: string }> }) {
   const r = await resolve((await params).slug);
-  return r.kind === "job" ? <JobDetail job={r.job} /> : <LandingPage {...r} />;
+  if (r.kind === "landing") return <LandingPage {...r} />;
+  const skillPages = new Set((await liveTermLandings()).map((l) => l.slug));
+  return <JobDetail job={r.job} skillPages={skillPages} />;
 }
 
 const toBoard = (j: PublicJob): BoardJob => ({
@@ -152,7 +156,7 @@ function LandingPage({ landing: l, jobs, intro, faqs }: Extract<Resolved, { kind
   );
 }
 
-function JobDetail({ job: j }: { job: PublicJob }) {
+function JobDetail({ job: j, skillPages }: { job: PublicJob; skillPages: Set<string> }) {
   const crumbs = [
     { href: "/", label: "Home" },
     { href: "/careers", label: "Careers" },
@@ -173,7 +177,7 @@ function JobDetail({ job: j }: { job: PublicJob }) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ldJson(breadcrumbLd(crumbs.map((c) => ({ name: c.label, url: c.href })))) }} />
       <CompactHero eyebrow={j.company ?? "Open role"} title={j.title} crumbs={crumbs}>
         <div className="mt-7 flex flex-wrap gap-3">
-          <MagneticButton href={`/portal/jobs/${j.id}`}>Apply now</MagneticButton>
+          <MagneticButton href={applyHref(`/portal/jobs/${j.id}`)}>Apply now</MagneticButton>
           <MagneticButton href="/register" variant="secondary">
             New here? Register free
           </MagneticButton>
@@ -193,7 +197,13 @@ function JobDetail({ job: j }: { job: PublicJob }) {
                   <ul className="mt-3 flex flex-wrap gap-2">
                     {(j.skills ?? []).map((s) => (
                       <li key={s} className="rounded-full bg-jade-50 px-3 py-1.5 text-[13.5px] font-medium text-jade-700">
-                        {s}
+                        {skillPages.has(slugify(s)) ? (
+                          <Link href={`/jobs/${slugify(s)}`} className="hover:underline">
+                            {s}
+                          </Link>
+                        ) : (
+                          s
+                        )}
                       </li>
                     ))}
                   </ul>
@@ -218,7 +228,7 @@ function JobDetail({ job: j }: { job: PublicJob }) {
                   ))}
                 </dl>
                 <div className="mt-6">
-                  <MagneticButton href={`/portal/jobs/${j.id}`} size="md">
+                  <MagneticButton href={applyHref(`/portal/jobs/${j.id}`)} size="md">
                     Apply now
                   </MagneticButton>
                 </div>

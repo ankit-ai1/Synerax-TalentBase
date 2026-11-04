@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import { FaqSearch } from "@/components/site/home/faq-search";
 import { Zap } from "lucide-react";
 import { site } from "@/content/site";
+import { ogMeta } from "@/lib/seo/og";
 import { Reveal } from "@/components/site/reveal";
 import { LeadForm } from "@/components/site/lead-form";
 import { ContactCards, MapGraphic } from "@/components/site/contact-cards";
@@ -10,7 +12,7 @@ export const metadata: Metadata = {
   title: "Contact us",
   description: "Get in touch with Synerax for hiring, job opportunities or partnerships. We reply within one working day.",
   alternates: { canonical: "/contact" },
-  openGraph: { title: `Contact ${site.name}`, url: "/contact" },
+  ...ogMeta(`Contact ${site.name}`, "/contact", "Get in touch with Synerax for hiring, job opportunities or partnerships. We reply within one working day."),
 };
 
 export default function ContactPage() {
@@ -32,6 +34,8 @@ export default function ContactPage() {
           </Reveal>
         </div>
       </Section>
+
+      <FaqSearch index="02" title="Questions, answered" tone="alt" />
     </>
   );
 }

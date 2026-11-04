@@ -78,6 +78,8 @@ const has = (list: string[] | null, name: string) => (list ?? []).some((s) => s.
 const titleHas = (title: string, name: string) => low(title).includes(low(name));
 
 // ---------------------------------------------------------------- copy
+/** the long title when it fits in 60 characters (Google truncates beyond that), else the short one */
+const fitTitle = (long: string, short: string) => (long.length <= 60 ? long : short);
 const jobWord = (n: string) => `${n} jobs`;
 const faqCity = (c: City): Faq[] => [
   { q: `How do I apply for jobs in ${c.name} through Synerax?`, a: `Open any job on this page and apply with your profile, or register once and our recruiters will match you with new ${c.name} openings as they come in. Registering is free.` },
@@ -150,7 +152,7 @@ function termLanding(name: string, kind: "skill" | "role"): Landing {
     kind,
     name,
     h1: `${jobWord(name)}`,
-    metaTitle: `${name} Jobs — Live Openings | Synerax`,
+    metaTitle: fitTitle(`${name} Jobs — Live Openings | Synerax`, `${name} Jobs | Synerax`),
     metaDescription: `Open ${name} jobs with employers hiring through Synerax. Screened roles across India, free for candidates — apply or get alerts.`,
     intro:
       kind === "role"
@@ -166,9 +168,12 @@ export const FIXED_LANDINGS: Landing[] = [
   ...CITIES.map(cityLanding),
   ...MODES.map(modeLanding),
   ...COUNTRIES.map(countryLanding),
-  ...COUNTRIES.map((c) => comboLanding(MODES[0], c.slug, c.name, c.about)),
-  ...MODES.filter((m) => m.slug !== "remote").flatMap((m) => CITIES.map((c) => comboLanding(m, c.slug, c.name, c.about))),
+  // every mode × every city / country, so the "related" links between them never 404
+  ...MODES.flatMap((m) => [...CITIES, ...COUNTRIES].map((c) => comboLanding(m, c.slug, c.name, c.about))),
 ];
+
+/** public apply link: straight to the login page (the portal itself would redirect there for visitors) */
+export const applyHref = (path: string) => `/login?next=${encodeURIComponent(path)}`;
 
 const SLUG_ALIASES: Record<string, string> = Object.fromEntries([...CITIES.flatMap((c) => (c.slugAliases ?? []).map((a) => [a, c.slug])), ...MODES.flatMap((m) => m.slugAliases.map((a) => [a, m.slug]))]);
 // combos with an alias place / mode, e.g. hybrid-bengaluru → hybrid-bangalore, wfh-india → remote-india

@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import { site } from "@/content/site";
+import { ogMeta } from "@/lib/seo/og";
 import { LegalPage } from "@/components/site/legal";
 
 export const metadata: Metadata = {
   title: "Terms of use",
   description: `Terms governing the use of the ${site.name} website.`,
   alternates: { canonical: "/terms" },
+  ...ogMeta(`Terms of use · ${site.name}`, "/terms", `Terms governing the use of the ${site.name} website.`),
 };
 
 // TODO: legal review — replace all placeholder text below with reviewed terms of use.

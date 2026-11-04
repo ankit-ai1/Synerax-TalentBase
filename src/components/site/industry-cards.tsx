@@ -161,7 +161,7 @@ export function IndustryExplorer() {
         <div className="flex h-full flex-col justify-center rounded-[1.25rem] border border-dashed border-line-strong bg-surface-2/60 p-6">
           <h3 className="text-[18px] font-semibold text-ink-900">Don&apos;t see your industry?</h3>
           <p className="mt-1.5 max-w-md text-[14.5px] leading-relaxed text-ink-500">
-            We regularly hire for other sectors too. Tell us about your requirement and we&apos;ll tell you honestly if we can help.
+            We regularly hire for other sectors too, including education, energy, real estate, media and professional services. Share the role, location, experience and budget, and a senior recruiter will tell you honestly within one working day whether we have the network to fill it — and how quickly we can share a first shortlist.
           </p>
           <Link href="/contact" className="group mt-4 inline-flex items-center gap-1.5 text-[14.5px] font-semibold text-jade-700">
             Talk to us <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden />

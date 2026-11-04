@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import { site } from "@/content/site";
+import { ogMeta } from "@/lib/seo/og";
 import { LegalPage } from "@/components/site/legal";
 
 export const metadata: Metadata = {
   title: "Privacy policy",
   description: `How ${site.name} collects, uses and protects your personal information.`,
   alternates: { canonical: "/privacy" },
+  ...ogMeta(`Privacy policy · ${site.name}`, "/privacy", `How ${site.name} collects, uses and protects your personal information.`),
 };
 
 // TODO: legal review — replace all placeholder text below with a reviewed privacy policy

@@ -9,6 +9,7 @@ import { FaqList } from "@/components/site/seo-faq";
 import { getPost, livePosts, related } from "@/lib/seo/data";
 import { mdStats, renderMarkdown } from "@/lib/blog/markdown";
 import { blogPostingLd, breadcrumbLd, faqLd, ldJson, siteBase } from "@/lib/seo/jsonld";
+import { clampTitle } from "@/lib/seo/og";
 import { formatDate } from "@/lib/utils";
 
 export const revalidate = 300;
@@ -24,7 +25,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const description = p.meta_description || p.excerpt || undefined;
   const og = p.og_image_url || p.cover_url || `/blog/${p.slug}/og`;
   return {
-    title: { absolute: title },
+    title: { absolute: clampTitle(title) },
     description,
     keywords: p.focus_keyword ? [p.focus_keyword, ...p.tags] : p.tags,
     alternates: { canonical: p.canonical_url || `/blog/${p.slug}` },

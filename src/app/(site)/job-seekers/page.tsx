@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { BadgeCheck, CalendarCheck, Sparkles } from "lucide-react";
 import { site } from "@/content/site";
+import { ogMeta } from "@/lib/seo/og";
 import { Reveal } from "@/components/site/reveal";
 import { TiltCard } from "@/components/site/cards";
 import { MagneticButton } from "@/components/site/magnetic-button";
@@ -12,7 +13,7 @@ export const metadata: Metadata = {
   title: "For candidates",
   description: "Get matched to roles that fit your skills, salary and location — with a real recruiter and your own tracking portal. Always free for candidates.",
   alternates: { canonical: "/job-seekers" },
-  openGraph: { title: `For candidates · ${site.name}`, url: "/job-seekers" },
+  ...ogMeta(`For candidates · ${site.name}`, "/job-seekers", "Get matched to roles that fit your skills, salary and location — with a real recruiter and your own tracking portal. Always free for candidates."),
 };
 
 const STAGES = ["Applied", "Under review", "Shared", "Interview", "Offer", "Joined"];

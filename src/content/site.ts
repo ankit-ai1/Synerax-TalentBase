@@ -257,23 +257,29 @@ export const site = {
 
   faq: {
     employers: [
-      { q: "How quickly can you share candidates?", a: "For most roles we share a first shortlist within 2–5 working days, depending on seniority and how niche the skills are." },
-      { q: "What does it cost to hire through Synerax?", a: "Permanent hiring is usually a percentage of the annual CTC, payable only when a candidate joins. Contract staffing is billed monthly. We share exact terms after understanding your requirement." },
-      { q: "Do you offer a replacement guarantee?", a: "Yes. Permanent placements include a replacement period agreed in your contract. If a candidate leaves within that period, we find a replacement at no extra fee." },
-      { q: "Which locations do you hire for?", a: "We hire across India for onsite, hybrid and remote roles, with strong networks in major metros and growing tier-2 cities." },
+      { q: "How quickly can you share candidates?", a: "For most roles we share a first shortlist within 2–5 working days. Mid-level and volume roles are usually at the faster end; senior or niche-skill roles can take a little longer. Every profile is screened by a recruiter for skills, CTC, notice period and interest before it reaches you, so you interview fewer, better-matched people." },
+      { q: "What does it cost to hire through Synerax?", a: "Permanent hiring is usually a percentage of the candidate's annual CTC, payable only when the candidate joins — there is no upfront fee. Contract staffing is billed as one monthly invoice that covers salary, compliance and our margin. RPO and bulk hiring are priced per plan. We share exact terms after understanding your requirement." },
+      { q: "Do you offer a replacement guarantee?", a: "Yes. Every permanent placement includes a replacement period that is agreed in your contract. If the candidate resigns or is let go for performance within that period, we source and share a replacement at no extra fee. The length of the guarantee depends on the role's seniority and is written into the agreement." },
+      { q: "Which locations do you hire for?", a: "We hire across India for onsite, hybrid and remote roles, with strong candidate networks in Bangalore, Pune, Hyderabad, Chennai, Mumbai, Delhi NCR, Noida and Gurugram, plus growing tier-2 cities. We also support selected roles in the UAE and the USA. Tell us the location and work mode, and we confirm availability first." },
     ],
     candidates: [
-      { q: "I'm a job seeker — do I pay anything?", a: "No. Synerax never charges candidates. Be cautious of anyone asking for money in our name." },
-      { q: "How do you keep my data safe?", a: "Your information is stored securely, accessed only by our recruiting team, and shared with employers only for roles you have agreed to." },
-      { q: "Will you share my profile without asking?", a: "Never. A recruiter always discusses the role with you and gets your consent before your profile goes to an employer." },
-      { q: "How long until I hear back?", a: "If your profile matches an open role, a recruiter usually calls within a few working days. We also keep your profile for future openings." },
+      { q: "I'm a job seeker — do I pay anything?", a: "No. Synerax never charges candidates anything — not for registration, interviews, offers or joining. Employers pay for our recruiting service. If anyone asks you for money, a deposit or a training fee in the name of Synerax, it is a scam; do not pay, and please report it to us so we can act on it." },
+      { q: "How do you keep my data safe?", a: "Your profile and CV are stored securely on our own platform and can be accessed only by our recruiting team. We share your details with an employer only for a specific role you have agreed to. You can ask us to update or delete your data at any time by writing to our team." },
+      { q: "Will you share my profile without asking?", a: "Never. Before your profile goes to any employer, a recruiter calls you to explain the role, the company, the salary range and the location, and asks for your consent. If you are not interested, your profile is not shared. You stay in control of every application we make for you." },
+      { q: "How long until I hear back?", a: "If your profile matches an open role, a recruiter usually calls you within a few working days of registering or applying. If nothing fits right now, we keep your profile on file and contact you when a matching job opens. You can also check live openings and apply directly on our jobs pages." },
     ],
   },
 
   servicesFaq: [
-    { q: "Can we combine engagement models?", a: "Yes. Many clients use permanent hiring for core roles and contract staffing for projects. We'll recommend a mix after understanding your plan." },
-    { q: "Who handles payroll for contract staff?", a: "Synerax does — including salary, statutory compliance (PF/ESI), attendance and exits — so you get one monthly invoice." },
-    { q: "Is there a minimum number of hires?", a: "No minimum for permanent or contract hiring. RPO and bulk hiring are scoped around a hiring plan." },
+    { q: "Can we combine engagement models?", a: "Yes. Many clients use permanent hiring for core, long-term roles and contract staffing for projects, peaks or budget-restricted headcount — sometimes with a contract-to-hire option to convert good performers later. After understanding your hiring plan, we recommend the mix that balances speed, cost and risk for each role." },
+    { q: "Who handles payroll for contract staff?", a: "Synerax does. We run salaries, statutory compliance such as PF, ESI and professional tax, attendance, leave, onboarding documents and exits for every contract employee. You receive one consolidated monthly invoice, while the people work fully inside your team under your day-to-day direction." },
+    { q: "Is there a minimum number of hires?", a: "No. There is no minimum for permanent or contract hiring — we are happy to fill a single critical role. RPO and bulk hiring are different: they are scoped around a hiring plan with volumes, timelines and locations, so the team, tools and pricing can be set up to match the plan." },
+  ],
+
+  industriesFaq: [
+    { q: "Which industries does Synerax recruit for?", a: "We recruit for IT and software, BFSI, healthcare and life sciences, manufacturing and engineering, retail and e-commerce, telecom, and logistics. Each sector has recruiters who know its roles, salary bands and certifications, so shortlists are screened against what that industry actually expects rather than a generic keyword match." },
+    { q: "Can you hire for niche or technical roles?", a: "Yes. A large share of our work is niche hiring — for example Salesforce, cloud and DevOps engineers, QA automation, clinical and pharma roles, and plant or quality engineers. For these roles we search passive candidates and our own talent database, not just job-board applicants, and run a skills screen before sharing profiles." },
+    { q: "Do you hire outside your listed industries?", a: "Often, yes. We regularly fill roles in education, energy, real estate, media and professional services. Share the role, location, experience and budget, and a senior recruiter will tell you honestly within one working day whether we have the network to deliver a strong shortlist for it." },
   ],
 
   about: {
