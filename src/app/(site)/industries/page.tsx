@@ -11,7 +11,7 @@ import { CtaBand, PageHero, Section, SectionHeading, StatsStrip } from "@/compon
 import { IndiaMap } from "@/components/site/home/india-map";
 
 export const metadata: Metadata = {
-  title: "Industries we hire for",
+  title: "Industries we hire for across India",
   description: "Specialist recruiters for IT & software, BFSI, healthcare, manufacturing, retail & e-commerce, telecom and logistics.",
   alternates: { canonical: "/industries" },
   ...ogMeta(`Industries · ${site.name}`, "/industries", "Specialist recruiters for IT & software, BFSI, healthcare, manufacturing, retail & e-commerce, telecom and logistics."),

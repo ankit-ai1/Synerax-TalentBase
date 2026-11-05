@@ -10,7 +10,7 @@ import { FaqSearch } from "@/components/site/home/faq-search";
 import { CtaBand, IconTile, PageHero, Section, SectionHeading, StatsStrip } from "@/components/site/ui";
 
 export const metadata: Metadata = {
-  title: "For candidates",
+  title: "For job seekers: free recruiter support",
   description: "Get matched to roles that fit your skills, salary and location — with a real recruiter and your own tracking portal. Always free for candidates.",
   alternates: { canonical: "/job-seekers" },
   ...ogMeta(`For candidates · ${site.name}`, "/job-seekers", "Get matched to roles that fit your skills, salary and location — with a real recruiter and your own tracking portal. Always free for candidates."),
@@ -69,7 +69,7 @@ export default function CandidatesPage() {
         <MagneticButton href="/register" variant="light" className="btn-shimmer">
           Create my profile
         </MagneticButton>
-        <MagneticButton href="/portal/jobs" variant="ghost-light">
+        <MagneticButton href="/careers" variant="ghost-light">
           Browse jobs
         </MagneticButton>
       </PageHero>

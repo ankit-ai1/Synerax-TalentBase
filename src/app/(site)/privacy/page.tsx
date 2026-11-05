@@ -4,7 +4,7 @@ import { ogMeta } from "@/lib/seo/og";
 import { LegalPage } from "@/components/site/legal";
 
 export const metadata: Metadata = {
-  title: "Privacy policy",
+  title: "Privacy policy and how we use your data",
   description: `How ${site.name} collects, uses and protects your personal information.`,
   alternates: { canonical: "/privacy" },
   ...ogMeta(`Privacy policy · ${site.name}`, "/privacy", `How ${site.name} collects, uses and protects your personal information.`),

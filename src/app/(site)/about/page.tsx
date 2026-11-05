@@ -11,7 +11,7 @@ import { team } from "@/data/team";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
-  title: "About us",
+  title: "About Synerax, a recruitment partner in India",
   description: "Learn about Synerax — our story, mission, values and the team helping companies across India hire better.",
   alternates: { canonical: "/about" },
   ...ogMeta(`About ${site.name}`, "/about", "Learn about Synerax — our story, mission, values and the team helping companies across India hire better."),

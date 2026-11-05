@@ -4,7 +4,7 @@ import { ogMeta } from "@/lib/seo/og";
 import { LegalPage } from "@/components/site/legal";
 
 export const metadata: Metadata = {
-  title: "Terms of use",
+  title: "Terms of use for the Synerax website",
   description: `Terms governing the use of the ${site.name} website.`,
   alternates: { canonical: "/terms" },
   ...ogMeta(`Terms of use · ${site.name}`, "/terms", `Terms governing the use of the ${site.name} website.`),

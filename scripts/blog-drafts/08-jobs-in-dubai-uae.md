@@ -63,7 +63,7 @@ Overseas job fraud is a real risk. Protect yourself:
 - **Never travel on a visit visa for a job promised later.** Working on a visit visa is not permitted and can leave you without protection.
 - **Keep copies** of your passport, contract and visa, and don't hand over your original passport to anyone except as required for official processing.
 
-If you need help once you are in the UAE, the [Consulate General of India in Dubai](https://www.cgidubai.gov.in) and the [Embassy of India in Abu Dhabi](https://www.indembassyuae.gov.in) provide assistance to Indian nationals.
+If you need help once you are in the UAE, the [Consulate General of India in Dubai](https://cgidubai.gov.in) and the [Embassy of India in Abu Dhabi](https://www.indembassyuae.gov.in) provide assistance to Indian nationals.
 
 ## Life in Dubai: practical points
 

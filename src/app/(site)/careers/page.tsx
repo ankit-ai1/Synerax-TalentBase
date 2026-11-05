@@ -18,7 +18,7 @@ import { ogMeta } from "@/lib/seo/og";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Find a job",
+  title: "Find a job: open roles across India",
   description: "Looking for your next role? Submit your resume to Synerax and get matched with opportunities across IT, BFSI, healthcare and more — free for candidates.",
   alternates: { canonical: "/careers" },
   ...ogMeta(`Find a job with ${site.name}`, "/careers"),

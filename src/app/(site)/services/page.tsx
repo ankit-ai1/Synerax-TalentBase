@@ -10,7 +10,7 @@ import { MagneticButton } from "@/components/site/magnetic-button";
 import { CtaBand, PageHero, Section, SectionHeading } from "@/components/site/ui";
 
 export const metadata: Metadata = {
-  title: "Staffing services",
+  title: "Staffing services: permanent, contract, RPO",
   description:
     "Permanent staffing, contract staffing, contract-to-hire, RPO, executive search and bulk hiring — flexible staffing services from Synerax.",
   alternates: { canonical: "/services" },

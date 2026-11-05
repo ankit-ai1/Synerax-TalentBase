@@ -47,6 +47,14 @@ export function Silk({ className, focus = [0.7, 0.5], heat = 0.32, amount = 0.55
   useEffect(() => {
     const cv = ref.current;
     if (!cv) return;
+    // phones and low-core devices get the static CSS glow: a full-screen fbm shader every frame costs seconds of
+    // main-thread time there (mobile PageSpeed TBT ~12 s with it on)
+    const light = window.matchMedia("(pointer: coarse), (max-width: 767px)").matches || (navigator.hardwareConcurrency || 8) <= 4;
+    if (light) {
+      cv.style.display = "none";
+      if (fallback.current) fallback.current.style.display = "block";
+      return;
+    }
     let dispose: (() => void) | undefined;
     const near = new IntersectionObserver(
       ([e]) => {

@@ -14,7 +14,7 @@ import { MagneticButton } from "@/components/site/magnetic-button";
 import { PageHero, SampleBadge, Section, SectionHeading, SiteIcon } from "@/components/site/ui";
 
 export const metadata: Metadata = {
-  title: "Hire talent",
+  title: "Hire talent: permanent and contract staffing",
   description: "Partner with Synerax to hire pre-screened talent fast — permanent, contract, contract-to-hire, RPO and bulk hiring with clear SLAs.",
   alternates: { canonical: "/employers" },
   ...ogMeta(`Hire talent with ${site.name}`, "/employers", "Partner with Synerax to hire pre-screened talent fast — permanent, contract, contract-to-hire, RPO and bulk hiring with clear SLAs."),

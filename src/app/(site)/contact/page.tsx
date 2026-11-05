@@ -9,7 +9,7 @@ import { ContactCards, MapGraphic } from "@/components/site/contact-cards";
 import { PageHero, Section } from "@/components/site/ui";
 
 export const metadata: Metadata = {
-  title: "Contact us",
+  title: "Contact us for hiring or job search help",
   description: "Get in touch with Synerax for hiring, job opportunities or partnerships. We reply within one working day.",
   alternates: { canonical: "/contact" },
   ...ogMeta(`Contact ${site.name}`, "/contact", "Get in touch with Synerax for hiring, job opportunities or partnerships. We reply within one working day."),

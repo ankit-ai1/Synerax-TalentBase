@@ -8,8 +8,9 @@ import { categoryIntro } from "@/content/blog-categories";
 
 export const revalidate = 300;
 export const dynamicParams = true;
-export function generateStaticParams() {
-  return [];
+export async function generateStaticParams() {
+  // prerender every category at build so first visits are served from the CDN, not rendered on demand
+  return countBy(await livePosts(), "categories").map((c) => ({ slug: c.slug }));
 }
 
 async function load(slug: string) {
@@ -23,7 +24,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { cat } = await load(slug);
   if (!cat) return { title: "Category not found", robots: { index: false } };
   const description = categoryIntro(slug, cat.name).slice(0, 155).replace(/\s\S*$/, "") + "…";
-  return { title: `${cat.name} — articles`, description, alternates: { canonical: `/blog/category/${slug}` }, ...ogMeta(`${cat.name} — Synerax blog`, `/blog/category/${slug}`, description) };
+  return { title: `${cat.name}: articles and guides from recruiters`, description, alternates: { canonical: `/blog/category/${slug}` }, ...ogMeta(`${cat.name} | Synerax blog`, `/blog/category/${slug}`, description) };
 }
 
 export default async function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {

@@ -8,8 +8,9 @@ import { MIN_TAG_POSTS } from "@/lib/seo/data";
 
 export const revalidate = 300;
 export const dynamicParams = true;
-export function generateStaticParams() {
-  return [];
+export async function generateStaticParams() {
+  // prerender every tag at build so first visits are served from the CDN, not rendered on demand
+  return countBy(await livePosts(), "tags").map((c) => ({ slug: c.slug }));
 }
 
 async function load(slug: string) {
@@ -24,7 +25,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   if (!cat) return { title: "Tag not found", robots: { index: false } };
   const description = `Synerax articles tagged ${cat.name}.`;
   return {
-    title: `#${cat.name} — articles`,
+    title: `#${cat.name}: articles and guides from recruiters`,
     description,
     alternates: { canonical: `/blog/tag/${slug}` },
     ...ogMeta(`#${cat.name} — Synerax blog`, `/blog/tag/${slug}`, description),
