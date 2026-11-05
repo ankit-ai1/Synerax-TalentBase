@@ -31,7 +31,7 @@ export function JobLinks() {
                     <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-jade-50 text-jade-700 ring-1 ring-inset ring-jade/15 transition-colors duration-300 group-hover:bg-jade group-hover:text-white">
                       <MapPin className="h-[18px] w-[18px]" aria-hidden />
                     </span>
-                    <ArrowUpRight className="h-4 w-4 text-ink-300 transition-all duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-jade-700" aria-hidden />
+                    <ArrowUpRight className="h-4 w-4 text-ink-300 transition-all duration-300 group-hover:translate-x-0.5 group-hover:text-jade-700" aria-hidden />
                   </span>
                   <span className="mt-5">
                     <span className="block text-[12px] font-medium text-ink-400">Jobs in</span>

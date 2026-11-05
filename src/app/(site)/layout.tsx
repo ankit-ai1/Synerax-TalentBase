@@ -15,10 +15,10 @@ import { Analytics } from "@/components/site/analytics";
 
 export const metadata: Metadata = {
   // short brand suffix keeps page titles under ~60 characters in search results
-  title: { default: `${site.name} — ${site.tagline}`, template: "%s · Synerax" },
+  title: { default: `${site.name} | ${site.tagline}`, template: "%s · Synerax" },
   description: site.description,
   robots: { index: true, follow: true },
-  ...ogMeta(`${site.name} — ${site.tagline}`, "/"),
+  ...ogMeta(`${site.name} | ${site.tagline}`, "/"),
 };
 
 /** Organization + LocalBusiness structured data for search engines and AI agents (not visible) */

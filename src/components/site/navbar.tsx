@@ -237,7 +237,7 @@ export function SiteNavbar() {
                   {MEGA[mega].items.map((it) => (
                     <li key={it.title}>
                       <Link href={it.href} className="group flex gap-3 rounded-xl p-3 transition-colors hover:bg-surface-3/70">
-                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-jade-50 text-jade-700 ring-1 ring-inset ring-jade/15 transition-transform group-hover:scale-105">
+                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-jade-50 text-jade-700 ring-1 ring-inset ring-jade/15 transition-transform">
                           <SiteIcon name={it.icon} className="h-5 w-5" />
                         </span>
                         <span className="min-w-0">

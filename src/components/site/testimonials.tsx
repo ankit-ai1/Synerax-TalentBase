@@ -71,7 +71,7 @@ export function TestimonialsCarousel() {
   return (
     <div onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)} onFocus={() => setPaused(true)} onBlur={() => setPaused(false)}>
       <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
-        <div className="inline-flex rounded-2xl border border-line bg-surface/70 p-1 backdrop-blur" role="tablist" aria-label="Testimonials by audience">
+        <div className="inline-flex rounded-2xl border border-line bg-surface p-1" role="tablist" aria-label="Testimonials by audience">
           {(
             [
               ["employers", "Employers", Briefcase],

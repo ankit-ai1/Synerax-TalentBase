@@ -16,7 +16,7 @@ export const site = {
   legalName: "Synerax", // TODO: replace with the registered company name
   tagline: "Staffing & recruitment partner",
   description:
-    "Synerax helps companies hire faster with permanent, contract and executive staffing — and helps professionals find roles that move their careers forward.",
+    "Synerax helps companies hire faster with permanent, contract and executive staffing, and helps professionals find roles that move their careers forward.",
   // live domain (NEXT_PUBLIC_SITE_URL in Vercel overrides it)
   url: process.env.NEXT_PUBLIC_SITE_URL || "https://staffing.synerax.in",
 
@@ -59,7 +59,7 @@ export const site = {
     title: "The right people, hired smarter.",
     highlight: "hired smarter.", // serif ember phrase; its last word rolls (smarter. / faster. / better.)
     subtitle:
-      "Synerax connects growing companies with pre-screened talent across tech, BFSI, healthcare and more — permanent, contract or at scale.",
+      "Synerax connects growing companies with pre-screened talent across tech, BFSI, healthcare and more: permanent, contract or at scale.",
     primaryCta: { label: "Hire talent", href: "/employers" },
     secondaryCta: { label: "Find a job", href: "/careers" },
     trust: [
@@ -83,13 +83,13 @@ export const site = {
       slug: "permanent",
       icon: "Briefcase",
       title: "Permanent staffing",
-      summary: "Full-time hires who fit your role, team and culture — screened end to end.",
+      summary: "Full-time hires who fit your role, team and culture, screened end to end.",
       description:
         "We source, screen and assess candidates against your exact brief, then manage interviews, offers and joining so you only meet people worth hiring.",
       whoFor: "Companies building long-term teams and filling critical full-time roles.",
       benefits: ["Role-specific screening & assessments", "Salary benchmarking and offer support", "Replacement guarantee period"],
       process: ["Brief & role calibration", "Sourcing & screening", "Shortlist within days", "Interviews, offer & joining"],
-      pricing: "Success fee — a percentage of annual CTC, payable only when the candidate joins.",
+      pricing: "Success fee: a percentage of annual CTC, payable only when the candidate joins.",
     },
     {
       slug: "contract",
@@ -101,7 +101,7 @@ export const site = {
       whoFor: "Project-based work, seasonal peaks and teams that need to scale quickly.",
       benefits: ["Fast deployment for urgent projects", "Payroll, PF/ESI and compliance managed", "Flexible extensions and conversions"],
       process: ["Requirement & duration", "Shortlist & client interviews", "Onboarding & deployment", "Ongoing payroll & support"],
-      pricing: "Monthly billing per resource — salary plus a transparent service margin.",
+      pricing: "Monthly billing per resource: salary plus a transparent service margin.",
     },
     {
       slug: "contract-to-hire",
@@ -133,11 +133,11 @@ export const site = {
       title: "Executive search",
       summary: "Confidential search for senior and leadership roles.",
       description:
-        "A research-led, discreet approach to finding leaders — mapping the market, approaching passive candidates and assessing leadership fit.",
+        "A research-led, discreet approach to finding leaders: mapping the market, approaching passive candidates and assessing leadership fit.",
       whoFor: "CXO, VP and director-level mandates, including confidential replacements.",
       benefits: ["Confidential, research-led search", "Access to passive leadership talent", "In-depth leadership assessment"],
       process: ["Mandate & success profile", "Market mapping & outreach", "Assessment & references", "Offer & onboarding support"],
-      pricing: "Retained search — staged fee across mandate, shortlist and joining.",
+      pricing: "Retained search with a staged fee across mandate, shortlist and joining.",
     },
     {
       slug: "bulk",
@@ -145,7 +145,7 @@ export const site = {
       title: "Bulk & volume hiring",
       summary: "High-volume hiring drives delivered on time, at quality.",
       description:
-        "For new sites, launches and seasonal peaks — walk-in drives, campus hiring and assessment centres run with consistent quality checks.",
+        "For new sites, launches and seasonal peaks: walk-in drives, campus hiring and assessment centres run with consistent quality checks.",
       whoFor: "New site launches, BPO/retail ramp-ups, campus and seasonal hiring.",
       benefits: ["Hundreds of hires per drive", "Assessment centres & walk-in drives", "Consistent quality at speed"],
       process: ["Volume plan & timelines", "Multi-channel sourcing", "Assessment drives", "Offers, joining & tracking"],
@@ -154,7 +154,7 @@ export const site = {
   ],
 
   process: [
-    { title: "Understand", text: "A short call to understand the role, team, budget and timelines — then we calibrate must-haves with you." },
+    { title: "Understand", text: "A short call to understand the role, team, budget and timelines. Then we calibrate must-haves with you." },
     { title: "Source", text: "Our recruiters search our talent database, job boards and referrals to find strong, relevant matches." },
     { title: "Screen", text: "Every candidate is screened for skills, experience, notice period and salary expectations." },
     { title: "Deliver", text: "You get a curated shortlist with notes; we coordinate interviews, offers and joining." },
@@ -233,11 +233,11 @@ export const site = {
   // TODO: replace with real data — these testimonials are placeholders, not real reviews (names and companies are fictional)
   testimonials: [
     { audience: "employers", name: "Ritika Malhotra", role: "Head of Talent Acquisition", company: "Nimbus Fintech", rating: 5, metric: "Hired 4 engineers in 18 days", quote: "Synerax shared a shortlist within three days and two of the first five candidates joined. The screening notes on fit, CTC and notice saved my team hours every week." },
-    { audience: "employers", name: "Vikas Bansal", role: "HR Manager", company: "Tidewater Logistics", rating: 5, metric: "120 hires for a new site in 5 weeks", quote: "They ran our bulk hiring drive for a new warehouse end to end — on time, with very few early drop-offs and daily updates." },
+    { audience: "employers", name: "Vikas Bansal", role: "HR Manager", company: "Tidewater Logistics", rating: 5, metric: "120 hires for a new site in 5 weeks", quote: "They ran our bulk hiring drive for a new warehouse end to end, on time, with very few early drop-offs and daily updates." },
     { audience: "employers", name: "Ananya Rao", role: "Engineering Manager", company: "Stackline SaaS", rating: 5, metric: "3 contract-to-hire conversions", quote: "Contract-to-hire let us evaluate engineers on real work before converting. Paperwork and payroll were completely hands-off for us." },
     { audience: "employers", name: "Dr. Sameer Kulkarni", role: "Founder", company: "Lumen Health", rating: 5, metric: "Closed a niche role in 11 days", quote: "Honest advice on salary benchmarks helped us close a hard-to-fill role without overpaying. It felt like an extension of our own team." },
     { audience: "candidates", name: "Karthik Iyer", role: "Senior Software Engineer", company: "Placed via Synerax", rating: 5, metric: "38% salary hike", quote: "I always knew where my application stood. My recruiter prepared me for every round and negotiated a much better offer than I expected." },
-    { audience: "candidates", name: "Neha Sharma", role: "Relationship Manager", company: "Placed via Synerax", rating: 5, metric: "Offer in 9 days", quote: "The interview prep and constant updates made a stressful job switch feel easy. No spam calls — only roles that actually fit me." },
+    { audience: "candidates", name: "Neha Sharma", role: "Relationship Manager", company: "Placed via Synerax", rating: 5, metric: "Offer in 9 days", quote: "The interview prep and constant updates made a stressful job switch feel easy. No spam calls, only roles that actually fit me." },
     { audience: "candidates", name: "Mohammed Arif", role: "ICU Staff Nurse", company: "Placed via Synerax", rating: 5, metric: "Relocated to Bengaluru", quote: "They found me a hospital role close to family and helped with every document. I never paid a single rupee." },
     { audience: "candidates", name: "Pooja Desai", role: "Data Analyst", company: "Placed via Synerax", rating: 5, metric: "First job after a career break", quote: "After a two-year break I was nervous. Synerax was honest about what employers wanted and got me back in, fully remote." },
   ],
@@ -258,12 +258,12 @@ export const site = {
   faq: {
     employers: [
       { q: "How quickly can you share candidates?", a: "For most roles we share a first shortlist within 2–5 working days. Mid-level and volume roles are usually at the faster end; senior or niche-skill roles can take a little longer. Every profile is screened by a recruiter for skills, CTC, notice period and interest before it reaches you, so you interview fewer, better-matched people." },
-      { q: "What does it cost to hire through Synerax?", a: "Permanent hiring is usually a percentage of the candidate's annual CTC, payable only when the candidate joins — there is no upfront fee. Contract staffing is billed as one monthly invoice that covers salary, compliance and our margin. RPO and bulk hiring are priced per plan. We share exact terms after understanding your requirement." },
+      { q: "What does it cost to hire through Synerax?", a: "Permanent hiring is usually a percentage of the candidate's annual CTC, payable only when the candidate joins. There is no upfront fee. Contract staffing is billed as one monthly invoice that covers salary, compliance and our margin. RPO and bulk hiring are priced per plan. We share exact terms after understanding your requirement." },
       { q: "Do you offer a replacement guarantee?", a: "Yes. Every permanent placement includes a replacement period that is agreed in your contract. If the candidate resigns or is let go for performance within that period, we source and share a replacement at no extra fee. The length of the guarantee depends on the role's seniority and is written into the agreement." },
       { q: "Which locations do you hire for?", a: "We hire across India for onsite, hybrid and remote roles, with strong candidate networks in Bangalore, Pune, Hyderabad, Chennai, Mumbai, Delhi NCR, Noida and Gurugram, plus growing tier-2 cities. We also support selected roles in the UAE and the USA. Tell us the location and work mode, and we confirm availability first." },
     ],
     candidates: [
-      { q: "I'm a job seeker — do I pay anything?", a: "No. Synerax never charges candidates anything — not for registration, interviews, offers or joining. Employers pay for our recruiting service. If anyone asks you for money, a deposit or a training fee in the name of Synerax, it is a scam; do not pay, and please report it to us so we can act on it." },
+      { q: "I'm a job seeker, do I pay anything?", a: "No. Synerax never charges candidates anything: not for registration, interviews, offers or joining. Employers pay for our recruiting service. If anyone asks you for money, a deposit or a training fee in the name of Synerax, it is a scam; do not pay, and please report it to us so we can act on it." },
       { q: "How do you keep my data safe?", a: "Your profile and CV are stored securely on our own platform and can be accessed only by our recruiting team. We share your details with an employer only for a specific role you have agreed to. You can ask us to update or delete your data at any time by writing to our team." },
       { q: "Will you share my profile without asking?", a: "Never. Before your profile goes to any employer, a recruiter calls you to explain the role, the company, the salary range and the location, and asks for your consent. If you are not interested, your profile is not shared. You stay in control of every application we make for you." },
       { q: "How long until I hear back?", a: "If your profile matches an open role, a recruiter usually calls you within a few working days of registering or applying. If nothing fits right now, we keep your profile on file and contact you when a matching job opens. You can also check live openings and apply directly on our jobs pages." },
@@ -271,14 +271,14 @@ export const site = {
   },
 
   servicesFaq: [
-    { q: "Can we combine engagement models?", a: "Yes. Many clients use permanent hiring for core, long-term roles and contract staffing for projects, peaks or budget-restricted headcount — sometimes with a contract-to-hire option to convert good performers later. After understanding your hiring plan, we recommend the mix that balances speed, cost and risk for each role." },
+    { q: "Can we combine engagement models?", a: "Yes. Many clients use permanent hiring for core, long-term roles and contract staffing for projects, peaks or budget-restricted headcount, sometimes with a contract-to-hire option to convert good performers later. After understanding your hiring plan, we recommend the mix that balances speed, cost and risk for each role." },
     { q: "Who handles payroll for contract staff?", a: "Synerax does. We run salaries, statutory compliance such as PF, ESI and professional tax, attendance, leave, onboarding documents and exits for every contract employee. You receive one consolidated monthly invoice, while the people work fully inside your team under your day-to-day direction." },
-    { q: "Is there a minimum number of hires?", a: "No. There is no minimum for permanent or contract hiring — we are happy to fill a single critical role. RPO and bulk hiring are different: they are scoped around a hiring plan with volumes, timelines and locations, so the team, tools and pricing can be set up to match the plan." },
+    { q: "Is there a minimum number of hires?", a: "No. There is no minimum for permanent or contract hiring. We are happy to fill a single critical role. RPO and bulk hiring are different: they are scoped around a hiring plan with volumes, timelines and locations, so the team, tools and pricing can be set up to match the plan." },
   ],
 
   industriesFaq: [
     { q: "Which industries does Synerax recruit for?", a: "We recruit for IT and software, BFSI, healthcare and life sciences, manufacturing and engineering, retail and e-commerce, telecom, and logistics. Each sector has recruiters who know its roles, salary bands and certifications, so shortlists are screened against what that industry actually expects rather than a generic keyword match." },
-    { q: "Can you hire for niche or technical roles?", a: "Yes. A large share of our work is niche hiring — for example Salesforce, cloud and DevOps engineers, QA automation, clinical and pharma roles, and plant or quality engineers. For these roles we search passive candidates and our own talent database, not just job-board applicants, and run a skills screen before sharing profiles." },
+    { q: "Can you hire for niche or technical roles?", a: "Yes. A large share of our work is niche hiring, for example Salesforce, cloud and DevOps engineers, QA automation, clinical and pharma roles, and plant or quality engineers. For these roles we search passive candidates and our own talent database, not just job-board applicants, and run a skills screen before sharing profiles." },
     { q: "Do you hire outside your listed industries?", a: "Often, yes. We regularly fill roles in education, energy, real estate, media and professional services. Share the role, location, experience and budget, and a senior recruiter will tell you honestly within one working day whether we have the network to deliver a strong shortlist for it." },
   ],
 
@@ -288,7 +288,7 @@ export const site = {
       "Synerax was founded to fix what frustrates both sides of hiring: slow shortlists, poorly matched profiles and candidates left without updates.",
       "We combine experienced recruiters with a structured process and our own talent platform, so every shortlist is fast, relevant and transparent.",
     ],
-    mission: "Help every company we work with build great teams — and help every candidate we meet take the next right step in their career.",
+    mission: "Help every company we work with build great teams, and help every candidate we meet take the next right step in their career.",
     vision: "To be India's most trusted staffing partner, known for speed, quality and honesty.",
     values: [
       { icon: "ShieldCheck", title: "Integrity", text: "Honest advice to clients and candidates, even when it's not what they want to hear." },
@@ -359,7 +359,7 @@ export const site = {
     steps: [
       { title: "Submit your profile", text: "Share your details and resume using the form below." },
       { title: "Recruiter call", text: "A recruiter calls to understand your experience and goals." },
-      { title: "Matched roles", text: "We share roles that fit — only with your consent." },
+      { title: "Matched roles", text: "We share roles that fit, only with your consent." },
       { title: "Interviews to joining", text: "We prepare you for each round and support you through the offer." },
     ],
   },
@@ -367,7 +367,7 @@ export const site = {
   candidates: {
     hero: {
       eyebrow: "For candidates",
-      title: "A recruiter in your corner — always free",
+      title: "A recruiter in your corner, always free",
       highlight: "always free",
       subtitle: "Create one profile and get matched to roles that fit your skills, salary and location. Track every application in your own portal, with a real recruiter guiding you.",
     },
@@ -379,9 +379,9 @@ export const site = {
     ],
     perks: [
       { icon: "Sparkles", title: "Matched, not spammed", text: "We only reach out with roles that fit your skills, salary and location." },
-      { icon: "LineChart", title: "Track every step", text: "See exactly where each application stands — from applied to joined." },
+      { icon: "LineChart", title: "Track every step", text: "See exactly where each application stands, from applied to joined." },
       { icon: "CalendarCheck", title: "Interview prep", text: "Company briefings, likely questions and honest feedback after each round." },
-      { icon: "Handshake", title: "Offer support", text: "Salary negotiation, notice period and joining — handled with you." },
+      { icon: "Handshake", title: "Offer support", text: "Salary negotiation, notice period and joining, all handled with you." },
       { icon: "ShieldCheck", title: "Your data, your consent", text: "Your profile goes to an employer only after you say yes." },
       { icon: "Bell", title: "Smart job alerts", text: "At most one email a day with new roles that match your profile." },
     ],

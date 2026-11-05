@@ -93,7 +93,7 @@ export function IndiaMap() {
   return (
     <Band tone="light" index="05" label="Industries" className="py-24 sm:py-32">
       <Wrap>
-        <SectionHead action={<SectionCta href="/industries">All industries</SectionCta>} index="05" label="Industries" title="Hiring across India, sector by sector" highlight="sector by sector" description="Pick a sector to see where we hire for it most — the lines reroute from our axis to that sector's hotspots." />
+        <SectionHead action={<SectionCta href="/industries">All industries</SectionCta>} index="05" label="Industries" title="Hiring across India, sector by sector" highlight="sector by sector" description="Pick a sector to see where we hire for it most, the lines reroute from our axis to that sector's hotspots." />
         <div className="grid items-center gap-10 lg:grid-cols-12">
           <Reveal className="relative [perspective:1400px] lg:col-span-7">
             <TiltCard max={7} edge={false}>
@@ -115,7 +115,7 @@ export function IndiaMap() {
                       onClick={() => setSel(i)}
                       className={cn(
                         "group relative isolate flex min-h-[96px] min-w-0 flex-col items-center justify-center gap-2 rounded-2xl border px-1 py-3 sm:px-1.5 text-center transition-[border-color,transform] duration-300",
-                        on ? "border-transparent" : "border-line bg-surface hover:-translate-y-0.5 hover:border-jade/40"
+                        on ? "border-transparent" : "border-line bg-surface hover:border-jade/40"
                       )}
                     >
                       {on && <m.span layoutId="sector-active" transition={{ type: "spring", stiffness: 380, damping: 32 }} className="absolute inset-0 -z-10 rounded-2xl bg-gradient-to-br from-[rgb(var(--ember-a))] to-[rgb(var(--ember-b))] shadow-[0_14px_30px_-12px_rgb(var(--ember-a)/0.75)]" />}
@@ -127,7 +127,7 @@ export function IndiaMap() {
                   );
                 })}
               </div>
-              <Link href="/industries" className="section-dark flex min-h-[96px] flex-col items-center justify-center rounded-2xl px-1.5 py-3 text-center transition-transform duration-300 hover:-translate-y-0.5">
+              <Link href="/industries" className="section-dark flex min-h-[96px] flex-col items-center justify-center rounded-2xl px-1.5 py-3 text-center transition-transform duration-300">
                 <span className="text-[20px] font-semibold leading-none tabular text-jade-700">{site.industries.length}</span>
                 <span className="mt-1.5 text-[12px] font-semibold leading-tight text-ink-900 sm:text-[12.5px]">View all</span>
               </Link>
@@ -154,7 +154,7 @@ export function IndiaMap() {
                 ))}
               </dl>
               <p className="mt-5 flex flex-wrap items-center gap-1.5 text-[13px] text-ink-600">
-                <MapPin className="h-4 w-4 text-success" aria-hidden /> {data.cities.join(" · ")}
+                <MapPin className="h-4 w-4 text-success" aria-hidden /> {data.cities.join(", ")}
               </p>
               <p className="mt-2 text-[13px] text-ink-500">
                 <b className="font-semibold text-ink-800">Typical roles:</b> {ind.roles.join(", ")}

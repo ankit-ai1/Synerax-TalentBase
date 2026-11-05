@@ -200,7 +200,7 @@ function LivePipeline() {
               <TrendingUp className="h-5 w-5" aria-hidden />
             </span>
             <div className="min-w-0">
-              <p className="text-[11.5px] font-medium uppercase tracking-[0.12em] text-ink-400">Hiring pipeline · live</p>
+              <p className="text-[11.5px] font-medium uppercase tracking-[0.12em] text-ink-400">Live hiring pipeline</p>
               <p className="truncate text-[16px] font-semibold text-ink-900">Senior React Developer</p>
             </div>
           </div>
@@ -321,7 +321,7 @@ function ToastStack() {
             <BellRing className="h-4 w-4" />
           </span>
           <span className="min-w-0">
-            <span className="block truncate text-[12.5px] font-semibold text-ink-900">New application · {TOASTS[i].n}</span>
+            <span className="block truncate text-[12.5px] font-semibold text-ink-900">New application: {TOASTS[i].n}</span>
             <span className="block truncate text-[11.5px] text-ink-500">{TOASTS[i].r}</span>
           </span>
         </m.div>

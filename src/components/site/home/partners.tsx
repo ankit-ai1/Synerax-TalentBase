@@ -56,12 +56,12 @@ function DesignedMark({ className }: { className?: string }) {
 
 function PartnerLogo({ p, i, logo }: { p: Partner; i: number; logo?: string }) {
   const Tag = p.url ? "a" : "div";
-  const detail = [p.industry, p.since ? `since ${p.since}` : ""].filter(Boolean).join(" · ");
+  const detail = [p.industry, p.since ? `since ${p.since}` : ""].filter(Boolean).join(", ");
   return (
     <Tag
       {...(p.url ? { href: p.url, target: "_blank", rel: "noopener noreferrer" } : detail ? { tabIndex: 0 } : {})}
       className="partner-logo group/logo relative flex h-full flex-col items-center justify-center gap-2.5 overflow-hidden rounded-2xl border border-line bg-surface px-2 py-5 text-center text-ink-400 shadow-card outline-none transition-[box-shadow,border-color] duration-300 hover:shadow-pop sm:gap-3 sm:px-4 lg:py-7"
-      aria-label={detail ? `${p.name} — ${detail}` : p.name}
+      aria-label={detail ? `${p.name}: ${detail}` : p.name}
       role={p.url ? undefined : "img"}
     >
       {p.designed ? (
@@ -104,7 +104,7 @@ function PartnerLogo({ p, i, logo }: { p: Partner; i: number; logo?: string }) {
         </>
       )}
       <span aria-hidden className="scan" style={{ ["--i" as string]: i }} />
-      {/* industry tooltip — only when there is something to say */}
+      {/* industry tooltip, only when there is something to say */}
       {detail && (
         <span className="pointer-events-none absolute bottom-2 left-1/2 z-10 -translate-x-1/2 translate-y-1 whitespace-nowrap rounded-full bg-ink-900 px-2.5 py-0.5 text-[11px] font-semibold text-canvas opacity-0 shadow-pop transition duration-200 group-hover/logo:translate-y-0 group-hover/logo:opacity-100 group-focus-visible/logo:translate-y-0 group-focus-visible/logo:opacity-100" aria-hidden>
           {detail}

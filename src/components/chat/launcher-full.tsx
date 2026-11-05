@@ -232,7 +232,7 @@ export function ChatLauncherFull({ placement = "portal", initialOpen = false }: 
         type="button"
         onClick={() => setOpen((o) => !o)}
         className={cn(
-          "fixed right-4 z-[60] inline-flex h-14 w-14 items-center justify-center rounded-full bg-jade text-white shadow-[0_12px_32px_-8px_rgb(var(--jade)/0.7)] transition hover:scale-105 hover:bg-[rgb(var(--jade-hover))] sm:right-5",
+          "fixed right-4 z-[60] inline-flex h-14 w-14 items-center justify-center rounded-full bg-jade text-white shadow-[0_12px_32px_-8px_rgb(var(--jade)/0.7)] transition hover:bg-[rgb(var(--jade-hover))] sm:right-5",
           PLACE[placement].button
         )}
         aria-label={open ? "Close chat" : "Open chat with the Synerax assistant"}

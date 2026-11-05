@@ -17,7 +17,7 @@ const FaqSearch = dynamic(() => import("@/components/site/home/faq-search").then
 const CtaSplit = dynamic(() => import("@/components/site/home/cta-split").then((m) => m.CtaSplit));
 
 export const metadata: Metadata = {
-  title: { absolute: `${site.name} — Staffing & recruitment partner in India` },
+  title: { absolute: `${site.name} | Staffing & recruitment partner in India` },
   description: site.description,
   alternates: { canonical: "/" },
 };

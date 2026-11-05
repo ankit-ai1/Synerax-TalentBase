@@ -50,7 +50,7 @@ export function LogoMarquee({ reverse }: { reverse?: boolean }) {
         <div
           key={l.name}
           style={{ ["--brand" as string]: l.color }}
-          className="group flex h-16 shrink-0 cursor-default items-center gap-2.5 rounded-2xl border border-line/70 bg-surface/60 px-6 text-ink-400 backdrop-blur transition-all duration-300 hover:-translate-y-0.5 hover:border-[color:var(--brand)] hover:text-[color:var(--brand)] hover:shadow-[0_12px_30px_-16px_var(--brand)]"
+          className="group flex h-16 shrink-0 cursor-default items-center gap-2.5 rounded-2xl border border-line/70 bg-surface px-6 text-ink-400 transition-all duration-300 hover:border-[color:var(--brand)] hover:text-[color:var(--brand)] hover:shadow-[0_12px_30px_-16px_var(--brand)]"
         >
           <svg viewBox="0 0 24 24" className="h-6 w-6 fill-current opacity-80 transition-transform duration-500 group-hover:rotate-12" aria-hidden>
             {MARKS[l.mark]}

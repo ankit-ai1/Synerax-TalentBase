@@ -144,7 +144,7 @@ export function FaqSearch({
                         {/* plus morphs into a minus */}
                         <span className={cn("relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full border transition-colors duration-300", isOpen ? "border-transparent bg-jade text-white" : "border-line text-ink-600")} aria-hidden>
                           <span className="absolute h-[1.5px] w-3.5 rounded-full bg-current" />
-                          <span className={cn("absolute h-3.5 w-[1.5px] rounded-full bg-current transition-transform duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)]", isOpen ? "rotate-90 scale-y-0" : "rotate-0 scale-y-100")} />
+                          <span className={cn("absolute h-3.5 w-[1.5px] rounded-full bg-current transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]", isOpen ? "rotate-90 scale-y-0" : "rotate-0 scale-y-100")} />
                         </span>
                       </button>
                     </h3>

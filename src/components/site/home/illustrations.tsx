@@ -41,7 +41,7 @@ export function PipelineFlow() {
           <div className="relative h-7 flex-1 overflow-hidden rounded-full bg-jade/10">
             {Array.from({ length: 4 - r }).map((_, k) => (
               <span key={k} className="flow-x absolute inset-0" style={{ ["--d" as string]: `${k * 0.8 + r * 0.3}s` }}>
-                <span className={cn("absolute left-0 top-1/2 h-3.5 w-3.5 -translate-y-1/2 rounded-full", r === 3 ? "bg-[rgb(var(--success))] shadow-[0_0_10px_rgb(var(--success))]" : "bg-[rgb(var(--accent-b))]")} />
+                <span className={cn("absolute left-0 top-1/2 h-3.5 w-3.5 -translate-y-1/2 rounded-full", r === 3 ? "bg-[rgb(var(--success))]" : "bg-[rgb(var(--accent-b))]")} />
               </span>
             ))}
           </div>
@@ -64,7 +64,7 @@ export function SpotlightFind() {
         <circle className="found" cx="56" cy="57" r="2.4" fill="rgb(var(--success))" />
       </svg>
       <div className="spot-roam absolute left-1/2 top-1/2 h-28 w-28 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgb(var(--fg)/0.22),transparent_65%)] mix-blend-screen" />
-      <span className="found absolute bottom-3 left-3 rounded-full bg-[rgb(var(--success))] px-2.5 py-1 text-[11px] font-bold text-[rgb(var(--on-accent))]">VP Engineering — found</span>
+      <span className="found absolute bottom-3 left-3 rounded-full bg-[rgb(var(--success))] px-2.5 py-1 text-[11px] font-bold text-[rgb(var(--on-accent))]">VP Engineering: found</span>
     </Frame>
   );
 }
@@ -83,7 +83,7 @@ export function WaveGrid() {
           return <circle key={i} className="wave-dot" cx={x} cy={y} r="2.1" fill={i % 9 === 0 ? "rgb(var(--success))" : "rgb(var(--accent-b))"} style={{ ["--d" as string]: `${d.toFixed(2)}s` }} />;
         })}
       </svg>
-      <span className="absolute bottom-3 left-3 rounded-full bg-fg/10 px-2.5 py-1 text-[11px] font-semibold text-ink-900">240 hires · 1 drive</span>
+      <span className="absolute bottom-3 left-3 rounded-full bg-fg/10 px-2.5 py-1 text-[11px] font-semibold text-ink-900">240 hires in 1 drive</span>
     </Frame>
   );
 }

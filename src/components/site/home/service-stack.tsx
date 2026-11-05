@@ -51,7 +51,7 @@ function ServiceCard({ s, i, dark }: { s: Service; i: number; dark: boolean }) {
           ))}
         </ul>
         <Link href={`/services#${s.slug}`} className="group mt-auto inline-flex items-center gap-1.5 pt-4 text-[15px] font-semibold text-jade-700 lg:pt-7">
-          Learn more <ArrowUpRight className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" aria-hidden />
+          Learn more <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden />
           <span className="sr-only"> about {s.title}</span>
         </Link>
       </div>
@@ -114,7 +114,7 @@ export function ServiceStack() {
           label="Staffing solutions"
           title="Six ways to hire, one partner"
           highlight="one partner"
-          description="Permanent, contract or at scale — every model runs on the same screening and the same transparent process."
+          description="Permanent, contract or at scale, every model runs on the same screening and the same transparent process."
           action={<SectionCta href="/services">All services</SectionCta>}
         />
 

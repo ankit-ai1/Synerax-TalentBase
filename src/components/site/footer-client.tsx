@@ -30,7 +30,7 @@ export function NewsletterForm() {
       if (!res.ok) throw new Error(json.error || "Couldn't subscribe right now.");
       setDone(true);
       setEmail("");
-      toast.success("You're subscribed — thank you!");
+      toast.success("You're subscribed, thank you!");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Couldn't subscribe right now.");
     } finally {
@@ -83,7 +83,7 @@ export function BackToTop() {
       onClick={() => window.scrollTo({ top: 0, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" })}
       aria-label="Back to top"
       className={cn(
-        "fixed bottom-5 right-5 z-40 inline-flex h-11 w-11 items-center justify-center rounded-full border border-line bg-surface/90 text-ink-700 shadow-pop backdrop-blur transition-all duration-300 hover:-translate-y-0.5 hover:text-ink-900",
+        "fixed bottom-5 right-5 z-40 inline-flex h-11 w-11 items-center justify-center rounded-full border border-line bg-surface text-ink-700 shadow-pop transition-all duration-300 hover:text-ink-900",
         show ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-3 opacity-0"
       )}
       tabIndex={show ? 0 : -1}

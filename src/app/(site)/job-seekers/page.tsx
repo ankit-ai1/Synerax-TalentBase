@@ -22,7 +22,7 @@ const STAGES = ["Applied", "Under review", "Shared", "Interview", "Offer", "Join
 function ProfileVisual() {
   return (
     <div aria-hidden className="relative mx-auto w-full max-w-[520px]">
-      <div className="rounded-[28px] border border-fg/10 bg-surface/90 p-6 shadow-[0_40px_120px_-40px_rgb(20_12_4/0.9)] backdrop-blur-xl">
+      <div className="rounded-[28px] border border-fg/10 bg-surface p-6 shadow-[0_40px_120px_-40px_rgb(20_12_4/0.9)]">
         <div className="flex items-center gap-4">
           <span className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[rgb(var(--accent-b))] to-[rgb(var(--accent-a))] text-[18px] font-bold text-[rgb(var(--on-accent))]">AS</span>
           <div>

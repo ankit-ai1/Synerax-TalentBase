@@ -8,14 +8,14 @@ import { Odometer } from "./metric-board";
 
 const STEPS = [
   { title: "Understand", time: "Day 0", text: "A short call to calibrate the role, must-haves, budget and notice period.", icon: ClipboardList },
-  { title: "Source", time: "Day 1–2", text: "Our talent pool, referrals and job boards — matched against your brief.", icon: Search },
+  { title: "Source", time: "Day 1–2", text: "Our talent pool, referrals and job boards, matched against your brief.", icon: Search },
   { title: "Screen", time: "Day 3", text: "Skills, experience, CTC and notice verified. Every profile gets a match score.", icon: ListChecks },
-  { title: "Deliver", time: "Day 7–30", text: "Interviews, offer and joining — we stay in touch until day one.", icon: BadgeCheck },
+  { title: "Deliver", time: "Day 7–30", text: "Interviews, offer and joining. We stay in touch until day one.", icon: BadgeCheck },
 ];
 
 const STATS = [
   { value: 72, suffix: " hrs", label: "Shortlist in", note: "for standard roles" },
-  { value: 3, suffix: " steps", label: "Screening", note: "skills · experience · fit" },
+  { value: 3, suffix: " steps", label: "Screening", note: "skills, experience, fit" },
   { value: 90, suffix: " days", label: "Replacement guarantee", note: "on permanent hires" },
 ];
 
@@ -113,7 +113,7 @@ function Node({ i, on }: { i: number; on: boolean }) {
   return (
     <span className="relative flex h-12 w-12 items-center justify-center">
       {on && <span aria-hidden className="absolute inset-0 animate-ping rounded-full bg-[rgb(var(--p-500)/0.25)] [animation-iteration-count:2]" />}
-      <span className={cn("relative flex h-12 w-12 items-center justify-center rounded-full border-2 transition-all duration-500", on ? "border-transparent bg-gradient-to-br from-[rgb(var(--ember-a))] to-[rgb(var(--ember-b))] text-white shadow-[0_0_24px_rgb(var(--p-500)/0.45)]" : "border-line bg-surface text-ink-400")}>
+      <span className={cn("relative flex h-12 w-12 items-center justify-center rounded-full border-2 transition-all duration-500", on ? "border-transparent bg-gradient-to-br from-[rgb(var(--ember-a))] to-[rgb(var(--ember-b))] text-white" : "border-line bg-surface text-ink-400")}>
         <Icon className="h-5 w-5" aria-hidden />
       </span>
     </span>
@@ -155,7 +155,7 @@ export function JourneyTimeline() {
   return (
     <Band tone="alt" index="04" label="How it works" className="py-24 sm:py-28">
       <Wrap>
-        <SectionHead index="04" label="How it works" title="The journey of one profile" highlight="one profile" description="From your brief to day one — four steps, with you in the loop at every stage." />
+        <SectionHead index="04" label="How it works" title="The journey of one profile" highlight="one profile" description="From your brief to day one in four steps, with you in the loop at every stage." />
 
         <div ref={ref}>
           {/* desktop: horizontal timeline */}

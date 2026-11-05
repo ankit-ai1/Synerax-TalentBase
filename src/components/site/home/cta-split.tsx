@@ -22,7 +22,7 @@ const SIDES = [
     key: "job",
     eyebrow: "I'm looking for a job",
     title: "Get matched to roles that fit you",
-    text: "One profile, a real recruiter, and no fees — ever.",
+    text: "One profile, a real recruiter, and no fees, ever.",
     cta: { href: "/register", label: "Find a job" },
     icon: UserRound,
     focus: [0.15, 0.85] as [number, number],

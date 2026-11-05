@@ -107,7 +107,7 @@ export function WhyToggle() {
                 transition={{ delay: i * 0.08, duration: 0.4 }}
                 className="flex items-center gap-4 border-b border-fg/[0.07] px-6 py-4 last:border-0"
               >
-                <span className={cn("flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-colors", yes ? (on ? "bg-jade text-white shadow-[0_0_18px_rgb(var(--p-500)/0.45)]" : "bg-fg/15 text-ink-800") : "bg-fg/[0.05] text-ink-400")}>
+                <span className={cn("flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-colors", yes ? (on ? "bg-jade text-white" : "bg-fg/15 text-ink-800") : "bg-fg/[0.05] text-ink-400")}>
                   {yes ? <Check className="h-4 w-4" aria-hidden /> : <Minus className="h-4 w-4" aria-hidden />}
                   <span className="sr-only">{yes ? "Yes" : "No"}</span>
                 </span>
@@ -133,7 +133,7 @@ export function WhyToggle() {
           label="Why Synerax"
           title="Flip the switch on how hiring feels"
           highlight="Flip the switch"
-          description="Compare a typical agency with how Synerax works — toggle to see the difference."
+          description="Compare a typical agency with how Synerax works, toggle to see the difference."
           action={toggle}
         />
 

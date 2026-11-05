@@ -78,7 +78,7 @@ function Card({ t, idx, top }: { t: T; idx: number; top: boolean }) {
         <span>
           <span className="block text-[16px] font-semibold text-ink-900">{t.name}</span>
           <span className="block text-[13.5px] text-ink-600">
-            {t.role} · {t.company}
+            {t.role}, {t.company}
           </span>
         </span>
       </figcaption>

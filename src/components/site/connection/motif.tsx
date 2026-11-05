@@ -120,7 +120,7 @@ export function SectionCta({ href, children }: { href: string; children: React.R
   return (
     <Link
       href={href}
-      className="btn-shimmer inline-flex h-14 items-center justify-center rounded-full bg-gradient-to-r from-[rgb(var(--ember-b))] to-[rgb(var(--ember-a))] px-8 text-[15px] font-semibold tracking-[-0.01em] text-white shadow-[0_16px_36px_-12px_rgb(var(--ember-a)/0.75),inset_0_1px_0_rgb(255_255_255/0.22)] transition-[transform,box-shadow] duration-300 hover:-translate-y-0.5 hover:shadow-[0_22px_44px_-12px_rgb(var(--ember-a)/0.9),inset_0_1px_0_rgb(255_255_255/0.22)]"
+      className="btn-shimmer inline-flex h-14 items-center justify-center rounded-full bg-gradient-to-r from-[rgb(var(--ember-b))] to-[rgb(var(--ember-a))] px-8 text-[15px] font-semibold tracking-[-0.01em] text-white shadow-[0_16px_36px_-12px_rgb(var(--ember-a)/0.75),inset_0_1px_0_rgb(255_255_255/0.22)] transition-[transform,box-shadow] duration-300 hover:shadow-[0_22px_44px_-12px_rgb(var(--ember-a)/0.9),inset_0_1px_0_rgb(255_255_255/0.22)]"
     >
       {children}
     </Link>

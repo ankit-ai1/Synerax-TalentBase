@@ -98,7 +98,7 @@ export function ComparisonTable() {
             {r.values.map((v, vi) => (
               <span key={vi} className="flex justify-center">
                 {v ? (
-                  <span className={cn("flex h-8 w-8 items-center justify-center rounded-full", vi === 0 ? "bg-jade text-white shadow-[0_0_24px_-2px_rgb(var(--jade)/0.8)]" : "bg-fg/10 text-ink-500")}>
+                  <span className={cn("flex h-8 w-8 items-center justify-center rounded-full", vi === 0 ? "bg-jade text-white" : "bg-fg/10 text-ink-500")}>
                     <DrawCheck delay={i * 110 + 250} />
                     <span className="sr-only">Yes</span>
                   </span>

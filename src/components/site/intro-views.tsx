@@ -126,7 +126,7 @@ function Loader({ reduce, onShown }: { reduce: boolean; onShown: () => void }) {
         {/* progress */}
         <div className="mt-10 w-[min(320px,70vw)]">
           <div className="h-[3px] overflow-hidden rounded-full bg-[#FDFBD4]/10">
-            <div className="h-full rounded-full bg-gradient-to-r from-[#C05800] via-[#E8862E] to-[#FDFBD4] shadow-[0_0_16px_rgb(232_134_46/0.7)]" style={{ width: `${pct}%` }} />
+            <div className="h-full rounded-full bg-gradient-to-r from-[#C05800] via-[#E8862E] to-[#FDFBD4]" style={{ width: `${pct}%` }} />
           </div>
           <div className="mt-2.5 flex justify-between text-[11px] font-medium tabular-nums tracking-wider text-[#FDFBD4]/50">
             <span>Staffing & recruitment partner</span>
@@ -152,7 +152,7 @@ function PromoCard({ onClose }: { onClose: () => void }) {
 
   return (
     <m.div className="fixed inset-0 z-[90] flex items-center justify-center p-3 sm:p-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} data-testid="site-promo">
-      <button type="button" aria-label="Close" onClick={onClose} className="absolute inset-0 cursor-default bg-[#1F150A]/70 backdrop-blur-[6px]" />
+      <button type="button" aria-label="Close" onClick={onClose} className="absolute inset-0 cursor-default bg-[#1F150A]/70" />
       <m.div
         role="dialog"
         aria-modal="true"
@@ -185,7 +185,7 @@ function PromoCard({ onClose }: { onClose: () => void }) {
           <h2 id="promo-title" className="mt-4 text-[34px] font-semibold leading-[1.05] tracking-[-0.03em] sm:text-[42px]">
             Your next role,
             <br />
-            <span className="bg-gradient-to-r from-[#E8862E] to-[#C05800] bg-clip-text text-transparent">found for you.</span>
+            <span className="text-[#E8862E]">found for you.</span>
           </h2>
           <p className="mt-3 text-[15px] leading-relaxed text-[#FDFBD4]/70">Create one profile and get matched to pre-screened openings — with a recruiter in your corner.</p>
           <ul className="mt-6 space-y-3">
@@ -203,7 +203,7 @@ function PromoCard({ onClose }: { onClose: () => void }) {
             ].map(([k, v], i) => (
               <m.div key={k} className="px-3 text-center" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.65 + i * 0.08 }}>
                 <dt className="sr-only">{v}</dt>
-                <dd className="bg-gradient-to-r from-[#E8862E] to-[#C05800] bg-clip-text text-[26px] font-semibold leading-none tracking-[-0.03em] text-transparent">{k}</dd>
+                <dd className="text-[26px] font-semibold leading-none tracking-[-0.03em] text-[#E8862E]">{k}</dd>
                 <dd className="mt-1.5 text-[11.5px] leading-snug text-[#FDFBD4]/60">{v}</dd>
               </m.div>
             ))}
@@ -236,7 +236,7 @@ function Visual() {
 
       {/* back card */}
       <m.div
-        className="absolute left-[18%] top-[16%] w-[62%] rotate-[-6deg] rounded-2xl border border-[#FDFBD4]/10 bg-[#FDFBD4]/[0.06] p-4 backdrop-blur"
+        className="absolute left-[18%] top-[16%] w-[62%] rotate-[-6deg] rounded-2xl border border-[#FDFBD4]/10 bg-[#FDFBD4]/[0.06] p-4"
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.15 }}
@@ -295,7 +295,7 @@ function Visual() {
           <span className="block text-[11px] text-[#6B5640]">Tomorrow, 11:00 AM</span>
         </span>
       </m.div>
-      <m.div className="absolute right-[7%] top-[11%] flex items-center gap-2 rounded-full bg-[#1F150A]/80 px-3.5 py-2 text-[12px] font-semibold text-[#FDFBD4] ring-1 ring-[#FDFBD4]/15 backdrop-blur" initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1 }}>
+      <m.div className="absolute right-[7%] top-[11%] flex items-center gap-2 rounded-full bg-[#1F150A]/80 px-3.5 py-2 text-[12px] font-semibold text-[#FDFBD4] ring-1 ring-[#FDFBD4]/15" initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1 }}>
         <Sparkles className="h-3.5 w-3.5 text-[#E8862E]" /> 3 new matches
       </m.div>
       <m.div className="absolute bottom-[8%] right-[8%] flex items-center gap-2 rounded-full bg-[#E8862E] px-3.5 py-2 text-[12px] font-semibold text-white shadow-lg" initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 1.5, type: "spring" }}>
