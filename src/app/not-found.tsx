@@ -13,7 +13,7 @@ export default function NotFound() {
         <div className="absolute left-1/2 top-1/3 h-72 w-72 -translate-x-1/2 rounded-full bg-jade/20 blur-3xl" />
       </div>
       <div className="relative">
-        <p className="bg-gradient-to-b from-ink-900 to-ink-400 bg-clip-text text-[96px] font-semibold leading-none tracking-[-0.05em] text-transparent sm:text-[140px]">404</p>
+        <p className="text-[96px] font-semibold leading-none tracking-[-0.05em] text-ink-900 sm:text-[140px]">404</p>
         <h1 className="mt-4 text-2xl font-semibold tracking-tight text-ink-900 sm:text-3xl">This page doesn&apos;t exist</h1>
         <p className="mx-auto mt-3 max-w-md text-[15px] text-ink-500">The link may be broken or the page may have moved. Let&apos;s get you back on track.</p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">

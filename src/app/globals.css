@@ -622,13 +622,13 @@ html:not(.reveal-on) .axis-glow, html.reveal-on [data-reveal].is-in .axis-glow {
 .band-dark::after { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; opacity: 0.09; mix-blend-mode: overlay; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
 
 /* ---- type: metal headings, serif ember highlights ---- */
-.metal { background: linear-gradient(180deg, rgb(var(--metal-a)) 20%, rgb(var(--metal-b)) 125%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.metal { color: rgb(var(--metal-a)); }
 /* highlight words: same sans font and weight as the heading, ember gradient */
 .hl { font-family: inherit; font-style: normal; font-weight: inherit; }
-.ember-text, .sweep, .text-gradient { background-image: linear-gradient(110deg, transparent 40%, rgb(255 250 225 / 0.7) 50%, transparent 60%), linear-gradient(100deg, rgb(var(--ember-a)), rgb(var(--ember-b))); background-size: 260% 100%, 100% 100%; background-repeat: no-repeat; background-position: 160% 0, 0 0; -webkit-background-clip: text; background-clip: text; color: transparent; animation: ember-sweep 5.5s ease-in-out 1.2s infinite; }
+.ember-text, .sweep, .text-gradient { color: rgb(var(--ember-b)); }
 @media (prefers-reduced-motion: reduce) { .ember-text, .sweep, .text-gradient { animation: none !important; } }
 /* slow light sweep across the ember highlight (hero) */
-.ember-sweep { background-image: linear-gradient(110deg, transparent 38%, rgb(255 250 225 / 0.75) 50%, transparent 62%), linear-gradient(100deg, rgb(var(--ember-a)), rgb(var(--ember-b))); background-size: 260% 100%, 100% 100%; background-repeat: no-repeat; -webkit-background-clip: text; background-clip: text; color: transparent; animation: ember-sweep 6.5s ease-in-out 1.6s infinite; }
+.ember-sweep { color: rgb(var(--ember-b)); }
 @keyframes ember-sweep { 0% { background-position: 160% 0, 0 0; } 45%, 100% { background-position: -60% 0, 0 0; } }
 .text-success { color: rgb(var(--success)); }
 
@@ -721,7 +721,7 @@ html.reveal-on [data-reveal].is-in .map-dot { animation: map-dot 0.6s ease var(-
 /* ---- final CTA: hovered side widens ---- */
 @media (min-width: 1024px) and (hover: hover) {
   .cta-row { display: flex; gap: 1rem; }
-  .cta-side { flex: 1 1 0%; min-width: 0; transition: flex-grow 0.9s cubic-bezier(0.34, 1.4, 0.5, 1); }
+  .cta-side { flex: 1 1 0%; min-width: 0; transition: flex-grow 0.9s cubic-bezier(0.22, 1, 0.36, 1); }
   .cta-row:hover .cta-side:hover { flex-grow: 1.5; }
 }
 html.reveal-on [data-reveal] .word-up { opacity: 0; transform: translate3d(0, 0.5em, 0); display: inline-block; }
