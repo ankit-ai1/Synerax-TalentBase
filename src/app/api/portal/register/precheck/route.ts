@@ -12,7 +12,7 @@ const schema = z.object({
 
 /** Checks email / mobile before the account is created (public) */
 export async function POST(req: Request) {
-  if (rateLimited(`precheck:${clientIp(req)}`, 20, 10 * 60 * 1000)) {
+  if (await rateLimited(`precheck:${clientIp(req)}`, 20, 10 * 60 * 1000)) {
     return Response.json({ error: "Too many attempts. Please try again in a few minutes." }, { status: 429 });
   }
   const parsed = schema.safeParse(await req.json().catch(() => ({})));

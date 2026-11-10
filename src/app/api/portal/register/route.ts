@@ -12,7 +12,7 @@ export const maxDuration = 60;
  * only created/linked after the email is verified (see /auth/callback).
  */
 export async function POST(req: Request) {
-  if (rateLimited(`register:${clientIp(req)}`, 8, 10 * 60 * 1000)) {
+  if (await rateLimited(`register:${clientIp(req)}`, 8, 10 * 60 * 1000)) {
     return Response.json({ error: "Too many attempts. Please try again in a few minutes." }, { status: 429 });
   }
 

@@ -28,7 +28,7 @@ export async function POST(req: Request) {
   if (input.kind === "start") {
     warmEmbeddings();
   } else {
-    const limited = ctx.userId ? rateLimited(`bot:u:${ctx.userId}`, 100, 3600e3) : rateLimited(`bot:ip:${clientIp(req)}`, 20, 3600e3);
+    const limited = ctx.userId ? await rateLimited(`bot:u:${ctx.userId}`, 100, 3600e3) : await rateLimited(`bot:ip:${clientIp(req)}`, 20, 3600e3);
     if (limited) return Response.json({ mode: ctx.mode, turns: [{ text: "You've sent a lot of messages — please try again in a little while.", tone: "error" }] });
     if (input.kind === "text" && input.text.length > MAX_CHARS) return Response.json({ mode: ctx.mode, turns: [{ text: `Please keep messages under ${MAX_CHARS} characters.`, tone: "error" }] });
   }

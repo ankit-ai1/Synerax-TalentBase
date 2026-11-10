@@ -2,7 +2,6 @@ node_modules
 .next
 .next-test
 .env*.local
-.env
 next-env.d.ts
 *.tsbuildinfo
 
@@ -10,9 +9,9 @@ next-env.d.ts
 /supabase/
 
 # All env files
-.env*
 
 # baseline build for before/after performance comparisons
 .next-base
 perf-proof
 client-teams-proof
+config.bat

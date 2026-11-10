@@ -124,7 +124,8 @@ export function CommandPalette({ open, onClose, isAdmin }: { open: boolean; onCl
     setLoading(true);
     const t = setTimeout(async () => {
       const supabase = createClient();
-      const like = `%${term.replace(/[%_]/g, "")}%`;
+      // commas and brackets would break out of the .or() filter below, so strip them with the wildcards
+      const like = `%${term.replace(/[%_,()]/g, "")}%`;
       // mobile-number search: "+91 98765-43210", "9876543210", "+971501234567" … (national digits, 4+)
       const national = phoneSearchDigits(term) ?? "";
       const [cands, jobs, clients, byPhone] = await Promise.all([

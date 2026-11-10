@@ -16,7 +16,7 @@ const MAX = 5 * 1024 * 1024;
 export async function POST(req: Request) {
   const a = await apiStaff();
   if ("error" in a) return a.error;
-  if (rateLimited(`jd:${a.profile.id}`, 120, 60 * 60 * 1000)) return Response.json({ error: "Too many JDs read in the last hour — try again later" }, { status: 429 });
+  if (await rateLimited(`jd:${a.profile.id}`, 120, 60 * 60 * 1000)) return Response.json({ error: "Too many JDs read in the last hour — try again later" }, { status: 429 });
   const form = await req.formData().catch(() => null);
   const file = form?.get("file");
   if (!(file instanceof File)) return Response.json({ error: "No file received" }, { status: 400 });

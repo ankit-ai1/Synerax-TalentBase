@@ -24,7 +24,7 @@ export async function POST(req: Request) {
   const profile = await getCurrentProfile().catch(() => null);
   const loggedIn = !!profile?.is_active;
   const key = loggedIn ? `resume:u:${profile!.id}` : `resume:ip:${clientIp(req)}`;
-  if (rateLimited(key, loggedIn ? 40 : 10, 60 * 60 * 1000)) {
+  if (await rateLimited(key, loggedIn ? 40 : 10, 60 * 60 * 1000)) {
     return Response.json({ error: "Too many CVs read in the last hour. Please fill the form manually or try again later." }, { status: 429 });
   }
 

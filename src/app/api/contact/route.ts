@@ -1,25 +1,10 @@
 import { createClient } from "@supabase/supabase-js";
 import { leadSchema } from "@/lib/leads";
-
-/** Basic in-memory rate limit: 5 submissions per IP per 10 minutes (per server instance) */
-const WINDOW_MS = 10 * 60 * 1000;
-const MAX_HITS = 5;
-const hits = new Map<string, number[]>();
-
-function limited(ip: string) {
-  const now = Date.now();
-  const recent = (hits.get(ip) ?? []).filter((t) => now - t < WINDOW_MS);
-  recent.push(now);
-  hits.set(ip, recent);
-  if (hits.size > 5000) {
-    for (const [k, v] of hits) if (v.every((t) => now - t >= WINDOW_MS)) hits.delete(k);
-  }
-  return recent.length > MAX_HITS;
-}
+import { clientIp, rateLimited } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
-  const ip = (request.headers.get("x-forwarded-for") ?? "").split(",")[0].trim() || request.headers.get("x-real-ip") || "unknown";
-  if (limited(ip)) {
+  // 5 submissions per IP per 10 minutes
+  if (await rateLimited(`contact:${clientIp(request)}`, 5, 10 * 60 * 1000)) {
     return Response.json({ error: "Too many submissions. Please try again in a few minutes." }, { status: 429 });
   }
 

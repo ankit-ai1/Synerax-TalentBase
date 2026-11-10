@@ -32,7 +32,7 @@ const extOf = (name: string) => (name.includes(".") ? name.slice(name.lastIndexO
 export async function POST(req: Request) {
   const profile = await getCurrentProfile();
   if (!profile?.is_active) return Response.json({ error: "Login required" }, { status: 401 });
-  if (rateLimited(`chat-file:${profile.id}`, 20, 10 * 60 * 1000)) return Response.json({ error: "Too many files — please wait a few minutes." }, { status: 429 });
+  if (await rateLimited(`chat-file:${profile.id}`, 20, 10 * 60 * 1000)) return Response.json({ error: "Too many files — please wait a few minutes." }, { status: 429 });
 
   const form = await req.formData();
   const file = form.get("file");
